@@ -1,0 +1,15 @@
+{
+  "enable": [
+    "all"
+  ],
+  "disable": [
+    {
+      "value": "processing",
+      "because": "Javac complains about annotations not being matched by any annotation processor even if they were"
+    },
+    {
+      "value": "serial",
+      "because": "We don't use serialization, so I don't want to generate serialIDs for exceptions and such"
+    }
+  ]
+}

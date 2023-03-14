@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter xmlns="http://findbugs.sourceforge.net/filter/3.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://findbugs.sourceforge.net/filter/3.0.0
+    https://raw.githubusercontent.com/findbugsproject/findbugs/3.0.1/findbugs/etc/findbugsfilter.xsd">
+    <Match>
+        <Bug pattern="
+      DRE_DECLARED_RUNTIME_EXCEPTION,
+      EI_EXPOSE_REP, EI_EXPOSE_REP2,
+      FII_COMBINE_FILTERS,
+      MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR,
+      OI_OPTIONAL_ISSUES_USES_IMMEDIATE_EXECUTION,
+      PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS,
+      RFI_SET_ACCESSIBLE,
+      S508C_SET_COMP_COLOR,
+      SE_NO_SERIALVERSIONID,
+      URF_UNREAD_FIELD,
+    "/>
+    </Match>
+</FindBugsFilter>
