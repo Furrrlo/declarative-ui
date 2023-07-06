@@ -4,10 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeComponentContext<T> {
 
@@ -96,6 +93,11 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V> V useCallback(V fun, List<Object> dependencies) {
         return toDecorate().useCallback(fun, dependencies);
+    }
+
+    @Override
+    public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+        return toDecorate().inner(getter, component);
     }
 
     @Override

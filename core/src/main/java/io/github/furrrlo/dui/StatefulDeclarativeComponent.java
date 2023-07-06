@@ -176,6 +176,12 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
+        public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+            ensureInsideBody();
+            return this;
+        }
+
+        @Override
         public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value) {
             ensureInsideBody();
             return this;

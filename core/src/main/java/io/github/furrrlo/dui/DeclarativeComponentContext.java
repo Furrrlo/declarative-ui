@@ -3,6 +3,7 @@ package io.github.furrrlo.dui;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface DeclarativeComponentContext<T> {
@@ -30,6 +31,8 @@ public interface DeclarativeComponentContext<T> {
     }
 
     <V> V useCallback(V fun, List<Object> dependencies);
+
+    <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 
     <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value);
 

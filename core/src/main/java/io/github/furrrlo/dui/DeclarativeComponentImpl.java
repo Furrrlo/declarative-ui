@@ -5,10 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -172,6 +169,21 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         public ContextImpl(DeclarativeComponentImpl<T, ?> outer, ContextImpl<T> other) {
             super(outer, other);
             this.attributes = other.attributes;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+            ensureInsideBody();
+            // I trust this cast
+            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?> internalComponent =
+                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?>) component.doApplyInternal();
+            if (internalComponent.body != null) {
+                internalComponent.isInvokingBody = true;
+                internalComponent.invokeBody(internalComponent.body, new InnerComponentContextImpl<>(this, getter));
+                internalComponent.isInvokingBody = false;
+            }
+            return this;
         }
 
         @Override
