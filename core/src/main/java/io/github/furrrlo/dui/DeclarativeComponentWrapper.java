@@ -107,7 +107,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         if(!depsChanged)
             return;
 
-        DeclarativeComponentImpl.updateDeclarativeComponent(
+        Attribute.updateDeclarativeComponent(
                 prevWrapped != null,
                 curr,
                 prevWrapped,
