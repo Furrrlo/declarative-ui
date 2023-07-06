@@ -5,18 +5,27 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeComponentContext<T> {
 
     private final @Nullable Class<T> type;
     private final Supplier<@Nullable T> factory;
+    private final BooleanSupplier canUpdateInCurrentThread;
+    private final Consumer<Runnable> updateScheduler;
 
     private @Nullable DeclarativeComponentContext<T> toDecorate;
 
-    protected DeclarativeComponentContextDecorator(@Nullable Class<T> type, Supplier<@Nullable T> factory) {
+    protected DeclarativeComponentContextDecorator(@Nullable Class<T> type,
+                                                   Supplier<@Nullable T> factory,
+                                                   BooleanSupplier canUpdateInCurrentThread,
+                                                   Consumer<Runnable> updateScheduler) {
         this.type = type;
         this.factory = factory;
+        this.canUpdateInCurrentThread = canUpdateInCurrentThread;
+        this.updateScheduler = updateScheduler;
     }
 
     void setToDecorate(@Nullable DeclarativeComponentContext<T> toDecorate) {
@@ -35,6 +44,14 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
 
     public Supplier<@Nullable T> getFactory() {
         return factory;
+    }
+
+    public Consumer<Runnable> getUpdateScheduler() {
+        return updateScheduler;
+    }
+
+    public BooleanSupplier getCanUpdateInCurrentThread() {
+        return canUpdateInCurrentThread;
     }
 
     public DeclarativeComponentFactory fn() {

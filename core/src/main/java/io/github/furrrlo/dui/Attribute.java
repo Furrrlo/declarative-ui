@@ -67,28 +67,30 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                                                @Nullable StatefulDeclarativeComponent<?, V, ?, ?> prevValue,
                                                @Nullable Consumer<V> createdComponent,
                                                @Nullable Consumer<V> updatedComponent) {
-        // Wrappers need to invoke their body before they can say declarativeType
-        if(value instanceof DeclarativeComponentWrapper) {
-            if(wasSet)
-                value.copy(Objects.requireNonNull(prevValue));
-            value.updateComponent(false);
-        }
+        value.runOrScheduleOnFrameworkThread(() -> {
+            // Wrappers need to invoke their body before they can say declarativeType
+            if(value instanceof DeclarativeComponentWrapper) {
+                if(wasSet)
+                    value.copy(Objects.requireNonNull(prevValue));
+                value.updateComponent(false);
+            }
 
-        if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
-            value.copy(prevValue);
-            value.updateComponent();
+            if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
+                value.copy(prevValue);
+                value.updateComponent();
 
-            if(updatedComponent != null)
-                updatedComponent.accept(value.getComponent());
+                if(updatedComponent != null)
+                    updatedComponent.accept(value.getComponent());
 
-            return;
-        }
+                return;
+            }
 
-        V created = value.updateOrCreateComponent();
-        if(createdComponent != null)
-            createdComponent.accept(created);
+            V created = value.updateOrCreateComponent();
+            if(createdComponent != null)
+                createdComponent.accept(created);
 
-        if(prevValue != null)
-            prevValue.disposeComponent();
+            if(prevValue != null)
+                prevValue.disposeComponent();
+        });
     }
 }

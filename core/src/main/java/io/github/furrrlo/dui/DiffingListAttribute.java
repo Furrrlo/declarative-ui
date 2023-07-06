@@ -90,6 +90,8 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     toDispose.remove(item);
                     alreadyDeepUpdated.add(item);
 
+                    // TODO: is it safe to do this on this random thread?
+                    //       probably not LMAO
                     final C component = item.updateOrCreateComponent();
                     if (LOGGER.isLoggable(Level.FINE))
                         LOGGER.log(Level.FINE, "Inserting component {} at idx {} of {}", new Object[]{component, idx, obj});
@@ -109,8 +111,10 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
             if (alreadyDeepUpdated.contains(currImpl))
                 continue;
 
-            currImpl.copy(prevImpl);
-            currImpl.updateComponent();
+            currImpl.runOrScheduleOnFrameworkThread(() -> {
+                currImpl.copy(prevImpl);
+                currImpl.updateComponent();
+            });
         }
 
         toDispose.forEach(StatefulDeclarativeComponent::disposeComponent);

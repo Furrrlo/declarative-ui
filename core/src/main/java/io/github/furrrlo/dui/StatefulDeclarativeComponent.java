@@ -2,7 +2,6 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -69,15 +68,9 @@ abstract class StatefulDeclarativeComponent<
         return getComponent();
     }
 
-    public void triggerComponentUpdate() {
-        // TODO:
-//        final EventQueue eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
-//        if(eventQueue instanceof PrioritizableEventQueue priorityQueue) {
-//            priorityQueue.invokeRightAfter(this::updateComponent);
-//        } else {
-        SwingUtilities.invokeLater(this::updateComponent);
-//        }
-    }
+    public abstract void triggerComponentUpdate();
+
+    public abstract void runOrScheduleOnFrameworkThread(Runnable runnable);
 
     protected void updateComponent() {
         updateComponent(true);

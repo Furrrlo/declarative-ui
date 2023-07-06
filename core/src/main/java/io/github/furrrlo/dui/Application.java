@@ -2,7 +2,6 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +10,9 @@ import java.util.function.Consumer;
 public interface Application {
 
     static void create(Consumer<Context> app) {
-//        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new PrioritizableEventQueue());
         final StatefulDeclarativeComponent<?, BaseApplication, ?, ?> ctx =
                 DeclarativeComponentFactory.INSTANCE.of(Context::new, app::accept).doApplyInternal();
-        SwingUtilities.invokeLater(ctx::updateOrCreateComponent);
+        ctx.triggerComponentUpdate();
     }
 
     class BaseApplication {
@@ -26,7 +24,7 @@ public interface Application {
         }
     }
 
-    class Context extends DeclarativeComponentContextDecorator<BaseApplication> {
+    class Context extends NoFrameworkDecorator<BaseApplication> {
 
         private static final String PREFIX = "__Application.Context__";
 

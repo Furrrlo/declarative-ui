@@ -24,7 +24,7 @@ public class JDFrame {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
-    public static class Decorator<T extends JFrame> extends DeclarativeComponentContextDecorator<T> {
+    public static class Decorator<T extends JFrame> extends SwingDecorator<T> {
 
         private static final String PREFIX = "__JDFrame__";
 

@@ -95,6 +95,16 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
+    public void triggerComponentUpdate() {
+        updateComponent(true);
+    }
+
+    @Override
+    public void runOrScheduleOnFrameworkThread(Runnable runnable) {
+        runnable.run();
+    }
+
+    @Override
     protected void updateAttributes(StatefulContext<Object> newCtx) {
         final StatefulDeclarativeComponent<?, R, ?, ?> curr = Objects.requireNonNull(
                 wrapped,

@@ -10,7 +10,7 @@ public class DNull {
         return DeclarativeComponentFactory.INSTANCE.of(Decorator::new);
     }
 
-    private static class Decorator<T> extends DeclarativeComponentContextDecorator<T> {
+    private static class Decorator<T> extends NoFrameworkDecorator<T> {
 
         protected Decorator() {
             super(null, () -> null);

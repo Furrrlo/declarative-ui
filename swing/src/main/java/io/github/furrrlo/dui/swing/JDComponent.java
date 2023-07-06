@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class JDComponent {
 
-    public static class Decorator<T extends JComponent> extends DeclarativeComponentContextDecorator<T> {
+    public static class Decorator<T extends JComponent> extends SwingDecorator<T> {
 
         private static final String PREFIX = "__JDComponent__";
 

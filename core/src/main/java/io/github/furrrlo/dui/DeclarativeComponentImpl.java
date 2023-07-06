@@ -6,6 +6,8 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +21,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     private final @Nullable DeclarativeComponentContextDecorator<T> decorator;
     private final Supplier<@Nullable T> componentFactory;
     private final @Nullable Class<T> componentType;
+    private final BooleanSupplier canUpdateInCurrentThread;
+    private final Consumer<Runnable> updateScheduler;
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
@@ -31,15 +35,22 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         this.decorator = decorator;
         this.componentType = decorator.getType();
         this.componentFactory = decorator.getFactory();
+        this.updateScheduler = decorator.getUpdateScheduler();
+        this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
 
     @SuppressWarnings("unchecked")
-    public DeclarativeComponentImpl(Class<T> componentType, Supplier<T> componentFactory,
+    public DeclarativeComponentImpl(Class<T> componentType,
+                                    Supplier<T> componentFactory,
+                                    BooleanSupplier canUpdateInCurrentThread,
+                                    Consumer<Runnable> updateScheduler,
                                     @Nullable Body<T, DeclarativeComponentContext<T>> body) {
         super((Body<T, O_CTX>) body);
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
+        this.updateScheduler = updateScheduler;
+        this.canUpdateInCurrentThread = canUpdateInCurrentThread;
     }
 
     @Override
@@ -85,6 +96,19 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         return super.updateOrCreateComponent();
+    }
+
+    @Override
+    public void triggerComponentUpdate() {
+        updateScheduler.accept(this::updateComponent);
+    }
+
+    @Override
+    public void runOrScheduleOnFrameworkThread(Runnable runnable) {
+        if(canUpdateInCurrentThread.getAsBoolean())
+            runnable.run();
+        else
+            updateScheduler.accept(runnable);
     }
 
     @Override
@@ -272,7 +296,13 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
         @Override
         public DeclarativeComponent<T> apply(DeclarativeComponentFactory factory) {
-            return DeclarativeComponentFactory.INSTANCE.of(type, () -> item);
+            return new DeclarativeComponentImpl<>(
+                    type,
+                    () -> item,
+                    // This in theory should never need to update any props anyway
+                    () -> true,
+                    Runnable::run,
+                    null);
         }
 
         @Override
