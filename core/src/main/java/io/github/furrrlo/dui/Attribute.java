@@ -70,8 +70,10 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         value.runOrScheduleOnFrameworkThread(() -> {
             // Wrappers need to invoke their body before they can say declarativeType
             if(value instanceof DeclarativeComponentWrapper) {
-                if(wasSet)
-                    value.copy(Objects.requireNonNull(prevValue));
+                if (wasSet && prevValue instanceof DeclarativeComponentWrapper && Objects.equals(
+                        ((DeclarativeComponentWrapper<?>) value).getDeclarativeWrapperType(),
+                        Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevValue).getDeclarativeWrapperType()))
+                    value.copy(prevValue);
                 value.updateComponent(false);
             }
 

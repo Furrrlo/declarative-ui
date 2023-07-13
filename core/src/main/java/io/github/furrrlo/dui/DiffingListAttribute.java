@@ -64,7 +64,9 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                 continue;
 
             final StatefulDeclarativeComponent<?, C, ?, ?> prevImpl = i < prevValue.size() ? prevValue.get(i) : null;
-            if (prevImpl != null)
+            if (prevImpl instanceof DeclarativeComponentWrapper && Objects.equals(
+                    ((DeclarativeComponentWrapper<?>) currImpl).getDeclarativeWrapperType(),
+                    Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevImpl).getDeclarativeWrapperType()))
                 currImpl.copy(prevImpl);
             currImpl.updateComponent(false);
         }
