@@ -16,6 +16,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     private final boolean hasDeps;
     private final List<Object> newDeps;
 
+    private boolean wasDeepUpdated;
     private @Nullable List<Object> deps;
     private @Nullable List<Object> prevDeps;
     private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> wrapped;
@@ -54,6 +55,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         final DeclarativeComponentWrapper<R> other = (DeclarativeComponentWrapper<R>) other0;
         ensureSame("hasDeps", other, f -> f.hasDeps);
 
+        wasDeepUpdated = other.wasDeepUpdated;
         deps = other.deps;
         prevDeps = other.prevDeps;
         wrapped = other.wrapped;
@@ -76,6 +78,18 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
                 this.wrapped,
                 "getDeclarativeType() attribute called without having invoked the wrapper body");
         return wrapperBody.getClass().getName() + "[" + wrapped.getDeclarativeType() + "]";
+    }
+
+    @Override
+    protected void updateComponent(boolean deepUpdate) {
+        super.updateComponent(deepUpdate);
+        // Wrappers need to invoke their body before they can say declarativeType
+        // so if this was soft-updated, propagate the update to the child wrapper
+        if(!deepUpdate && wrapped instanceof DeclarativeComponentWrapper) {
+            if(prevWrapped != null)
+                wrapped.copy(prevWrapped);
+            wrapped.updateComponent(false);
+        }
     }
 
     private void invokeWrappedBody(DeclarativeComponentContext<Object> ctx) {
@@ -117,8 +131,10 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         if(!depsChanged)
             return;
 
+        final boolean wasDeepUpdated = this.wasDeepUpdated;
+        this.wasDeepUpdated = true;
         Attribute.updateDeclarativeComponent(
-                prevWrapped != null,
+                wasDeepUpdated,
                 curr,
                 prevWrapped,
                 null,
