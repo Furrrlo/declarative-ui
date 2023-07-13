@@ -69,8 +69,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     }
 
     @Override
-    protected void copyContext(ContextImpl<T> toCopy) {
-        context = new ContextImpl<>(this, toCopy);
+    protected void copyContext(@Nullable ContextImpl<T> toCopy) {
+        context = toCopy == null ? null : new ContextImpl<>(this, toCopy);
     }
 
     @Override

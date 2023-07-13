@@ -66,8 +66,8 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
-    protected void copyContext(StatefulContext<Object> toCopy) {
-        context = new StatefulContext<>(this, toCopy);
+    protected void copyContext(@Nullable StatefulContext<Object> toCopy) {
+        context = toCopy == null ? null : new StatefulContext<>(this, toCopy);
     }
 
     @Override

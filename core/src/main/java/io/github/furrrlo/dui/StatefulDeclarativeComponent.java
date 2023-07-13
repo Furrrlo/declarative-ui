@@ -57,7 +57,7 @@ abstract class StatefulDeclarativeComponent<
 
     protected abstract I_CTX newContext();
 
-    protected abstract void copyContext(I_CTX toCopy);
+    protected abstract void copyContext(@Nullable I_CTX toCopy);
 
     public abstract @Nullable String getDeclarativeType();
 
