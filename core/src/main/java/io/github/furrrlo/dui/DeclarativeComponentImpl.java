@@ -89,7 +89,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     public T updateOrCreateComponent() {
         if(component == null) {
             component = componentFactory.get();
-            LOGGER.log(Level.FINE, "Created component {}", component);
+            LOGGER.log(Level.FINE, "Created component {0}", component);
         }
 
         return super.updateOrCreateComponent();
@@ -136,7 +136,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     protected void disposeComponent() {
-        LOGGER.log(Level.FINE, "Disposing component {}", component);
+        LOGGER.log(Level.FINE, "Disposing component {0}", component);
         // TODO: how to make components disposable?
         if(component instanceof Window) {
             final Window window = (Window) component;

@@ -45,7 +45,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         if (!wasSet || !Objects.equals(value, prevValue)) {
             setter.accept(obj, value);
             if (LOGGER.isLoggable(Level.FINE))
-                LOGGER.log(Level.FINE, "Updated attribute {}: {} -> {} of {}",
+                LOGGER.log(Level.FINE, "Updated attribute {0}: {1} -> {2} of {3}",
                         new Object[]{key, prevValue, value, obj});
         }
     }

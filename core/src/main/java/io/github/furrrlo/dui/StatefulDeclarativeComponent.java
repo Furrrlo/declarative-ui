@@ -163,7 +163,7 @@ abstract class StatefulDeclarativeComponent<
 
             final Memoized<V> newMemo = new Memoized<>(value.get(), dependencies);
             if(LOGGER.isLoggable(Level.FINE))
-                LOGGER.log(Level.FINE, "Created memoized value ({}) {} for {}",
+                LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
                         new Object[] { currMemoizedIdx, newMemo.value, newMemo.dependencies });
             outer.memoizedVars.add(newMemo);
             currMemoizedIdx++;
@@ -278,7 +278,7 @@ abstract class StatefulDeclarativeComponent<
             if(!this.dependencies.equals(dependencies)) {
                 value = newValue.get();
                 if(LOGGER.isLoggable(Level.FINE))
-                    LOGGER.log(Level.FINE, "Updated memoized value {} (deps: {} -> {})",
+                    LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1} -> {2})",
                             new Object[] { value, this.dependencies, dependencies });
                 this.dependencies = dependencies;
             }
