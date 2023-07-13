@@ -3,6 +3,7 @@ package io.github.furrrlo.dui;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -78,6 +79,10 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
         final List<StatefulDeclarativeComponent<?, C, ?, ?>> toUpdate = new ArrayList<>(prevValue);
         final Set<StatefulDeclarativeComponent<?, ?, ?, ?>> alreadyDeepUpdated = new LinkedHashSet<>();
         final Set<StatefulDeclarativeComponent<?, ?, ?, ?>> toDispose = new LinkedHashSet<>();
+
+        final List<Runnable> actions = new ArrayList<>();
+        final List<CompletableFuture<?>> componentsCreations = new ArrayList<>();
+
         outputMoves.forEach(move -> move.doMove(
                 (idx, item) -> {
                     final S supplier = Objects.requireNonNull(implToSuppliers.get(item),
@@ -90,19 +95,35 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     toDispose.remove(item);
                     alreadyDeepUpdated.add(item);
 
-                    // TODO: is it safe to do this on this random thread?
-                    //       probably not LMAO
-                    final C component = item.updateOrCreateComponent();
-                    if (LOGGER.isLoggable(Level.FINE))
-                        LOGGER.log(Level.FINE, "Inserting component {} at idx {} of {}", new Object[]{component, idx, obj});
-                    adder.add(obj, idx, supplier, component);
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    item.runOrScheduleOnFrameworkThread(() -> {
+                        try {
+                            item.updateOrCreateComponent();
+                        } finally {
+                            future.complete(null);
+                        }
+                    });
+                    componentsCreations.add(future);
+                    actions.add(() -> {
+                        final C component = item.getComponent();
+                        if (LOGGER.isLoggable(Level.FINE))
+                            LOGGER.log(Level.FINE, "Inserting component {0} at idx {1} of {2}", new Object[]{component, idx, obj});
+                        adder.add(obj, idx, supplier, component);
+                    });
                 },
                 idx -> {
                     if (LOGGER.isLoggable(Level.FINE))
-                        LOGGER.log(Level.FINE, "Removing component at idx {} of {}", new Object[]{idx, obj});
+                        LOGGER.log(Level.FINE, "Removing component at idx {0} of {1}", new Object[]{idx, obj});
                     toDispose.add(toUpdate.remove(idx));
-                    remover.remover(obj, idx);
+                    actions.add(() -> remover.remover(obj, idx));
                 }));
+
+        // This is shit but whatever I guess
+        // It should allow components with a different framework thread to still execute actions in order
+        CompletableFuture.allOf(componentsCreations.toArray(new CompletableFuture[0])).thenRun(() -> {
+            // TODO: do this on the thread of the component which owns this attribute
+            actions.forEach(Runnable::run);
+        });
 
         // Deep updates
         for (int i = 0; i < toUpdate.size(); i++) {
@@ -117,6 +138,6 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
             });
         }
 
-        toDispose.forEach(StatefulDeclarativeComponent::disposeComponent);
+        toDispose.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
     }
 }
