@@ -16,8 +16,9 @@ public interface DeclarativeComponentContext<T> {
         return useMemo(value, Collections.emptyList());
     }
 
-    default <V> V useMemo(Supplier<V> value, Object dependency) {
-        return useMemo(value, Collections.singletonList(dependency));
+    default <V> Supplier<V> useMemoSupplier(IdentifiableSupplier<V> value) {
+        final V memoized = useMemo(value);
+        return () -> memoized;
     }
 
     <V> V useMemo(Supplier<V> value, List<Object> dependencies);
@@ -34,7 +35,7 @@ public interface DeclarativeComponentContext<T> {
 
     <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 
-    <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value);
+    <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value);
 
     <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
             String key,

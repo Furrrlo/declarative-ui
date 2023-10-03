@@ -15,37 +15,37 @@ public class DAbstractButton {
             super(type, factory);
         }
 
-        public void icon(Icon icon) {
+        public void icon(Supplier<Icon> icon) {
             attribute(PREFIX + "icon", AbstractButton::setIcon, icon);
         }
 
-        public void text(String text) {
+        public void text(Supplier<String> text) {
             attribute(PREFIX + "text", AbstractButton::setText, text);
         }
 
-        public void margin(Insets m) {
+        public void margin(Supplier<Insets> m) {
             attribute(PREFIX + "margin", AbstractButton::setMargin, m);
         }
 
-        public void toolTipText(String tooltip) {
+        public void toolTipText(Supplier<String> tooltip) {
             attribute(PREFIX + "toolTipText", AbstractButton::setToolTipText, tooltip);
         }
 
-        public void enabled(boolean enabled) {
+        public void enabled(Supplier<Boolean> enabled) {
             attribute(PREFIX + "enabled", AbstractButton::setEnabled, enabled);
         }
 
-        public void selected(boolean selected) {
+        public void selected(Supplier<Boolean> selected) {
             attribute(PREFIX + "selected", AbstractButton::setSelected, selected);
         }
 
-        public void buttonGroup(ButtonGroup buttonGroup) {
+        public void buttonGroup(Supplier<ButtonGroup> buttonGroup) {
             attribute(PREFIX + "buttonGroup",
                     (btn, group) -> group.add(btn),
                     buttonGroup);
         }
 
-        public void actionListener(ActionListener l) {
+        public void actionListener(Supplier<ActionListener> l) {
             eventListener(PREFIX + "actionListener",
                     ActionListener.class,
                     ActionListenerWrapper::new,

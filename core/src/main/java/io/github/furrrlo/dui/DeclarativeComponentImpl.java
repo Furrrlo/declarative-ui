@@ -3,8 +3,9 @@ package io.github.furrrlo.dui;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.*;
 import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,12 +15,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         extends StatefulDeclarativeComponent<T, T, O_CTX, DeclarativeComponentImpl.ContextImpl<T>> {
 
     private static final Logger LOGGER = Logger.getLogger(DeclarativeComponentImpl.class.getName());
+    private static final boolean TRACE_UPDATE_SCHEDULES = true;
 
     private final @Nullable DeclarativeComponentContextDecorator<T> decorator;
     private final Supplier<@Nullable T> componentFactory;
     private final @Nullable Class<T> componentType;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final Consumer<Runnable> updateScheduler;
+    private @Nullable IdentifiableRunnable currentStateDependency;
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
@@ -32,7 +35,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         this.decorator = decorator;
         this.componentType = decorator.getType();
         this.componentFactory = decorator.getFactory();
-        this.updateScheduler = decorator.getUpdateScheduler();
+        this.updateScheduler = traceUpdateSchedules(decorator.getUpdateScheduler());
         this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
 
@@ -46,8 +49,22 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
-        this.updateScheduler = updateScheduler;
+        this.updateScheduler = traceUpdateSchedules(updateScheduler);
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
+    }
+
+    private static Consumer<Runnable> traceUpdateSchedules(Consumer<Runnable> updateScheduler) {
+        return !TRACE_UPDATE_SCHEDULES ? updateScheduler : (update) -> {
+            final Throwable trace = new Exception("Called from here");
+            updateScheduler.accept(() -> {
+                try {
+                    update.run();
+                } catch (Throwable ex) {
+                    ex.addSuppressed(trace);
+                    throw ex;
+                }
+            });
+        };
     }
 
     @Override
@@ -97,7 +114,12 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     public void triggerComponentUpdate() {
-        updateScheduler.accept(this::updateComponent);
+        updateScheduler.accept(() -> substituteComponentRef.get().updateComponent(true));
+    }
+
+    @Override
+    public void scheduleOnFrameworkThread(Runnable runnable) {
+        updateScheduler.accept(runnable);
     }
 
     @Override
@@ -105,7 +127,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         if(canUpdateInCurrentThread.getAsBoolean())
             runnable.run();
         else
-            updateScheduler.accept(runnable);
+            scheduleOnFrameworkThread(runnable);
     }
 
     @Override
@@ -130,8 +152,62 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     context.attributes.get(key) :
                     null;
             final Object prevValue = prevProp != null ? prevProp.value() : null;
-            ((Attr) prop).update(component, prevProp != null, prevProp, prevValue);
+            this.<Attr>updateAttribute(key, prop, component, prevProp != null, prevProp, prevValue);
         });
+    }
+
+    private <A extends Attr<T, A>>  void updateAttribute(String attrKey,
+                                                         A attr,
+                                                         T obj,
+                                                         boolean wasSet,
+                                                         @Nullable A prev,
+                                                         @Nullable Object prevValue) {
+        this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, () -> {
+            attr.update(obj, wasSet, prev, prevValue);
+            return null;
+        });
+    }
+
+    @Override
+    protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
+        return currentStateDependency != null
+                ? currentStateDependency
+                : makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <A extends Attr<?, A>> IdentifiableRunnable makeAttrStateDependency(
+            String attrKey,
+            BiConsumer<DeclarativeComponentImpl<T, O_CTX>, A> runnable,
+            BiFunction<DeclarativeComponentImpl<T, O_CTX>, A, Object[]> deps) {
+        return this.<DeclarativeComponentImpl<T, O_CTX>>makeStateDependency(
+                c -> {
+                    final Attr<?, ?> attr;
+                    if(c.context != null && (attr = c.context.attributes.get(attrKey)) != null)
+                        runnable.accept(c, (A) attr);
+                },
+                c -> {
+                    final Attr<?, ?> attr;
+                    if(c.context != null && (attr = c.context.attributes.get(attrKey)) != null)
+                        return deps.apply(c, (A) attr);
+                    return new Object[] { c, attrKey };
+                });
+    }
+
+    private <RET, A extends Attr<T, A>> RET buildOrChangeAttrWithStateDependency(String attrKey, Supplier<RET> factory) {
+        IdentifiableRunnable prevStateDependency = currentStateDependency;
+        // Notice how it's not capturing neither this nor attr, as both  might be replaced with
+        // newer versions, and we do not want to update stale stuff
+        this.currentStateDependency = this.<A>makeAttrStateDependency(
+                attrKey,
+                (c, attr) -> c.updateScheduler.accept(() -> c.runAsComponentUpdate(() ->
+                        c.updateAttribute(attrKey, attr, c.component, true, null, attr.value()))),
+                (c, attr) -> new Object[] { attr });
+        try {
+            return factory.get();
+        } finally {
+            this.currentStateDependency = prevStateDependency;
+        }
     }
 
     @Override
@@ -159,15 +235,18 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     static class ContextImpl<T> extends StatefulDeclarativeComponent.StatefulContext<T> {
 
+        private final DeclarativeComponentImpl<T, ?> outer;
         private final LinkedHashMap<String, Attr<T, ?>> attributes; // Important: this needs to maintain order
 
         public ContextImpl(DeclarativeComponentImpl<T, ?> outer) {
             super(outer);
+            this.outer = outer;
             this.attributes = new LinkedHashMap<>();
         }
 
         public ContextImpl(DeclarativeComponentImpl<T, ?> outer, ContextImpl<T> other) {
             super(outer, other);
+            this.outer = outer;
             this.attributes = other.attributes;
         }
 
@@ -187,9 +266,9 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value) {
+        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
             ensureInsideBody();
-            attributes.put(key, new Attribute<>(key, setter, value));
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new Attribute<>(key, setter, value)));
             return this;
         }
 
@@ -230,7 +309,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         @Override
         public <C1> DeclarativeComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
             ensureInsideBody();
-            attributes.put(key, new Attribute<>(key, setter, fn.doApplyInternal()));
+            attributes.put(key, new Attribute<>(key, setter, fn::doApplyInternal));
             return this;
         }
 

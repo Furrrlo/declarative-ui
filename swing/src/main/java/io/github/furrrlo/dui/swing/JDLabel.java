@@ -31,15 +31,15 @@ public class JDLabel {
             super(type, factory);
         }
 
-        public void text(String text) {
+        public void text(Supplier<String> text) {
             attribute(PREFIX + "text", JLabel::setText, text);
         }
 
-        public void icon(Icon icon) {
+        public void icon(Supplier<Icon> icon) {
             attribute(PREFIX + "icon", JLabel::setIcon, icon);
         }
 
-        public void enabled(boolean enabled) {
+        public void enabled(Supplier<Boolean> enabled) {
             attribute(PREFIX + "enabled", JLabel::setEnabled, enabled);
         }
     }

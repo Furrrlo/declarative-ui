@@ -32,15 +32,15 @@ public class JDFrame {
             super(type, factory);
         }
 
-        public void visible(boolean visible) {
+        public void visible(Supplier<Boolean> visible) {
             attribute(PREFIX + "visible", Frame::setVisible, visible);
         }
 
-        public void title(String title) {
+        public void title(Supplier<String> title) {
             attribute(PREFIX + "title", Frame::setTitle, title);
         }
 
-        public void defaultCloseOperation(int operation) {
+        public void defaultCloseOperation(Supplier<Integer> operation) {
             attribute(PREFIX + "defaultCloseOperation", JFrame::setDefaultCloseOperation, operation);
         }
 
@@ -51,16 +51,16 @@ public class JDFrame {
         }
 
 
-        public void minimumSize(Dimension dimension) {
+        public void minimumSize(Supplier<Dimension> dimension) {
             attribute(PREFIX + "minimumSize", JFrame::setMinimumSize, dimension);
         }
 
 
-        public void size(Dimension dimension) {
+        public void size(Supplier<Dimension> dimension) {
             attribute(PREFIX + "size", JFrame::setSize, dimension);
         }
 
-        public void locationRelativeTo(Component c) {
+        public void locationRelativeTo(Supplier<Component> c) {
             attribute(PREFIX + "locationRelativeTo", JFrame::setLocationRelativeTo, c);
         }
     }

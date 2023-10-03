@@ -2,10 +2,10 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -19,8 +19,12 @@ abstract class StatefulDeclarativeComponent<
 
     private static final Logger LOGGER = Logger.getLogger(StatefulDeclarativeComponent.class.getName());
 
+    private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
+            ThreadLocal.withInitial(() -> null);
+
     protected final @Nullable Body<T, O_CTX> body;
 
+    protected AtomicReference<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef = new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected I_CTX context;
     protected boolean isInvokingBody;
@@ -34,11 +38,9 @@ abstract class StatefulDeclarativeComponent<
         ensureSame("type", other0, StatefulDeclarativeComponent::getClass);
 
         final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>) other0;
+        substituteComponentRef = other.substituteComponentRef;
+        substituteComponentRef.set(this);
         memoizedVars = other.memoizedVars;
-        memoizedVars.forEach(memo -> {
-            if (memo.value instanceof StateImpl)
-                ((StateImpl<?>) memo.value).component = this;
-        });
         copyContext(other.context);
     }
 
@@ -70,31 +72,51 @@ abstract class StatefulDeclarativeComponent<
 
     public abstract void triggerComponentUpdate();
 
+    public abstract void scheduleOnFrameworkThread(Runnable runnable);
+
     public abstract void runOrScheduleOnFrameworkThread(Runnable runnable);
 
     protected void updateComponent() {
         updateComponent(true);
     }
 
+    protected void runAsComponentUpdate(Runnable runnable) {
+        final StatefulDeclarativeComponent<?, ?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        CURR_UPDATING_COMPONENT.set(this);
+        try {
+            runnable.run();
+        } finally {
+            if(prevUpdatingComponent == null)
+                CURR_UPDATING_COMPONENT.remove();
+            else
+                CURR_UPDATING_COMPONENT.set(prevUpdatingComponent);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     protected void updateComponent(boolean deepUpdate) {
-        final I_CTX newCtx = newContext();
-        if(body != null) {
-            isInvokingBody = true;
-            // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-            invokeBody(body, (O_CTX) newCtx);
-            isInvokingBody = false;
-        }
+        if(substituteComponentRef.get() != this)
+            throw new UnsupportedOperationException("Trying to update substituted component");
 
-        if(context != null && newCtx.getCurrMemoizedIdx() != context.getCurrMemoizedIdx())
-            throw new UnsupportedOperationException("Memoized variables differ across re-renders, " +
-                    "did you put any state/memo in conditionals?" +
-                    " before " + newCtx.getCurrMemoizedIdx() + ", " +
-                    "after" + newCtx.getCurrMemoizedIdx());
+        runAsComponentUpdate(() -> {
+            final I_CTX newCtx = newContext();
+            if (body != null) {
+                isInvokingBody = true;
+                // This cast to C has to be guaranteed by the DeclarativeComponentFactory
+                invokeBody(body, (O_CTX) newCtx);
+                isInvokingBody = false;
+            }
 
-        if(deepUpdate)
-            updateAttributes(newCtx);
-        context = newCtx;
+            if (context != null && newCtx.getCurrMemoizedIdx() != context.getCurrMemoizedIdx())
+                throw new UnsupportedOperationException("Memoized variables differ across re-renders, " +
+                        "did you put any state/memo in conditionals?" +
+                        " before " + newCtx.getCurrMemoizedIdx() + ", " +
+                        "after" + newCtx.getCurrMemoizedIdx());
+
+            if (deepUpdate)
+                updateAttributes(newCtx);
+            context = newCtx;
+        });
     }
 
     protected void invokeBody(Body<T, O_CTX> body, O_CTX newCtx) {
@@ -102,6 +124,20 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected void updateAttributes(I_CTX newCtx) {
+    }
+
+    protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
+        return makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <C extends StatefulDeclarativeComponent<?, ?, ?, ?>> IdentifiableRunnable makeStateDependency(
+            Consumer<C> runnable,
+            Function<C, Object[]> deps) {
+        Supplier<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
+        return IdentifiableRunnable.of(
+                () -> runnable.accept((C) componentRef.get()),
+                () -> deps.apply((C) componentRef.get()));
     }
 
     protected void disposeComponent() {
@@ -150,7 +186,7 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> State<V> useState(Supplier<V> value) {
-            return useMemo(() -> new StateImpl<>(outer, value.get()));
+            return useMemo(() -> new StateImpl<>(value.get()));
         }
 
         @Override
@@ -172,7 +208,9 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> V useCallback(V fun, List<Object> dependencies) {
-            return useMemo(() -> fun, dependencies);
+            // TODO: fix
+            // return useMemo(() -> fun, dependencies);
+            return fun;
         }
 
         @Override
@@ -182,7 +220,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value) {
+        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
             ensureInsideBody();
             return this;
         }
@@ -250,17 +288,32 @@ abstract class StatefulDeclarativeComponent<
 
     private static class StateImpl<S> extends BaseState<S> {
 
-        private StatefulDeclarativeComponent<?, ?, ?, ?> component;
+        private final Set<Runnable> dependencies = new LinkedHashSet<>();
 
-        public StateImpl(StatefulDeclarativeComponent<?, ?, ?, ?> component, S value) {
+        public StateImpl(S value) {
             super(value);
-            this.component = component;
+        }
+
+        @Override
+        public S get() {
+            final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+            if(currUpdatingComponent == null) {
+                CURR_UPDATING_COMPONENT.remove();
+            } else {
+                Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
+                if (currDependency != null)
+                    dependencies.add(currDependency);
+            }
+            return super.get();
         }
 
         @Override
         public void set(S value) {
             super.set(value);
-            component.triggerComponentUpdate();
+
+            Set<Runnable> dependencies = new LinkedHashSet<>(this.dependencies);
+            this.dependencies.clear();
+            dependencies.forEach(Runnable::run);
         }
     }
 

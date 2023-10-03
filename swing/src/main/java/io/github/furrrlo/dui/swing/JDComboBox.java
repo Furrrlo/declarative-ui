@@ -49,11 +49,11 @@ public class JDComboBox {
                     });
         }
 
-        public void selectedItem(String item) {
+        public void selectedItem(Supplier<String> item) {
             attribute(PREFIX + "selectedItem", JComboBox::setSelectedItem, item);
         }
 
-        public void actionListener(ActionListener l) {
+        public void actionListener(Supplier<ActionListener> l) {
             eventListener(
                     PREFIX + "actionListener",
                     ActionListener.class,

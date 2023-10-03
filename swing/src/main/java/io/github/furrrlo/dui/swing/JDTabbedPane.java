@@ -39,21 +39,21 @@ public class JDTabbedPane {
             super(type, factory);
         }
 
-        public void tabLayoutPolicy(int tabLayoutPolicy) {
+        public void tabLayoutPolicy(Supplier<Integer> tabLayoutPolicy) {
             attribute(
                     PREFIX + "tabLayoutPolicy",
                     JTabbedPane::setTabLayoutPolicy,
                     tabLayoutPolicy);
         }
 
-        public void tabPlacement(int tabPlacement) {
+        public void tabPlacement(Supplier<Integer> tabPlacement) {
             attribute(
                     PREFIX + "tabPlacement",
                     JTabbedPane::setTabPlacement,
                     tabPlacement);
         }
 
-        public void selectedTab(int index) {
+        public void selectedTab(Supplier<Integer> index) {
             attribute(
                     PREFIX + "selectedTab",
                     JTabbedPane::setSelectedIndex,
@@ -62,6 +62,7 @@ public class JDTabbedPane {
 
         @SuppressWarnings({"unchecked", "rawtypes"})
         public void tabs(Consumer<TabCollector> collector) {
+            // TODO: the tab collector does not use suppliers so it causes entire component updates
             final List<Tab<?>> tabs = new ArrayList<>();
             final List<TabComponent<? extends Component>> tabComponents0 = new ArrayList<>();
             collector.accept((key, title, icon, tabComponent, component, tooltipText) -> {
@@ -89,7 +90,7 @@ public class JDTabbedPane {
                                 tabbedPane.setTitleAt(i, title);
                         }
                     },
-                    tabs.stream().map(Tab::title).collect(Collectors.toList()));
+                    () -> tabs.stream().map(Tab::title).collect(Collectors.toList()));
             attribute(
                     PREFIX + "icons",
                     (tabbedPane, icons) -> {
@@ -99,7 +100,7 @@ public class JDTabbedPane {
                                 tabbedPane.setIconAt(i, icon);
                         }
                     },
-                    tabs.stream().map(Tab::icon).collect(Collectors.toList()));
+                    () -> tabs.stream().map(Tab::icon).collect(Collectors.toList()));
             attribute(
                     PREFIX + "tooltipTexts",
                     (tabbedPane, toolTipTexts) -> {
@@ -109,7 +110,7 @@ public class JDTabbedPane {
                                 tabbedPane.setToolTipTextAt(i, toolTipText);
                         }
                     },
-                    tabs.stream().map(Tab::tooltipText).collect(Collectors.toList()));
+                    () -> tabs.stream().map(Tab::tooltipText).collect(Collectors.toList()));
             listFnAttribute(
                     PREFIX + "tabComponents",
                     (tabbedPane, s, tabComponents) -> {
@@ -230,7 +231,7 @@ public class JDTabbedPane {
             }
         }
 
-        public void changeListener(ChangeListener l) {
+        public void changeListener(Supplier<ChangeListener> l) {
             eventListener(PREFIX + "changeListener",
                     ChangeListener.class,
                     ChangeListenerWrapper::new,

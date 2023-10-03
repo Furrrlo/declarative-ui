@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> {
 
@@ -62,7 +63,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value) {
+    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
         return this;
     }

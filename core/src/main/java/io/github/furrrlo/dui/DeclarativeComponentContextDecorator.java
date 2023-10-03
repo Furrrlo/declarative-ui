@@ -101,7 +101,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, V value) {
+    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         return toDecorate().attribute(key, setter, value);
     }
 

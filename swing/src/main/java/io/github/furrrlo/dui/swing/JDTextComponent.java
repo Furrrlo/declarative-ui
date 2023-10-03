@@ -14,14 +14,14 @@ public class JDTextComponent {
             super(type, factory);
         }
 
-        public void text(String text) {
+        public void text(Supplier<String> text) {
             attribute(PREFIX + "text", (textField, t) -> {
                 if (!Objects.equals(textField.getText(), t))
                     textField.setText(t);
             }, text);
         }
 
-        public void editable(boolean editable) {
+        public void editable(Supplier<Boolean> editable) {
             attribute(PREFIX + "editable", JTextComponent::setEditable, editable);
         }
     }

@@ -116,7 +116,25 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     public void triggerComponentUpdate() {
-        updateComponent(true);
+        // We do not want to eagerly execute the component update as possibly there are other updates
+        // already scheduled in the framework specific scheduler, and we should respect that order,
+        // so try to schedule the update to be executed on said framework scheduler
+
+        StatefulDeclarativeComponent<?, ?, ?, ?> comp = wrapped;
+        // Special case for nested wrappers, go on until we get to an actual component
+        while (comp instanceof DeclarativeComponentWrapper)
+            comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
+
+        if(comp != null) {
+            wrapped.scheduleOnFrameworkThread(() -> updateComponent(true));
+        } else {
+            updateComponent(true);
+        }
+    }
+
+    @Override
+    public void scheduleOnFrameworkThread(Runnable runnable) {
+        runnable.run();
     }
 
     @Override

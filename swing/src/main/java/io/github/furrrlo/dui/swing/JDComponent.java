@@ -23,30 +23,30 @@ public class JDComponent {
             super(type, factory);
         }
 
-        public void maximumSize(Dimension dimension) {
-            maximumWidth((int) dimension.getWidth());
-            maximumHeight((int) dimension.getHeight());
+        public void maximumSize(Supplier<Dimension> dimension) {
+            maximumWidth(() -> (int) dimension.get().getWidth());
+            maximumHeight(() -> (int) dimension.get().getHeight());
         }
 
-        public void name(String name) {
+        public void name(Supplier<String> name) {
             attribute(PREFIX + "name", Component::setName, name);
         }
 
-        public void visible(boolean visible) {
+        public void visible(Supplier<Boolean> visible) {
             attribute(PREFIX + "visible", JComponent::setVisible, visible);
         }
 
-        public void background(Color color) {
+        public void background(Supplier<Color> color) {
             attribute(PREFIX + "background", JComponent::setBackground, color);
         }
 
-        public void maximumWidth(int width) {
+        public void maximumWidth(Supplier<Integer> width) {
             attribute(PREFIX + "maximumHeight",
                     (c, w) -> c.setMaximumSize(new Dimension(w, (int) c.getMaximumSize().getHeight())),
                     width);
         }
 
-        public void maximumHeight(int height) {
+        public void maximumHeight(Supplier<Integer> height) {
             attribute(PREFIX + "maximumHeight",
                     (c, h) -> c.setMaximumSize(new Dimension((int) c.getMaximumSize().getWidth(), h)),
                     height);
@@ -57,7 +57,7 @@ public class JDComponent {
                                                             Class<L> type,
                                                             Function<L, EventListenerWrapper<L>> factory,
                                                             BiConsumer<T, L> adder,
-                                                            L l) {
+                                                            Supplier<L> l) {
             attribute(
                     key,
                     (component, v) -> {
@@ -66,14 +66,14 @@ public class JDComponent {
                                 .map(w -> (EventListenerWrapper<L>) w)
                                 .findFirst();
                         if(maybeWrapper.isPresent())
-                            maybeWrapper.get().setWrapped(l);
+                            maybeWrapper.get().setWrapped(v);
                         else
-                            adder.accept(component, (L) factory.apply(l));
+                            adder.accept(component, (L) factory.apply(v));
                     },
                     l);
         }
 
-        public void layout(LayoutManager layoutManager) {
+        public void layout(Supplier<LayoutManager> layoutManager) {
             attribute(PREFIX + "layout", Container::setLayout, layoutManager);
         }
 

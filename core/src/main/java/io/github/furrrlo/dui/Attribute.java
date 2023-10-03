@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,12 +15,14 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
 
     private final String key;
     private final BiConsumer<T, V> setter;
-    private final Object value;
+    private final Supplier<?> valueSupplier;
+    private Object value;
 
-    public Attribute(String key, BiConsumer<T, V> setter, Object value) {
+    public Attribute(String key, BiConsumer<T, V> setter, Supplier<?> valueSupplier) {
         this.key = key;
         this.setter = setter;
-        this.value = value;
+        this.valueSupplier = valueSupplier;
+        this.value = valueSupplier.get();
     }
 
     @Override
@@ -30,6 +33,8 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     @Override
     @SuppressWarnings("unchecked")
     public void update(T obj, boolean wasSet, @Nullable Attribute<T, V> prev, @Nullable Object prevValue) {
+        value = valueSupplier.get();
+
         if (value instanceof DeclarativeComponentSupplier) {
             updateAttribute(obj,
                     wasSet,
@@ -43,7 +48,13 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
 
     private void updateAttribute(T obj, boolean wasSet, V value, V prevValue) {
         if (!wasSet || !Objects.equals(value, prevValue)) {
+            if(obj == null)
+                throw new NullPointerException(String.format(
+                        "Attribute '%s' with old value '%s' and new value '%s'",
+                        key, prevValue, value));
+
             setter.accept(obj, value);
+
             if (LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Updated attribute {0}: {1} -> {2} of {3}",
                         new Object[]{key, prevValue, value, obj});
