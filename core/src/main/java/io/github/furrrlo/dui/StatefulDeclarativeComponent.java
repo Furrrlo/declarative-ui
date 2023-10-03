@@ -186,14 +186,15 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> State<V> useState(Supplier<V> value) {
-            return useMemo(() -> new StateImpl<>(value.get()));
+            return useMemo(IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get())));
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V> V useMemo(Supplier<V> value, List<Object> dependencies) {
+        public <V> V useMemo(IdentifiableSupplier<V> value) {
             ensureInsideBody();
 
+            final List<Object> dependencies = Arrays.asList(value.deps());
             if(currMemoizedIdx < outer.memoizedVars.size())
                 return ((Memoized<V>) outer.memoizedVars.get(currMemoizedIdx++)).updateAndGet(value, dependencies);
 

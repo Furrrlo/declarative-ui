@@ -66,18 +66,8 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> V useMemo(Supplier<V> value) {
+    public <V> V useMemo(IdentifiableSupplier<V> value) {
         return toDecorate().useMemo(value);
-    }
-
-    @Override
-    public <V> V useMemo(Supplier<V> value, Object dependency) {
-        return toDecorate().useMemo(value, dependency);
-    }
-
-    @Override
-    public <V> V useMemo(Supplier<V> value, List<Object> dependencies) {
-        return toDecorate().useMemo(value, dependencies);
     }
 
     @Override

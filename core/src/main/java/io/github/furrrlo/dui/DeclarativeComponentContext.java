@@ -12,16 +12,12 @@ public interface DeclarativeComponentContext<T> {
 
     <V> State<V> useState(Supplier<V> value);
 
-    default <V> V useMemo(Supplier<V> value) {
-        return useMemo(value, Collections.emptyList());
-    }
+    <V> V useMemo(IdentifiableSupplier<V> value);
 
     default <V> Supplier<V> useMemoSupplier(IdentifiableSupplier<V> value) {
         final V memoized = useMemo(value);
         return () -> memoized;
     }
-
-    <V> V useMemo(Supplier<V> value, List<Object> dependencies);
 
     default <V> V useCallback(V fun) {
         return useCallback(fun, Collections.emptyList());

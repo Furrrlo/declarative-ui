@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> {
 
@@ -27,18 +26,8 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     }
 
     @Override
-    public <V> V useMemo(Supplier<V> value) {
+    public <V> V useMemo(IdentifiableSupplier<V> value) {
         return parent.useMemo(value);
-    }
-
-    @Override
-    public <V> V useMemo(Supplier<V> value, Object dependency) {
-        return parent.useMemo(value, dependency);
-    }
-
-    @Override
-    public <V> V useMemo(Supplier<V> value, List<Object> dependencies) {
-        return parent.useMemo(value, dependencies);
     }
 
     @Override

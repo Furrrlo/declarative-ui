@@ -3,7 +3,7 @@ package io.github.furrrlo.dui;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-abstract class IdentifiableRunnable implements Runnable {
+abstract class IdentifiableRunnable implements Runnable, Identifiable.Explicit {
 
     private Runnable runnable;
 
@@ -15,8 +15,6 @@ abstract class IdentifiableRunnable implements Runnable {
     public void run() {
         runnable.run();
     }
-
-    protected abstract Object[] deps();
 
     @Override
     public boolean equals(Object o) {
@@ -34,7 +32,7 @@ abstract class IdentifiableRunnable implements Runnable {
     static IdentifiableRunnable of(Runnable runnable, Object... deps) {
         return new IdentifiableRunnable(runnable) {
             @Override
-            protected Object[] deps() {
+            public Object[] deps() {
                 return deps;
             }
         };
@@ -43,7 +41,7 @@ abstract class IdentifiableRunnable implements Runnable {
     static IdentifiableRunnable of(Runnable runnable, Supplier<Object[]> deps) {
         return new IdentifiableRunnable(runnable) {
             @Override
-            protected Object[] deps() {
+            public Object[] deps() {
                 return deps.get();
             }
         };
