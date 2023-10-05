@@ -126,7 +126,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
 
         if(comp != null) {
-            wrapped.scheduleOnFrameworkThread(() -> updateComponent(true));
+            comp.scheduleOnFrameworkThread(() -> substituteComponentRef.get().updateComponent(true));
         } else {
             updateComponent(true);
         }

@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -26,23 +27,23 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     }
 
     @Override
-    public <V> V useMemo(IdentifiableSupplier<V> value) {
+    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
         return parent.useMemo(value);
     }
 
     @Override
-    public <V> V useCallback(V fun) {
+    public <V extends Serializable> V useCallback(V fun) {
         return parent.useCallback(fun);
     }
 
     @Override
-    public <V> V useCallback(V fun, Object dependency) {
-        return parent.useCallback(fun, dependency);
+    public <V> V useCallbackExplicit(V fun, Object dependency) {
+        return parent.useCallbackExplicit(fun, dependency);
     }
 
     @Override
-    public <V> V useCallback(V fun, List<Object> dependencies) {
-        return parent.useCallback(fun, dependencies);
+    public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
+        return parent.useCallbackExplicit(fun, dependencies);
     }
 
     @Override

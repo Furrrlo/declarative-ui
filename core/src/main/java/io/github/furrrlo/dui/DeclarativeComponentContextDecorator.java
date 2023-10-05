@@ -2,6 +2,7 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.*;
@@ -66,23 +67,23 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> V useMemo(IdentifiableSupplier<V> value) {
+    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
         return toDecorate().useMemo(value);
     }
 
     @Override
-    public <V> V useCallback(V fun) {
+    public <V extends Serializable> V useCallback(V fun) {
         return toDecorate().useCallback(fun);
     }
 
     @Override
-    public <V> V useCallback(V fun, Object dependency) {
-        return toDecorate().useCallback(fun, dependency);
+    public <V> V useCallbackExplicit(V fun, Object dependency) {
+        return toDecorate().useCallbackExplicit(fun, dependency);
     }
 
     @Override
-    public <V> V useCallback(V fun, List<Object> dependencies) {
-        return toDecorate().useCallback(fun, dependencies);
+    public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
+        return toDecorate().useCallbackExplicit(fun, dependencies);
     }
 
     @Override

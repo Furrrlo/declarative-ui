@@ -2,9 +2,7 @@ package io.github.furrrlo.dui;
 
 import java.util.function.Function;
 
-public interface State<T> {
-
-    T get();
+public interface State<T> extends Memo<T> {
 
     void set(T value);
 

@@ -57,7 +57,7 @@ public class JDComponent {
                                                             Class<L> type,
                                                             Function<L, EventListenerWrapper<L>> factory,
                                                             BiConsumer<T, L> adder,
-                                                            Supplier<L> l) {
+                                                            L l) {
             attribute(
                     key,
                     (component, v) -> {
@@ -70,7 +70,7 @@ public class JDComponent {
                         else
                             adder.accept(component, (L) factory.apply(v));
                     },
-                    l);
+                    () -> l);
         }
 
         public void layout(Supplier<LayoutManager> layoutManager) {

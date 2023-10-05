@@ -53,7 +53,7 @@ public class JDComboBox {
             attribute(PREFIX + "selectedItem", JComboBox::setSelectedItem, item);
         }
 
-        public void actionListener(Supplier<ActionListener> l) {
+        public void actionListener(ActionListener l) {
             eventListener(
                     PREFIX + "actionListener",
                     ActionListener.class,

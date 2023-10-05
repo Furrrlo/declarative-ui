@@ -4,10 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +25,7 @@ abstract class StatefulDeclarativeComponent<
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected I_CTX context;
     protected boolean isInvokingBody;
+    protected @Nullable IdentifiableRunnable currentStateDependency;
 
     public StatefulDeclarativeComponent(@Nullable Body<T, O_CTX> body) {
         this.body = body;
@@ -127,7 +125,9 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
-        return makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
+        return currentStateDependency != null
+                ? currentStateDependency
+                : makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
     }
 
     @SuppressWarnings("unchecked")
@@ -138,6 +138,54 @@ abstract class StatefulDeclarativeComponent<
         return IdentifiableRunnable.of(
                 () -> runnable.accept((C) componentRef.get()),
                 () -> deps.apply((C) componentRef.get()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <V, M extends Memoized<V>> IdentifiableRunnable makeMemoStateDependency(
+            int memoIdx,
+            BiConsumer<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, M> runnable,
+            BiFunction<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, M, Object[]> deps) {
+        return this.<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>>makeStateDependency(
+                c -> {
+                    final Memoized<?> memo;
+                    if(memoIdx < c.memoizedVars.size() && (memo = c.memoizedVars.get(memoIdx)) != null)
+                        runnable.accept(c, (M) memo);
+                },
+                c -> {
+                    final Memoized<?> memo;
+                    if(memoIdx < c.memoizedVars.size() && (memo = c.memoizedVars.get(memoIdx)) != null)
+                        return deps.apply(c, (M) memo);
+                    return new Object[] { c, memoIdx };
+                });
+    }
+
+    private <RET, V, M extends Memoized<V>> RET updateMemoWithStateDependency(int memoIdx, Supplier<RET> factory) {
+        IdentifiableRunnable prevStateDependency = currentStateDependency;
+        // Notice how it's not capturing neither this nor attr, as both  might be replaced with
+        // newer versions, and we do not want to update stale stuff
+        this.currentStateDependency = this.<V, M>makeMemoStateDependency(
+                memoIdx,
+                (c, memo) -> {
+                    // Mark the memo to be updated, so if for any reason its parent component is scheduled
+                    // before this, and therefore it's re-run before we can get to the update scheduled below,
+                    // the memo is updated right away (and not on the schedule below)
+                    memo.markForUpdate();
+                    // Schedule an update
+                    c.scheduleOnFrameworkThread(() -> {
+                        // If when we get here the memo was not already updated, do it now
+                        if(memo.isMarkedForUpdate())
+                            c.runAsComponentUpdate(() -> c.updateMemoWithStateDependency(memoIdx, () -> {
+                                memo.update();
+                                return null;
+                            }));
+                    });
+                },
+                (c, memo) -> new Object[] { memo });
+        try {
+            return factory.get();
+        } finally {
+            this.currentStateDependency = prevStateDependency;
+        }
     }
 
     protected void disposeComponent() {
@@ -186,32 +234,30 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> State<V> useState(Supplier<V> value) {
-            return useMemo(IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get())));
+            Memoized<State<V>> memo = useMemo(IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get())));
+            return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V> V useMemo(IdentifiableSupplier<V> value) {
+        public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value) {
             ensureInsideBody();
 
             final List<Object> dependencies = Arrays.asList(value.deps());
-            if(currMemoizedIdx < outer.memoizedVars.size())
-                return ((Memoized<V>) outer.memoizedVars.get(currMemoizedIdx++)).updateAndGet(value, dependencies);
+            if(currMemoizedIdx < outer.memoizedVars.size()) {
+                final int idx = currMemoizedIdx++;
+                final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(idx);
+                return outer.updateMemoWithStateDependency(idx, () -> memo.updateIfNecessary(value, dependencies));
+            }
 
-            final Memoized<V> newMemo = new Memoized<>(value.get(), dependencies);
+            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(currMemoizedIdx,
+                    () -> new Memoized<>(value, dependencies));
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
                         new Object[] { currMemoizedIdx, newMemo.value, newMemo.dependencies });
             outer.memoizedVars.add(newMemo);
             currMemoizedIdx++;
-            return newMemo.updateAndGet(value, dependencies);
-        }
-
-        @Override
-        public <V> V useCallback(V fun, List<Object> dependencies) {
-            // TODO: fix
-            // return useMemo(() -> fun, dependencies);
-            return fun;
+            return newMemo;
         }
 
         @Override
@@ -287,56 +333,90 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    private static class StateImpl<S> extends BaseState<S> {
+    private static class BaseMemo<V> implements Memo<V> {
 
-        private final Set<Runnable> dependencies = new LinkedHashSet<>();
+        private final Set<Runnable> signalDeps = new LinkedHashSet<>();
 
-        public StateImpl(S value) {
-            super(value);
-        }
+        protected V value;
 
         @Override
-        public S get() {
+        public V get() {
             final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
             if(currUpdatingComponent == null) {
                 CURR_UPDATING_COMPONENT.remove();
             } else {
                 Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
                 if (currDependency != null)
-                    dependencies.add(currDependency);
+                    signalDeps.add(currDependency);
             }
-            return super.get();
+
+            return value;
+        }
+
+        protected void set(V value) {
+            this.value = value;
+
+            Set<Runnable> dependencies = new LinkedHashSet<>(this.signalDeps);
+            this.signalDeps.clear();
+            dependencies.forEach(Runnable::run);
+        }
+    }
+
+    private static class Memoized<V> extends BaseMemo<V> {
+
+        private Supplier<V> supplier;
+        private boolean markedForUpdate;
+        private List<Object> dependencies;
+
+        public Memoized(Supplier<V> supplier, List<Object> dependencies) {
+            this.value = supplier.get();
+            this.supplier = supplier;
+            this.dependencies = dependencies;
+        }
+
+        public void markForUpdate() {
+            markedForUpdate = true;
+        }
+
+        public boolean isMarkedForUpdate() {
+            return markedForUpdate;
+        }
+
+        public void update() {
+            set(supplier.get());
+
+            if(LOGGER.isLoggable(Level.FINE))
+                LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1} -> {2})",
+                        new Object[] { value, this.dependencies, dependencies });
+
+            markedForUpdate = false;
+        }
+
+        public Memoized<V> updateIfNecessary(Supplier<V> newValue, List<Object> dependencies) {
+            if(markedForUpdate || !this.dependencies.equals(dependencies)) {
+                this.supplier = newValue;
+                this.dependencies = dependencies;
+                update();
+            }
+            return this;
+        }
+    }
+
+    private static class StateImpl<S> extends BaseMemo<S> implements State<S> {
+
+        public StateImpl(S value) {
+            this.value = value;
         }
 
         @Override
         public void set(S value) {
             super.set(value);
-
-            Set<Runnable> dependencies = new LinkedHashSet<>(this.dependencies);
-            this.dependencies.clear();
-            dependencies.forEach(Runnable::run);
-        }
-    }
-
-    private static class Memoized<V> {
-
-        private V value;
-        private List<Object> dependencies;
-
-        public Memoized(V value, List<Object> dependencies) {
-            this.value = value;
-            this.dependencies = dependencies;
         }
 
-        public V updateAndGet(Supplier<V> newValue, List<Object> dependencies) {
-            if(!this.dependencies.equals(dependencies)) {
-                value = newValue.get();
-                if(LOGGER.isLoggable(Level.FINE))
-                    LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1} -> {2})",
-                            new Object[] { value, this.dependencies, dependencies });
-                this.dependencies = dependencies;
-            }
-            return value;
+        @Override
+        public S update(Function<S, S> updater) {
+            set(updater.apply(get()));
+            return get();
         }
     }
 }

@@ -231,7 +231,7 @@ public class JDTabbedPane {
             }
         }
 
-        public void changeListener(Supplier<ChangeListener> l) {
+        public void changeListener(ChangeListener l) {
             eventListener(PREFIX + "changeListener",
                     ChangeListener.class,
                     ChangeListenerWrapper::new,

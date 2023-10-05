@@ -22,7 +22,6 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     private final @Nullable Class<T> componentType;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final Consumer<Runnable> updateScheduler;
-    private @Nullable IdentifiableRunnable currentStateDependency;
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
@@ -166,13 +165,6 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
             attr.update(obj, wasSet, prev, prevValue);
             return null;
         });
-    }
-
-    @Override
-    protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
-        return currentStateDependency != null
-                ? currentStateDependency
-                : makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
     }
 
     @SuppressWarnings("unchecked")
