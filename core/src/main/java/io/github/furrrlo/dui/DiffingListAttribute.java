@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.StatefulDeclarativeComponent.UpdateFlags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -68,7 +69,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     ((DeclarativeComponentWrapper<?>) currImpl).getDeclarativeWrapperType(),
                     Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevImpl).getDeclarativeWrapperType()))
                 currImpl.substitute(prevImpl);
-            currImpl.updateComponent(false);
+            currImpl.updateComponent(UpdateFlags.SOFT);
         }
 
         final List<ListDiff.OutputMove<StatefulDeclarativeComponent<?, C, ?, ?>>> outputMoves = ListDiff.diff(

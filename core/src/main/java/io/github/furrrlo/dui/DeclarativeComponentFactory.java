@@ -2,8 +2,6 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DeclarativeComponentFactory {
@@ -18,16 +16,11 @@ public class DeclarativeComponentFactory {
     }
 
     public <T, C extends DeclarativeComponentContextDecorator<T>> DeclarativeComponent<T> of(Supplier<C> decoratorFactory,
-                                                                                             @Nullable DeclarativeComponent.Body<T, C> body) {
+                                                                                             @Nullable IdentifiableConsumer<C> body) {
         return new DeclarativeComponentImpl<>(decoratorFactory, body);
     }
 
-    public <T> DeclarativeComponent<T> wrapper(Function<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<T>> body) {
+    public <T> DeclarativeComponent<T> wrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<T>> body) {
         return new DeclarativeComponentWrapper<>(body);
-    }
-
-    public <T> DeclarativeComponent<T> memo(List<Object> deps,
-                                            Function<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<T>> body) {
-        return new DeclarativeComponentWrapper<>(deps, body);
     }
 }

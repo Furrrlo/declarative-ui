@@ -6,9 +6,4 @@ public interface DeclarativeComponent<T> extends DeclarativeComponentSupplier<T>
     default DeclarativeComponent<T> apply(DeclarativeComponentFactory declarativeComponentFactory) {
         return this;
     }
-
-    interface Body<T, C extends DeclarativeComponentContext<T>> {
-
-        void component(C ctx);
-    }
 }

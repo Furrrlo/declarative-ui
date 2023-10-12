@@ -25,11 +25,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
-                                    @Nullable Body<T, O_CTX> body) {
+                                    @Nullable IdentifiableConsumer<O_CTX> body) {
         this(decoratorFactory.get(), body);
     }
 
-    private DeclarativeComponentImpl(DeclarativeComponentContextDecorator<T> decorator, @Nullable Body<T, O_CTX> body) {
+    private DeclarativeComponentImpl(DeclarativeComponentContextDecorator<T> decorator, @Nullable IdentifiableConsumer<O_CTX> body) {
         super(body);
         this.decorator = decorator;
         this.componentType = decorator.getType();
@@ -43,8 +43,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                                     Supplier<T> componentFactory,
                                     BooleanSupplier canUpdateInCurrentThread,
                                     Consumer<Runnable> updateScheduler,
-                                    @Nullable Body<T, DeclarativeComponentContext<T>> body) {
-        super((Body<T, O_CTX>) body);
+                                    @Nullable IdentifiableConsumer<DeclarativeComponentContext<T>> body) {
+        super((IdentifiableConsumer<O_CTX>) body);
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
@@ -113,7 +113,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     public void triggerStateUpdate() {
-        updateScheduler.accept(() -> substituteComponentRef.get().updateComponent(true));
+        updateScheduler.accept(() -> substituteComponentRef.get().updateComponent(UpdateFlags.FORCE));
     }
 
     @Override
@@ -131,11 +131,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void invokeBody(Body<T, O_CTX> body, O_CTX newCtx) {
+    protected void invokeBody(IdentifiableConsumer<O_CTX> body, O_CTX newCtx) {
         if(decorator != null) {
             decorator.setToDecorate(newCtx);
             // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-            body.component((O_CTX) decorator);
+            body.accept((O_CTX) decorator);
             return;
         }
 

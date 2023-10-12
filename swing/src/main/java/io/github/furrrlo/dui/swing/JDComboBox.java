@@ -2,6 +2,7 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
+import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
@@ -11,20 +12,19 @@ import java.util.function.Supplier;
 public class JDComboBox {
 
 
-    public static DeclarativeComponent<JComboBox<String>> fn(
-            DeclarativeComponent.Body<JComboBox<String>, Decorator<JComboBox<String>>> body) {
+    public static DeclarativeComponent<JComboBox<String>> fn(IdentifiableConsumer<Decorator<JComboBox<String>>> body) {
         return fn(JComboBox::new, body);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static DeclarativeComponent<JComboBox<String>> fn(Supplier<JComboBox<String>> factory,
-                                                             DeclarativeComponent.Body<JComboBox<String>, Decorator<JComboBox<String>>> body) {
+                                                             IdentifiableConsumer<Decorator<JComboBox<String>>> body) {
         return fn((Class<JComboBox<String>>) (Class) JComboBox.class, factory, body);
     }
 
     public static <T extends JComboBox<String>> DeclarativeComponent<T> fn(Class<T> type,
                                                                            Supplier<T> factory,
-                                                                           DeclarativeComponent.Body<T, Decorator<T>> body) {
+                                                                           IdentifiableConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 

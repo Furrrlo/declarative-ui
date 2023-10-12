@@ -9,18 +9,18 @@ import java.util.function.Supplier;
 
 public class JDFrame {
 
-    public static DeclarativeComponent<JFrame> fn(DeclarativeComponent.Body<JFrame, Decorator<JFrame>> body) {
+    public static DeclarativeComponent<JFrame> fn(IdentifiableConsumer<Decorator<JFrame>> body) {
         return fn(JFrame.class, JFrame::new, body);
     }
 
     public static DeclarativeComponent<JFrame> fn(Supplier<JFrame> factory,
-                                                  DeclarativeComponent.Body<JFrame, Decorator<JFrame>> body) {
+                                                  IdentifiableConsumer<Decorator<JFrame>> body) {
         return fn(JFrame.class, factory, body);
     }
 
     public static <T extends JFrame> DeclarativeComponent<T> fn(Class<T> type,
                                                                 Supplier<T> factory,
-                                                                DeclarativeComponent.Body<T, Decorator<T>> body) {
+                                                                IdentifiableConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 

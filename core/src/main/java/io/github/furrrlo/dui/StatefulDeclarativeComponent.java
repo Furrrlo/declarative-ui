@@ -19,15 +19,19 @@ abstract class StatefulDeclarativeComponent<
     private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
 
-    protected final @Nullable Body<T, O_CTX> body;
+    protected final @Nullable IdentifiableConsumer<O_CTX> body;
+    protected final List<Object> newDeps;
+    private @Nullable List<Object> deps;
 
     protected AtomicReference<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef = new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected I_CTX context;
+
     protected boolean isInvokingBody;
     protected @Nullable IdentifiableRunnable currentStateDependency;
 
-    public StatefulDeclarativeComponent(@Nullable Body<T, O_CTX> body) {
+    protected StatefulDeclarativeComponent(@Nullable IdentifiableConsumer<O_CTX> body) {
+        this.newDeps = body != null ? Arrays.asList(body.deps()) : Collections.emptyList();
         this.body = body;
     }
 
@@ -38,6 +42,7 @@ abstract class StatefulDeclarativeComponent<
         final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>) other0;
         substituteComponentRef = other.substituteComponentRef;
         substituteComponentRef.set(this);
+        deps = other.deps;
         memoizedVars = other.memoizedVars;
         copyContext(other.context);
     }
@@ -74,10 +79,6 @@ abstract class StatefulDeclarativeComponent<
 
     public abstract void runOrScheduleOnFrameworkThread(Runnable runnable);
 
-    protected void updateComponent() {
-        updateComponent(true);
-    }
-
     protected void runAsComponentUpdate(Runnable runnable) {
         final StatefulDeclarativeComponent<?, ?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         CURR_UPDATING_COMPONENT.set(this);
@@ -91,18 +92,35 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
+    static class UpdateFlags {
+        public static final int SOFT = 0x1;
+        public static final int FORCE = 0x2;
+    }
+
+    protected void updateComponent() {
+        updateComponent(0);
+    }
+
     @SuppressWarnings("unchecked")
-    protected void updateComponent(boolean deepUpdate) {
+    protected void updateComponent(int flags) {
         if(substituteComponentRef.get() != this)
             throw new UnsupportedOperationException("Trying to update substituted component");
 
         runAsComponentUpdate(() -> {
-            final I_CTX newCtx = newContext();
-            if (body != null) {
-                isInvokingBody = true;
-                // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-                invokeBody(body, (O_CTX) newCtx);
-                isInvokingBody = false;
+            final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
+            final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0 || !newDeps.equals(deps);
+
+            final I_CTX newCtx;
+            if(!depsChanged) {
+                newCtx = context;
+            } else {
+                newCtx = newContext();
+                if (body != null) {
+                    isInvokingBody = true;
+                    // This cast to C has to be guaranteed by the DeclarativeComponentFactory
+                    invokeBody(body, (O_CTX) newCtx);
+                    isInvokingBody = false;
+                }
             }
 
             try {
@@ -113,8 +131,16 @@ abstract class StatefulDeclarativeComponent<
                             " before " + context.getCurrMemoizedIdx() + ", " +
                             "after " + newCtx.getCurrMemoizedIdx());
 
-                if (deepUpdate)
-                    updateAttributes(newCtx);
+                if (deepUpdate) {
+                    // We only register the deps change if we are deep updating, otherwise
+                    // if we have a soft update followed by a deep update, we would in practise
+                    // skip the deep update also on the second call, as the first would consume
+                    // the deps change
+                    deps = newDeps;
+
+                    if (depsChanged)
+                        updateAttributes(newCtx);
+                }
                 context = newCtx;
             } catch (Throwable t) {
                 Throwable bodyStackTrace = newCtx.getCapturedBodyStacktrace();
@@ -125,8 +151,8 @@ abstract class StatefulDeclarativeComponent<
         });
     }
 
-    protected void invokeBody(Body<T, O_CTX> body, O_CTX newCtx) {
-        body.component(newCtx);
+    protected void invokeBody(IdentifiableConsumer<O_CTX> body, O_CTX newCtx) {
+        body.accept(newCtx);
     }
 
     protected void updateAttributes(I_CTX newCtx) {

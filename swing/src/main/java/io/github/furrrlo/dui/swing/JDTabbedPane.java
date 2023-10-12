@@ -15,19 +15,18 @@ import java.util.stream.Collectors;
 
 public class JDTabbedPane {
 
-    public static DeclarativeComponent<JTabbedPane> fn(
-            DeclarativeComponent.Body<JTabbedPane, Decorator<JTabbedPane>> body) {
+    public static DeclarativeComponent<JTabbedPane> fn(IdentifiableConsumer<Decorator<JTabbedPane>> body) {
         return fn(JTabbedPane.class, JTabbedPane::new, body);
     }
 
     public static DeclarativeComponent<JTabbedPane> fn(Supplier<JTabbedPane> factory,
-                                                       DeclarativeComponent.Body<JTabbedPane, Decorator<JTabbedPane>> body) {
+                                                       IdentifiableConsumer<Decorator<JTabbedPane>> body) {
         return fn(JTabbedPane.class, factory, body);
     }
 
     public static <T extends JTabbedPane> DeclarativeComponent<T> fn(Class<T> type,
                                                                      Supplier<T> factory,
-                                                                     DeclarativeComponent.Body<T, Decorator<T>> body) {
+                                                                     IdentifiableConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 

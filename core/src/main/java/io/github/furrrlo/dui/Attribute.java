@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.StatefulDeclarativeComponent.UpdateFlags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -85,7 +86,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                         ((DeclarativeComponentWrapper<?>) value).getDeclarativeWrapperType(),
                         Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevValue).getDeclarativeWrapperType()))
                     value.substitute(prevValue);
-                value.updateComponent(false);
+                value.updateComponent(UpdateFlags.SOFT);
             }
 
             if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
