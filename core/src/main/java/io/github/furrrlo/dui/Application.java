@@ -12,7 +12,7 @@ public interface Application {
     static void create(Consumer<Context> app) {
         final StatefulDeclarativeComponent<?, BaseApplication, ?, ?> ctx =
                 DeclarativeComponentFactory.INSTANCE.of(Context::new, app::accept).doApplyInternal();
-        ctx.triggerComponentUpdate();
+        ctx.triggerStateUpdate();
     }
 
     class BaseApplication {

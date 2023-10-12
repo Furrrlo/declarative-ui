@@ -112,7 +112,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     }
 
     @Override
-    public void triggerComponentUpdate() {
+    public void triggerStateUpdate() {
         updateScheduler.accept(() -> substituteComponentRef.get().updateComponent(true));
     }
 

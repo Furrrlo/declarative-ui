@@ -68,7 +68,7 @@ abstract class StatefulDeclarativeComponent<
         return getComponent();
     }
 
-    public abstract void triggerComponentUpdate();
+    public abstract void triggerStateUpdate();
 
     public abstract void scheduleOnFrameworkThread(Runnable runnable);
 
@@ -127,7 +127,7 @@ abstract class StatefulDeclarativeComponent<
     protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
         return currentStateDependency != null
                 ? currentStateDependency
-                : makeStateDependency(StatefulDeclarativeComponent::triggerComponentUpdate, c -> new Object[] { c });
+                : makeStateDependency(StatefulDeclarativeComponent::triggerStateUpdate, c -> new Object[] { c });
     }
 
     @SuppressWarnings("unchecked")

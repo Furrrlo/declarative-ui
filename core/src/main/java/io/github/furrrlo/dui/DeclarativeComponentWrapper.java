@@ -115,7 +115,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
-    public void triggerComponentUpdate() {
+    public void triggerStateUpdate() {
         // We do not want to eagerly execute the component update as possibly there are other updates
         // already scheduled in the framework specific scheduler, and we should respect that order,
         // so try to schedule the update to be executed on said framework scheduler
