@@ -105,16 +105,23 @@ abstract class StatefulDeclarativeComponent<
                 isInvokingBody = false;
             }
 
-            if (context != null && newCtx.getCurrMemoizedIdx() != context.getCurrMemoizedIdx())
-                throw new UnsupportedOperationException("Memoized variables differ across re-renders " +
-                        "for component " + getDeclarativeType() + ", " +
-                        "did you put any state/memo in conditionals?" +
-                        " before " + context.getCurrMemoizedIdx() + ", " +
-                        "after " + newCtx.getCurrMemoizedIdx());
+            try {
+                if (context != null && newCtx.getCurrMemoizedIdx() != context.getCurrMemoizedIdx())
+                    throw new UnsupportedOperationException("Memoized variables differ across re-renders " +
+                            "for component " + getDeclarativeType() + ", " +
+                            "did you put any state/memo in conditionals?" +
+                            " before " + context.getCurrMemoizedIdx() + ", " +
+                            "after " + newCtx.getCurrMemoizedIdx());
 
-            if (deepUpdate)
-                updateAttributes(newCtx);
-            context = newCtx;
+                if (deepUpdate)
+                    updateAttributes(newCtx);
+                context = newCtx;
+            } catch (Throwable t) {
+                Throwable bodyStackTrace = newCtx.getCapturedBodyStacktrace();
+                if(bodyStackTrace != null)
+                    t.addSuppressed(bodyStackTrace);
+                throw t;
+            }
         });
     }
 
@@ -204,8 +211,16 @@ abstract class StatefulDeclarativeComponent<
 
     protected static class StatefulContext<T> implements DeclarativeComponentContext<T> {
 
+        private static final Throwable STACKTRACE_SENTINEL = new Exception("StatefulContext sentinel");
+        private static final String DUI_PACKAGE;
+        static {
+            String name = StatefulDeclarativeComponent.class.getName();
+            DUI_PACKAGE = name.substring(0, name.lastIndexOf("."));
+        }
+
         private final StatefulDeclarativeComponent<T, ?, ?, ?> outer;
         private int currMemoizedIdx;
+        private @Nullable Throwable capturedBodyStacktrace;
 
         public StatefulContext(StatefulDeclarativeComponent<T, ?, ?, ?> outer) {
             this.outer = outer;
@@ -216,15 +231,32 @@ abstract class StatefulDeclarativeComponent<
                                StatefulContext<T> other) {
             this.outer = outer;
             this.currMemoizedIdx = other.currMemoizedIdx;
+            this.capturedBodyStacktrace = other.capturedBodyStacktrace;
         }
 
         protected int getCurrMemoizedIdx() {
             return currMemoizedIdx;
         }
 
+        protected @Nullable Throwable getCapturedBodyStacktrace() {
+            return capturedBodyStacktrace != STACKTRACE_SENTINEL ? capturedBodyStacktrace : null;
+        }
+
         protected void ensureInsideBody() {
             if(!outer.isInvokingBody)
                 throw new UnsupportedOperationException("Invalid state/attribute invocation, can only be done inside body");
+
+            if(capturedBodyStacktrace == null) {
+                Throwable t = new Exception("Body stack frame");
+                capturedBodyStacktrace = Arrays.stream(t.getStackTrace())
+                        .filter(el -> !el.getClassName().startsWith(DUI_PACKAGE))
+                        .findFirst()
+                        .map(el -> {
+                            t.setStackTrace(new StackTraceElement[] { el });
+                            return t;
+                        })
+                        .orElse(STACKTRACE_SENTINEL);
+            }
         }
 
         @Override
