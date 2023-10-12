@@ -49,8 +49,8 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void copy(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
-        super.copy(other0);
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+        super.substitute(other0);
 
         final DeclarativeComponentWrapper<R> other = (DeclarativeComponentWrapper<R>) other0;
         ensureSame("hasDeps", other, f -> f.hasDeps);
@@ -93,7 +93,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
             if (prevWrapped instanceof DeclarativeComponentWrapper && Objects.equals(
                     ((DeclarativeComponentWrapper<?>) wrapped).getDeclarativeWrapperType(),
                     Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevWrapped).getDeclarativeWrapperType()))
-                wrapped.copy(prevWrapped);
+                wrapped.substitute(prevWrapped);
             wrapped.updateComponent(false);
         }
     }

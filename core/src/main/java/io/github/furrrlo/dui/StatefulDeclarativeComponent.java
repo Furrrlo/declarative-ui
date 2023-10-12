@@ -32,7 +32,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    protected void copy(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
         ensureSame("type", other0, StatefulDeclarativeComponent::getClass);
 
         final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>) other0;

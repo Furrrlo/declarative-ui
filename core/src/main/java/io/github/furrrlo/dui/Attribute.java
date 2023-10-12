@@ -84,12 +84,12 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                 if (wasSet && prevValue instanceof DeclarativeComponentWrapper && Objects.equals(
                         ((DeclarativeComponentWrapper<?>) value).getDeclarativeWrapperType(),
                         Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevValue).getDeclarativeWrapperType()))
-                    value.copy(prevValue);
+                    value.substitute(prevValue);
                 value.updateComponent(false);
             }
 
             if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
-                value.copy(prevValue);
+                value.substitute(prevValue);
                 value.updateComponent();
 
                 if(updatedComponent != null)

@@ -68,8 +68,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void copy(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
-        super.copy(other0);
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+        super.substitute(other0);
 
         final DeclarativeComponentImpl<T, ?> other = (DeclarativeComponentImpl<T, ?>) other0;
         ensureSame("component type", other, fn -> fn.componentType);

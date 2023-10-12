@@ -67,7 +67,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
             if (prevImpl instanceof DeclarativeComponentWrapper && Objects.equals(
                     ((DeclarativeComponentWrapper<?>) currImpl).getDeclarativeWrapperType(),
                     Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevImpl).getDeclarativeWrapperType()))
-                currImpl.copy(prevImpl);
+                currImpl.substitute(prevImpl);
             currImpl.updateComponent(false);
         }
 
@@ -135,7 +135,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                 continue;
 
             currImpl.runOrScheduleOnFrameworkThread(() -> {
-                currImpl.copy(prevImpl);
+                currImpl.substitute(prevImpl);
                 currImpl.updateComponent();
             });
         }
