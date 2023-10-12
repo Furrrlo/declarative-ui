@@ -106,10 +106,11 @@ abstract class StatefulDeclarativeComponent<
             }
 
             if (context != null && newCtx.getCurrMemoizedIdx() != context.getCurrMemoizedIdx())
-                throw new UnsupportedOperationException("Memoized variables differ across re-renders, " +
+                throw new UnsupportedOperationException("Memoized variables differ across re-renders " +
+                        "for component " + getDeclarativeType() + ", " +
                         "did you put any state/memo in conditionals?" +
-                        " before " + newCtx.getCurrMemoizedIdx() + ", " +
-                        "after" + newCtx.getCurrMemoizedIdx());
+                        " before " + context.getCurrMemoizedIdx() + ", " +
+                        "after " + newCtx.getCurrMemoizedIdx());
 
             if (deepUpdate)
                 updateAttributes(newCtx);
@@ -242,6 +243,14 @@ abstract class StatefulDeclarativeComponent<
         @SuppressWarnings("unchecked")
         public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value) {
             ensureInsideBody();
+
+            // Try to catch memo issues as soon as possible from within the component
+            // body so that the stacktrace is more helpful
+            if (outer.context != null && getCurrMemoizedIdx() > outer.context.getCurrMemoizedIdx())
+                throw new UnsupportedOperationException("Memoized variables increased in this rerender, " +
+                        "did you put any state/memo in conditionals?" +
+                        " before " + getCurrMemoizedIdx() + ", " +
+                        "now" + outer.context.getCurrMemoizedIdx());
 
             final List<Object> dependencies = Arrays.asList(value.deps());
             if(currMemoizedIdx < outer.memoizedVars.size()) {
