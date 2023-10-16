@@ -62,13 +62,28 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
+    public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
+        return toDecorate().useState(value, equalityFn);
+    }
+
+    @Override
     public <V> State<V> useState(Supplier<V> value) {
         return toDecorate().useState(value);
     }
 
     @Override
+    public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
+        return toDecorate().useState(value, equalityFn);
+    }
+
+    @Override
     public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
         return toDecorate().useMemo(value);
+    }
+
+    @Override
+    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        return toDecorate().useMemo(value, equalityFn);
     }
 
     @Override
@@ -94,6 +109,14 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         return toDecorate().attribute(key, setter, value);
+    }
+
+    @Override
+    public <V> DeclarativeComponentContext<T> attribute(String key,
+                                                        BiConsumer<T, V> setter,
+                                                        Supplier<V> value,
+                                                        AttributeEqualityFn<T, V> equalityFn) {
+        return toDecorate().attribute(key, setter, value, equalityFn);
     }
 
     @Override

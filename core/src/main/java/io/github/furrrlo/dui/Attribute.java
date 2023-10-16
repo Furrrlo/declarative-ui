@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeComponentContext.AttributeEqualityFn;
 import io.github.furrrlo.dui.StatefulDeclarativeComponent.UpdateFlags;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,12 +18,14 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     private final String key;
     private final BiConsumer<T, V> setter;
     private final Supplier<?> valueSupplier;
+    private final AttributeEqualityFn<T, V> equalityFn;
     private Object value;
 
-    public Attribute(String key, BiConsumer<T, V> setter, Supplier<?> valueSupplier) {
+    public Attribute(String key, BiConsumer<T, V> setter, Supplier<?> valueSupplier, AttributeEqualityFn<T, V> equalityFn) {
         this.key = key;
         this.setter = setter;
         this.valueSupplier = valueSupplier;
+        this.equalityFn = equalityFn;
         this.value = valueSupplier.get();
     }
 
@@ -48,7 +51,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     }
 
     private void updateAttribute(T obj, boolean wasSet, V value, V prevValue) {
-        if (!wasSet || !Objects.equals(value, prevValue)) {
+        if (!wasSet || !equalityFn.equals(obj, value, prevValue)) {
             if(obj == null)
                 throw new NullPointerException(String.format(
                         "Attribute '%s' with old value '%s' and new value '%s'",

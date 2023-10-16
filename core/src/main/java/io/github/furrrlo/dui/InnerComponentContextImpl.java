@@ -3,6 +3,7 @@ package io.github.furrrlo.dui;
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -22,13 +23,28 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     }
 
     @Override
+    public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
+        return parent.useState(value, equalityFn);
+    }
+
+    @Override
     public <V> State<V> useState(Supplier<V> value) {
         return parent.useState(value);
     }
 
     @Override
+    public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
+        return parent.useState(value, equalityFn);
+    }
+
+    @Override
     public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
         return parent.useMemo(value);
+    }
+
+    @Override
+    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        return parent.useMemo(value, equalityFn);
     }
 
     @Override
@@ -55,6 +71,19 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     @Override
     public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
+        return this;
+    }
+
+    @Override
+    public <V> DeclarativeComponentContext<T> attribute(String key,
+                                                        BiConsumer<T, V> setter,
+                                                        Supplier<V> value,
+                                                        AttributeEqualityFn<T, V> equalityFn) {
+        parent.attribute(
+                key,
+                (parent, val) -> setter.accept(childGetter.apply(parent), val),
+                value,
+                (parent, prevV, currV) -> equalityFn.equals(childGetter.apply(parent), prevV, currV));
         return this;
     }
 

@@ -258,9 +258,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+        public <V> DeclarativeComponentContext<T> attribute(String key,
+                                                            BiConsumer<T, V> setter,
+                                                            Supplier<V> value,
+                                                            AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
-            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new Attribute<>(key, setter, value)));
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
+                    key,
+                    () -> new Attribute<>(key, setter, value, equalityFn)));
             return this;
         }
 
@@ -301,7 +306,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         @Override
         public <C1> DeclarativeComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
             ensureInsideBody();
-            attributes.put(key, new Attribute<>(key, setter, fn::doApplyInternal));
+            attributes.put(key, new Attribute<>(key, setter, fn::doApplyInternal, AttributeEqualityFn.never()));
             return this;
         }
 

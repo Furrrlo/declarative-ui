@@ -286,20 +286,22 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public <V> State<V> useState(V value) {
+        public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
-            return useState(() -> value);
+            return this.<V>useState(() -> value, equalityFn);
         }
 
         @Override
-        public <V> State<V> useState(Supplier<V> value) {
-            Memoized<State<V>> memo = useMemo(IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get())));
+        public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
+            Memoized<State<V>> memo = useMemo(
+                    IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get(), equalityFn)),
+                    (prev, next) -> false);
             return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value) {
+        public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
 
             // Try to catch memo issues as soon as possible from within the component
@@ -318,7 +320,7 @@ abstract class StatefulDeclarativeComponent<
             }
 
             final Memoized<V> newMemo = outer.updateMemoWithStateDependency(currMemoizedIdx,
-                    () -> new Memoized<>(value, dependencies));
+                    () -> new Memoized<>(value, dependencies, equalityFn));
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
                         new Object[] { currMemoizedIdx, newMemo.value, newMemo.dependencies });
@@ -334,7 +336,10 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+        public <V> DeclarativeComponentContext<T> attribute(String key,
+                                                            BiConsumer<T, V> setter,
+                                                            Supplier<V> value,
+                                                            AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
             return this;
         }
@@ -404,7 +409,12 @@ abstract class StatefulDeclarativeComponent<
 
         private final Set<Runnable> signalDeps = new LinkedHashSet<>();
 
+        private final BiPredicate<V, V> equalityFn;
         protected V value;
+
+        public BaseMemo(BiPredicate<V, V> equalityFn) {
+            this.equalityFn = equalityFn;
+        }
 
         @Override
         public V get() {
@@ -421,6 +431,9 @@ abstract class StatefulDeclarativeComponent<
         }
 
         protected void set(V value) {
+            if(equalityFn.test(this.value, value))
+                return;
+
             this.value = value;
 
             Set<Runnable> dependencies = new LinkedHashSet<>(this.signalDeps);
@@ -435,7 +448,8 @@ abstract class StatefulDeclarativeComponent<
         private boolean markedForUpdate;
         private List<Object> dependencies;
 
-        public Memoized(Supplier<V> supplier, List<Object> dependencies) {
+        public Memoized(Supplier<V> supplier, List<Object> dependencies, BiPredicate<V, V> equalityFn) {
+            super(equalityFn);
             this.value = supplier.get();
             this.supplier = supplier;
             this.dependencies = dependencies;
@@ -471,7 +485,8 @@ abstract class StatefulDeclarativeComponent<
 
     private static class StateImpl<S> extends BaseMemo<S> implements State<S> {
 
-        public StateImpl(S value) {
+        public StateImpl(S value, BiPredicate<S, S> equalityFn) {
+            super(equalityFn);
             this.value = value;
         }
 

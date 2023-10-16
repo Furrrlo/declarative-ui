@@ -3,17 +3,31 @@ package io.github.furrrlo.dui;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface DeclarativeComponentContext<T> {
 
-    <V> State<V> useState(V value);
+    default <V> State<V> useState(V value) {
+        return useState(value, Objects::deepEquals);
+    }
 
-    <V> State<V> useState(Supplier<V> value);
+    <V> State<V> useState(V value, BiPredicate<V, V> equalityFn);
 
-    <V> Memo<V> useMemo(IdentifiableSupplier<V> value);
+    default <V> State<V> useState(Supplier<V> value) {
+        return this.<V>useState(value, Objects::deepEquals);
+    }
+
+    <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn);
+
+    default <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
+        return useMemo(value, Objects::deepEquals);
+    }
+
+    <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn);
 
     default <V extends Serializable> V useCallback(V fun) {
         // By getting directly here, we are registering the whole component
@@ -38,7 +52,14 @@ public interface DeclarativeComponentContext<T> {
 
     <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 
-    <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value);
+    default <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+        return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
+    }
+
+    <V> DeclarativeComponentContext<T> attribute(String key,
+                                                 BiConsumer<T, V> setter,
+                                                 Supplier<V> value,
+                                                 AttributeEqualityFn<T, V> equalityFn);
 
     <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
             String key,
@@ -72,6 +93,16 @@ public interface DeclarativeComponentContext<T> {
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,
             List<S> fn);
+
+    @FunctionalInterface
+    interface AttributeEqualityFn<T, V> {
+
+        boolean equals(T component, V prevV, V newV);
+
+        static <T, V> AttributeEqualityFn<T, V> never() {
+            return (c, oldV, newV) -> false;
+        }
+    }
 
     @FunctionalInterface
     interface ListSetter<T, C, S extends DeclarativeComponentSupplier<? extends C>> {

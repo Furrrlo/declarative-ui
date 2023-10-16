@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class DAbstractButton {
@@ -36,7 +37,9 @@ public class DAbstractButton {
         }
 
         public void selected(Supplier<Boolean> selected) {
-            attribute(PREFIX + "selected", AbstractButton::setSelected, selected);
+            attribute(PREFIX + "selected", AbstractButton::setSelected, selected,
+                    // For stuff that toggles, to avoid having to cancel events
+                    (c, oldV, newV) -> Objects.equals(c.isSelected(), newV));
         }
 
         public void buttonGroup(Supplier<ButtonGroup> buttonGroup) {
