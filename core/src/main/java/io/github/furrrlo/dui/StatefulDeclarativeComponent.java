@@ -23,7 +23,8 @@ abstract class StatefulDeclarativeComponent<
     protected final List<Object> newDeps;
     private @Nullable List<Object> deps;
 
-    protected AtomicReference<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef = new AtomicReference<>(this);
+    protected AtomicReference<@Nullable StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef =
+            new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected I_CTX context;
 
@@ -170,8 +171,15 @@ abstract class StatefulDeclarativeComponent<
             Function<C, Object[]> deps) {
         Supplier<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
         return IdentifiableRunnable.of(
-                () -> runnable.accept((C) componentRef.get()),
-                () -> deps.apply((C) componentRef.get()));
+                () -> {
+                    C sub = (C) componentRef.get();
+                    if(sub != null)
+                        runnable.accept(sub);
+                },
+                () -> {
+                    C sub = (C) componentRef.get();
+                    return sub != null ? deps.apply((C) componentRef.get()) : new Object[] { componentRef };
+                });
     }
 
     @SuppressWarnings("unchecked")
@@ -223,6 +231,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected void disposeComponent() {
+        substituteComponentRef.set(null);
     }
 
     @Override

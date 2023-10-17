@@ -113,7 +113,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     public void triggerStateUpdate() {
-        updateScheduler.accept(() -> substituteComponentRef.get().updateComponent(UpdateFlags.FORCE));
+        updateScheduler.accept(() -> {
+            StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
+            if(sub != null)
+                sub.updateComponent(UpdateFlags.FORCE);
+        });
     }
 
     @Override
@@ -207,6 +211,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     protected void disposeComponent() {
+        super.disposeComponent();
+
         LOGGER.log(Level.FINE, "Disposing component {0}", component);
 
         if(context != null)

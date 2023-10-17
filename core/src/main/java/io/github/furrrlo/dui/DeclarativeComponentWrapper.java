@@ -106,7 +106,11 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
 
         if(comp != null) {
-            comp.scheduleOnFrameworkThread(() -> substituteComponentRef.get().updateComponent(UpdateFlags.FORCE));
+            comp.scheduleOnFrameworkThread(() -> {
+                StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
+                if(sub != null)
+                    sub.updateComponent(UpdateFlags.FORCE);
+            });
         } else {
             updateComponent(UpdateFlags.FORCE);
         }
@@ -140,6 +144,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     protected void disposeComponent() {
+        super.disposeComponent();
         if(wrapped != null)
             wrapped.runOrScheduleOnFrameworkThread(wrapped::disposeComponent);
     }
