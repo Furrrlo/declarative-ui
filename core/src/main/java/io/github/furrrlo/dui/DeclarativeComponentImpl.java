@@ -145,7 +145,6 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected void updateAttributes(ContextImpl<T> newCtx) {
-        // TODO: what happens when an attribute was there, but is no longer present?
         newCtx.attributes.forEach((key, prop) -> {
             final Attr<T, ?> prevProp = context != null ?
                     context.attributes.get(key) :
@@ -153,6 +152,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
             final Object prevValue = prevProp != null ? prevProp.value() : null;
             this.<Attr>updateAttribute(key, prop, component, prevProp != null, prevProp, prevValue);
         });
+        // TODO: what happens when an attribute was there, but is no longer present?
+        // for now copy over old attributes (might be not ideal, but at least we don't lose stuff around)
+        if(context != null)
+            context.attributes.forEach(newCtx.attributes::putIfAbsent);
     }
 
     private <A extends Attr<T, A>>  void updateAttribute(String attrKey,
