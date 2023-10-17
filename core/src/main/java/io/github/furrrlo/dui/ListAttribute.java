@@ -54,9 +54,14 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
         for (; idx < prevValues.size(); idx++) {
             final StatefulDeclarativeComponent<?, C, ?, ?> prevValue = prevValues.get(idx);
             if (prevValue != null)
-                prevValue.disposeComponent();
+                prevValue.runOrScheduleOnFrameworkThread(prevValue::disposeComponent);
         }
 
         setter.set(obj, suppliers, children);
+    }
+
+    @Override
+    public void dispose() {
+        value.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
     }
 }

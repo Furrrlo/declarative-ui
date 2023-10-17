@@ -137,4 +137,10 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
                 null,
                 null);
     }
+
+    @Override
+    protected void disposeComponent() {
+        if(wrapped != null)
+            wrapped.runOrScheduleOnFrameworkThread(wrapped::disposeComponent);
+    }
 }

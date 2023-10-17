@@ -143,4 +143,9 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
         toDispose.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
     }
+
+    @Override
+    public void dispose() {
+        value.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
+    }
 }

@@ -205,6 +205,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     protected void disposeComponent() {
         LOGGER.log(Level.FINE, "Disposing component {0}", component);
+
+        if(context != null)
+            context.attributes.values().forEach(Attr::dispose);
+
         // TODO: how to make components disposable?
         if(component instanceof Window) {
             final Window window = (Window) component;
@@ -401,8 +405,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     interface Attr<T, SELF extends Attr<T, SELF>> {
 
+        Object value();
+
         void update(T obj, boolean wasSet, @Nullable SELF prev, @Nullable Object prevValue);
 
-        Object value();
+        void dispose();
     }
 }

@@ -55,7 +55,12 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
             // TODO: what to do with these?
 //                replacer.replace(obj, idx, null, null);
             if (prevValue != null)
-                prevValue.disposeComponent();
+                prevValue.runOrScheduleOnFrameworkThread(prevValue::disposeComponent);
         }
+    }
+
+    @Override
+    public void dispose() {
+        value.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
     }
 }

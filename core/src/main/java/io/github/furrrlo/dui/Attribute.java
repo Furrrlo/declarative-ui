@@ -110,4 +110,14 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                 prevValue.disposeComponent();
         });
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void dispose() {
+        if (!(value instanceof DeclarativeComponentSupplier))
+            return;
+
+        StatefulDeclarativeComponent<?, V, ?, ?> comp = (StatefulDeclarativeComponent<?, V, ?, ?>) value;
+        comp.runOrScheduleOnFrameworkThread(comp::disposeComponent);
+    }
 }
