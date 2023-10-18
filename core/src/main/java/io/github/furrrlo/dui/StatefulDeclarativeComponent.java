@@ -82,6 +82,9 @@ abstract class StatefulDeclarativeComponent<
     public abstract void runOrScheduleOnFrameworkThread(Runnable runnable);
 
     protected void runAsComponentUpdate(Runnable runnable) {
+        if(substituteComponentRef.get() != this)
+            throw new UnsupportedOperationException("Trying to update substituted component");
+
         final StatefulDeclarativeComponent<?, ?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         CURR_UPDATING_COMPONENT.set(this);
         try {
@@ -105,9 +108,6 @@ abstract class StatefulDeclarativeComponent<
 
     @SuppressWarnings("unchecked")
     protected void updateComponent(int flags) {
-        if(substituteComponentRef.get() != this)
-            throw new UnsupportedOperationException("Trying to update substituted component");
-
         runAsComponentUpdate(() -> {
             final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
             final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0 || !newDeps.equals(deps);
