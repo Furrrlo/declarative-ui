@@ -92,7 +92,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
-            List<V> fn
+            Supplier<List<V>> fn
     ) {
         parent.<V, S>listAttribute(key, type,
                 (parent, idx, supplier, child) -> replacer.replace(childGetter.apply(parent), idx, supplier, child),
@@ -105,7 +105,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
             String key,
             Class<V> type,
             ListRemover<T> remover,
-            List<V> fn,
+            Supplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         parent.<V, S>listAttribute(key, type,
@@ -127,7 +127,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         parent.listFnAttribute(key, (parent, supplier, v) -> setter.set(childGetter.apply(parent), supplier, v), fn);
         return this;
@@ -137,7 +137,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         parent.listFnAttribute(key,
                 (parent, idx, supplier, child) -> replacer.replace(childGetter.apply(parent), idx, supplier, child),
@@ -150,7 +150,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         parent.listFnAttribute(key,
                 (parent, idx, supplier, child) -> adder.add(childGetter.apply(parent), idx, supplier, child),

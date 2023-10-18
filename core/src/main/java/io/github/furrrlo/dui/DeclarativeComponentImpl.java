@@ -200,7 +200,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         this.currentStateDependency = this.<A>makeAttrStateDependency(
                 attrKey,
                 (c, attr) -> c.updateScheduler.accept(() -> c.runAsComponentUpdate(() ->
-                        c.updateAttribute(attrKey, attr, c.component, true, null, attr.value()))),
+                        c.updateAttribute(attrKey, attr, c.component, true, attr, attr.value()))),
                 (c, attr) -> new Object[] { attr });
         try {
             return factory.get();
@@ -288,12 +288,12 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 String key,
                 Class<V> type,
                 ListReplacer<T, V, S> replacer,
-                List<V> fn
+                Supplier<List<V>> fn
         ) {
             return listFnAttribute(
                     key,
                     (ListReplacer<T, V, SingleItem<V>>) replacer,
-                    fn.stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
+                    () -> fn.get().stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
                             Collectors.toList(),
                             Collections::unmodifiableList)));
         }
@@ -304,14 +304,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 String key,
                 Class<V> type,
                 ListRemover<T> remover,
-                List<V> fn,
+                Supplier<List<V>> fn,
                 ListAdder<T, V, S> adder
         ) {
             return listFnAttribute(
                     key,
                     (ListAdder<T, V, SingleItem<V>>) adder,
                     remover,
-                    fn.stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
+                    () -> fn.get().stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
                             Collectors.toList(),
                             Collections::unmodifiableList)));
         }
@@ -324,63 +324,63 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings("unchecked")
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListSetter<T, C, S> setter,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
-            attributes.put(key, new ListAttribute<>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new ListAttribute<>(
                     key,
                     setter,
                     fn,
-                    (List) fn.stream()
-                            .map(DeclarativeComponentSupplier::doApplyInternal)
+                    suppliers -> suppliers.stream()
+                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
-                                    Collections::unmodifiableList))));
+                                    Collections::unmodifiableList)))));
             return this;
         }
 
         @Override
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings("unchecked")
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListReplacer<T, C, S> replacer,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
-            attributes.put(key, new ReplacingListAttribute<>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new ReplacingListAttribute<>(
                     key,
                     replacer,
                     fn,
-                    (List) fn.stream()
-                            .map(DeclarativeComponentSupplier::doApplyInternal)
+                    suppliers -> suppliers.stream()
+                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
-                                    Collections::unmodifiableList))));
+                                    Collections::unmodifiableList)))));
             return this;
         }
 
         @Override
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public <C1, S extends DeclarativeComponentWithIdSupplier<? extends C1>> DeclarativeComponentContext<T> listFnAttribute(
+        @SuppressWarnings("unchecked")
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
-                ListAdder<T, C1, S> adder,
+                ListAdder<T, C, S> adder,
                 ListRemover<T> remover,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
-            attributes.put(key, new DiffingListAttribute<T, C1, S>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new DiffingListAttribute<>(
                     key,
                     adder, remover,
                     fn,
-                    (List) fn.stream()
-                            .map(DeclarativeComponentSupplier::doApplyInternal)
+                    suppliers -> suppliers.stream()
+                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
-                                    Collections::unmodifiableList))));
+                                    Collections::unmodifiableList)))));
             return this;
         }
     }

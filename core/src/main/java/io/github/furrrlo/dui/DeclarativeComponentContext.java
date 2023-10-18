@@ -65,13 +65,13 @@ public interface DeclarativeComponentContext<T> {
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
-            List<V> fn);
+            Supplier<List<V>> fn);
 
     <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListRemover<T> remover,
-            List<V> fn,
+            Supplier<List<V>> fn,
             ListAdder<T, V, S> adder);
 
     <C> DeclarativeComponentContext<T> fnAttribute(String key,
@@ -81,18 +81,18 @@ public interface DeclarativeComponentContext<T> {
     <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
-            List<S> fn);
+            Supplier<List<S>> fn);
 
     <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
-            List<S> fn);
+            Supplier<List<S>> fn);
 
     <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,
-            List<S> fn);
+            Supplier<List<S>> fn);
 
     @FunctionalInterface
     interface AttributeEqualityFn<T, V> {

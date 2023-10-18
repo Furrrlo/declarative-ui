@@ -124,7 +124,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
-            List<V> fn
+            Supplier<List<V>> fn
     ) {
         return toDecorate().listAttribute(key, type, replacer, fn);
     }
@@ -134,7 +134,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             Class<V> type,
             ListRemover<T> remover,
-            List<V> fn,
+            Supplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         return toDecorate().listAttribute(key, type, remover, fn, adder);
@@ -149,7 +149,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         return toDecorate().listFnAttribute(key, setter, fn);
     }
@@ -158,7 +158,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         return toDecorate().listFnAttribute(key, replacer, fn);
     }
@@ -168,7 +168,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,
-            List<S> fn
+            Supplier<List<S>> fn
     ) {
         return toDecorate().listFnAttribute(key, adder, remover, fn);
     }

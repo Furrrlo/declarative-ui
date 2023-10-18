@@ -45,7 +45,7 @@ public interface Application {
                             app.getRoots().add(idx, v);
                     },
                     (app, idx) -> app.getRoots().remove(idx),
-                    roots);
+                    () -> roots);
         }
 
         public interface RootCollector {

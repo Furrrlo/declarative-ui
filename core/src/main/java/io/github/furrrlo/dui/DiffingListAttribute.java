@@ -5,6 +5,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -20,19 +22,24 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     private final String key;
     private final DeclarativeComponentContext.ListAdder<T, C, S> adder;
     private final DeclarativeComponentContext.ListRemover<T> remover;
-    private final List<S> suppliers;
-    private final List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
+    private final Supplier<List<S>> valueSuppliersSupplier;
+    private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
+
+    private List<S> suppliers;
+    private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
 
     public DiffingListAttribute(String key,
                                 DeclarativeComponentContext.ListAdder<T, C, S> adder,
                                 DeclarativeComponentContext.ListRemover<T> remover,
-                                List<S> suppliers,
-                                List<StatefulDeclarativeComponent<?, C, ?, ?>> value) {
+                                Supplier<List<S>> suppliers,
+                                Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;
         this.adder = adder;
         this.remover = remover;
-        this.suppliers = suppliers;
-        this.value = value;
+        this.valueSuppliersSupplier = suppliers;
+        this.suppliers = suppliers.get();
+        this.valueFn = value;
+        this.value = value.apply(this.suppliers);
     }
 
     @Override
@@ -43,6 +50,11 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     @Override
     @SuppressWarnings("unchecked")
     public void update(T obj, boolean wasSet, @Nullable DiffingListAttribute<T, C, S> prev, @Nullable Object prevValue0) {
+        // prev might be this attribute itself, so we need to save the suppliers before we replace them
+        final List<S> prevSuppliers = prev != null ? prev.suppliers : null;
+        this.suppliers = valueSuppliersSupplier.get();
+        this.value = valueFn.apply(this.suppliers);
+
         final List<StatefulDeclarativeComponent<?, C, ?, ?>> prevValue = wasSet ?
                 (List<StatefulDeclarativeComponent<?, C, ?, ?>>) Objects.requireNonNull(prevValue0) :
                 Collections.emptyList();
@@ -50,10 +62,10 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                 .of(IntStream.range(0, suppliers.size())
                                 .boxed()
                                 .collect(Collectors.toMap(value::get, suppliers::get)),
-                        prev != null ?
-                                IntStream.range(0, prev.suppliers.size())
+                        prevSuppliers != null ?
+                                IntStream.range(0, prevSuppliers.size())
                                         .boxed()
-                                        .collect(Collectors.toMap(prevValue::get, prev.suppliers::get)) :
+                                        .collect(Collectors.toMap(prevValue::get, prevSuppliers::get)) :
                                 Collections.<StatefulDeclarativeComponent<?, C, ?, ?>, S>emptyMap())
                 .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends C>>
         implements DeclarativeComponentImpl.Attr<T, ListAttribute<T, C, S>> {
@@ -13,17 +15,22 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
     private final DeclarativeComponentContext.ListSetter<T, C, S> setter;
-    private final List<S> suppliers;
-    private final List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
+    private final Supplier<List<S>> valueSuppliersSupplier;
+    private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
+
+    private List<S> suppliers;
+    private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
 
     public ListAttribute(String key,
                          DeclarativeComponentContext.ListSetter<T, C, S> setter,
-                         List<S> suppliers,
-                         List<StatefulDeclarativeComponent<?, C, ?, ?>> value) {
+                         Supplier<List<S>> suppliers,
+                         Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;
         this.setter = setter;
-        this.suppliers = suppliers;
-        this.value = value;
+        this.valueSuppliersSupplier = suppliers;
+        this.suppliers = suppliers.get();
+        this.valueFn = value;
+        this.value = value.apply(this.suppliers);
     }
 
     @Override
@@ -34,6 +41,9 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     @Override
     @SuppressWarnings("unchecked")
     public void update(T obj, boolean wereSet, @Nullable ListAttribute<T, C, S> prev, @Nullable Object prevValues0) {
+        this.suppliers = valueSuppliersSupplier.get();
+        this.value = valueFn.apply(this.suppliers);
+
         final List<StatefulDeclarativeComponent<?, C, ?, ?>> prevValues = wereSet ?
                 (List<StatefulDeclarativeComponent<?, C, ?, ?>>) Objects.requireNonNull(prevValues0) :
                 Collections.emptyList();
@@ -52,7 +62,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
 
         // These were all removed
         for (; idx < prevValues.size(); idx++) {
-            final StatefulDeclarativeComponent<?, C, ?, ?> prevValue = prevValues.get(idx);
+            final StatefulDeclarativeComponent<?, ? extends C, ?, ?> prevValue = prevValues.get(idx);
             if (prevValue != null)
                 prevValue.runOrScheduleOnFrameworkThread(prevValue::disposeComponent);
         }

@@ -92,7 +92,7 @@ public class JDComponent {
                     },
                     Container::remove,
                     // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    (List<Child<Component>>) (List) children);
+                    () -> (List<Child<Component>>) (List) children);
             listAttribute(
                     PREFIX + "constraints",
                     Object.class,
@@ -107,7 +107,7 @@ public class JDComponent {
                         p.remove(idx);
                         p.add(c, constraints, idx);
                     },
-                    children.stream().map(Child::constraints).collect(Collectors.toList()));
+                    () -> children.stream().map(Child::constraints).collect(Collectors.toList()));
         }
 
         public interface ChildCollector {

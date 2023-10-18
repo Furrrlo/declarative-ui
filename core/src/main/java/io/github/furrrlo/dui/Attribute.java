@@ -78,7 +78,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     }
 
     static <V> void updateDeclarativeComponent(boolean wasSet,
-                                               StatefulDeclarativeComponent<?, V, ?, ?> value,
+                                               StatefulDeclarativeComponent<?, ? extends V, ?, ?> value,
                                                @Nullable StatefulDeclarativeComponent<?, V, ?, ?> prevValue,
                                                @Nullable Consumer<V> createdComponent,
                                                @Nullable Consumer<V> updatedComponent) {

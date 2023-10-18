@@ -358,7 +358,7 @@ abstract class StatefulDeclarativeComponent<
                 String key,
                 Class<V> type,
                 ListReplacer<T, V, S> replacer,
-                List<V> fn
+                Supplier<List<V>> fn
         ) {
             ensureInsideBody();
             return this;
@@ -369,7 +369,7 @@ abstract class StatefulDeclarativeComponent<
                 String key,
                 Class<V> type,
                 ListRemover<T> remover,
-                List<V> fn,
+                Supplier<List<V>> fn,
                 ListAdder<T, V, S> adder
         ) {
             ensureInsideBody();
@@ -386,7 +386,7 @@ abstract class StatefulDeclarativeComponent<
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListSetter<T, C, S> setter,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
             return this;
@@ -396,7 +396,7 @@ abstract class StatefulDeclarativeComponent<
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListReplacer<T, C, S> replacer,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
             return this;
@@ -407,7 +407,7 @@ abstract class StatefulDeclarativeComponent<
                 String key,
                 ListAdder<T, C1, S> adder,
                 ListRemover<T> remover,
-                List<S> fn
+                Supplier<List<S>> fn
         ) {
             ensureInsideBody();
             return this;

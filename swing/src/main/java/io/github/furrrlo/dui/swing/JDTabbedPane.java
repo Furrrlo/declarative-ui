@@ -79,7 +79,7 @@ public class JDTabbedPane {
                     },
                     JTabbedPane::removeTabAt,
                     // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    (List<Tab<Component>>) (List) tabs);
+                    () -> (List<Tab<Component>>) (List) tabs);
             attribute(
                     PREFIX + "titles",
                     (tabbedPane, titles) -> {
@@ -120,7 +120,7 @@ public class JDTabbedPane {
                         }
                     },
                     // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    (List<TabComponent<Component>>) (List) tabComponents0);
+                    () -> (List<TabComponent<Component>>) (List) tabComponents0);
         }
 
         public interface TabCollector {

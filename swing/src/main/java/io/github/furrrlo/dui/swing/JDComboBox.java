@@ -36,7 +36,7 @@ public class JDComboBox {
             super(type, factory);
         }
 
-        public void items(List<String> items) {
+        public void items(Supplier<List<String>> items) {
             listAttribute(
                     PREFIX + "items",
                     String.class,
