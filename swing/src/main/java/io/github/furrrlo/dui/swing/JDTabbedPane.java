@@ -7,9 +7,9 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -34,8 +34,11 @@ public class JDTabbedPane {
 
         private static final String PREFIX = "__JTabbedPane__";
 
+        private final ReservedMemo<List<Tab<?, ?>>> reservedTabsMemo;
+
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
+            reservedTabsMemo = reserveMemo(Collections::emptyList);
         }
 
         public void tabLayoutPolicy(Supplier<Integer> tabLayoutPolicy) {
@@ -59,27 +62,24 @@ public class JDTabbedPane {
                     index);
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public void tabs(Consumer<TabCollector> collector) {
-            // TODO: the tab collector does not use suppliers so it causes entire component updates
-            final List<Tab<?>> tabs = new ArrayList<>();
-            final List<TabComponent<? extends Component>> tabComponents0 = new ArrayList<>();
-            collector.accept((key, title, icon, tabComponent, component, tooltipText) -> {
-                tabs.add(new Tab<>(key, title, icon, component, tooltipText));
-                tabComponents0.add(new TabComponent<>(tabComponent));
-            });
+        public void tabs(IdentifiableConsumer<TabCollector> collector) {
+            final Memo<List<Tab<?, ?>>> tabs = reservedTabsMemo.apply(IdentifiableSupplier.explicit(() -> {
+                final List<Tab<?, ?>> tabs0 = new ArrayList<>();
+                collector.accept((key, title, icon, tabComponent, component, tooltipText) ->
+                        tabs0.add(new Tab<>(key, title, icon, new TabComponent<>(tabComponent), component, tooltipText)));
+                return tabs0;
+            }, collector.deps()));
 
             listFnAttribute(
                     PREFIX + "components",
-                    (tabbedPane, idx, s, component) -> {
+                    (T tabbedPane, int idx, Tab<?, ?> s, Component component) -> {
                         if (idx >= tabbedPane.getTabCount())
                             tabbedPane.addTab(s.title, s.icon, component, s.tooltipText);
                         else
                             tabbedPane.insertTab(s.title, s.icon, component, s.tooltipText, idx);
                     },
                     JTabbedPane::removeTabAt,
-                    // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    () -> (List<Tab<Component>>) (List) tabs);
+                    tabs);
             attribute(
                     PREFIX + "titles",
                     (tabbedPane, titles) -> {
@@ -89,7 +89,7 @@ public class JDTabbedPane {
                                 tabbedPane.setTitleAt(i, title);
                         }
                     },
-                    () -> tabs.stream().map(Tab::title).collect(Collectors.toList()));
+                    () -> tabs.get().stream().map(Tab::title).collect(Collectors.toList()));
             attribute(
                     PREFIX + "icons",
                     (tabbedPane, icons) -> {
@@ -99,7 +99,7 @@ public class JDTabbedPane {
                                 tabbedPane.setIconAt(i, icon);
                         }
                     },
-                    () -> tabs.stream().map(Tab::icon).collect(Collectors.toList()));
+                    () -> tabs.get().stream().map(Tab::icon).collect(Collectors.toList()));
             attribute(
                     PREFIX + "tooltipTexts",
                     (tabbedPane, toolTipTexts) -> {
@@ -109,7 +109,7 @@ public class JDTabbedPane {
                                 tabbedPane.setToolTipTextAt(i, toolTipText);
                         }
                     },
-                    () -> tabs.stream().map(Tab::tooltipText).collect(Collectors.toList()));
+                    () -> tabs.get().stream().map(Tab::tooltipText).collect(Collectors.toList()));
             listFnAttribute(
                     PREFIX + "tabComponents",
                     (tabbedPane, s, tabComponents) -> {
@@ -119,8 +119,7 @@ public class JDTabbedPane {
                                 tabbedPane.setTabComponentAt(i, tabComponent);
                         }
                     },
-                    // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    () -> (List<TabComponent<Component>>) (List) tabComponents0);
+                    () -> tabs.get().stream().map(Tab::tabComponent).collect(Collectors.toList()));
         }
 
         public interface TabCollector {
@@ -157,23 +156,26 @@ public class JDTabbedPane {
                         @Nullable String tooltipText);
         }
 
-        private static class Tab<T extends Component> implements DeclarativeComponentWithIdSupplier<T> {
+        private static class Tab<T extends Component, TC extends Component> implements DeclarativeComponentWithIdSupplier<T> {
 
             private final @Nullable String id;
             private final String title;
             private final @Nullable Icon icon;
+            private final TabComponent<TC> tabComponent;
             private final DeclarativeComponentSupplier<T> component;
             private final @Nullable String tooltipText;
 
             public Tab(@Nullable String id,
                        String title,
                        @Nullable Icon icon,
+                       TabComponent<TC> tabComponent,
                        DeclarativeComponentSupplier<T> component,
                        @Nullable String tooltipText) {
                 this.id = id;
                 this.title = title;
                 this.icon = icon;
                 this.component = component;
+                this.tabComponent = tabComponent;
                 this.tooltipText = tooltipText;
             }
 
@@ -191,6 +193,10 @@ public class JDTabbedPane {
                 return title;
             }
 
+            public TabComponent<TC> tabComponent() {
+                return tabComponent;
+            }
+
             public @Nullable Icon icon() {
                 return icon;
             }
@@ -205,6 +211,7 @@ public class JDTabbedPane {
                         "id='" + id + '\'' +
                         ", title='" + title + '\'' +
                         ", icon=" + icon +
+                        ", tabComponent=" + tabComponent +
                         ", component=" + component +
                         ", tooltipText='" + tooltipText + '\'' +
                         '}';

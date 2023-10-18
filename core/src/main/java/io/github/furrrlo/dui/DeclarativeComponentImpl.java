@@ -135,15 +135,21 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void invokeBody(IdentifiableConsumer<O_CTX> body, O_CTX newCtx) {
+    protected void invokeBody(IdentifiableConsumer<O_CTX> body,
+                              DeclarativeComponentImpl.ContextImpl<T> underlyingNewCtx,
+                              O_CTX newCtx) {
         if(decorator != null) {
-            decorator.setToDecorate(newCtx);
-            // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-            body.accept((O_CTX) decorator);
+            decorator.setToDecorate(newCtx, underlyingNewCtx::reserveMemo);
+            try {
+                // This cast to C has to be guaranteed by the DeclarativeComponentFactory
+                body.accept((O_CTX) decorator);
+            } finally {
+                decorator.endDecoration();
+            }
             return;
         }
 
-        super.invokeBody(body, newCtx);
+        super.invokeBody(body, underlyingNewCtx, newCtx);
     }
 
     @Override
@@ -260,11 +266,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
             ensureInsideBody();
             // I trust this cast
-            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?> internalComponent =
-                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?>) component.doApplyInternal();
+            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ContextImpl<V>> internalComponent =
+                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ContextImpl<V>>) component.doApplyInternal();
             if (internalComponent.body != null) {
                 internalComponent.isInvokingBody = true;
-                internalComponent.invokeBody(internalComponent.body, new InnerComponentContextImpl<>(this, getter));
+                internalComponent.invokeBody(
+                        internalComponent.body,
+                        (ContextImpl<V>) this, // This cast is also incredibly unsafe
+                        new InnerComponentContextImpl<>(this, getter));
                 internalComponent.isInvokingBody = false;
             }
             return this;

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -28,13 +29,19 @@ public interface Application {
 
         private static final String PREFIX = "__Application.Context__";
 
+        private final ReservedMemo<List<Root<?>>> reservedRootsMemo;
+
         protected Context() {
             super(BaseApplication.class, BaseApplication::new);
+            reservedRootsMemo = reserveMemo(Collections::emptyList);
         }
 
-        public void roots(Consumer<RootCollector> rootCollector) {
-            final List<Root<?>> roots = new ArrayList<>();
-            rootCollector.accept((key, comp) -> roots.add(new Root<>(key, comp)));
+        public void roots(IdentifiableConsumer<RootCollector> rootCollector) {
+            final Memo<List<Root<?>>> roots = reservedRootsMemo.apply(IdentifiableSupplier.explicit(() -> {
+                final List<Root<?>> roots0 = new ArrayList<>();
+                rootCollector.accept((key, comp) -> roots0.add(new Root<>(key, comp)));
+                return roots0;
+            }, rootCollector.deps()));
 
             listFnAttribute(
                     PREFIX + "roots",
@@ -45,7 +52,7 @@ public interface Application {
                             app.getRoots().add(idx, v);
                     },
                     (app, idx) -> app.getRoots().remove(idx),
-                    () -> roots);
+                    roots);
         }
 
         public interface RootCollector {

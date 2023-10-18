@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -118,8 +119,8 @@ abstract class StatefulDeclarativeComponent<
                 newCtx = newContext();
                 if (body != null) {
                     isInvokingBody = true;
-                    // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-                    invokeBody(body, (O_CTX) newCtx);
+                    // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
+                    invokeBody(body, newCtx, (O_CTX) newCtx);
                     isInvokingBody = false;
                 }
             }
@@ -152,7 +153,7 @@ abstract class StatefulDeclarativeComponent<
         });
     }
 
-    protected void invokeBody(IdentifiableConsumer<O_CTX> body, O_CTX newCtx) {
+    protected void invokeBody(IdentifiableConsumer<O_CTX> body, I_CTX underlyingNewCtx, O_CTX newCtx) {
         body.accept(newCtx);
     }
 
@@ -278,6 +279,8 @@ abstract class StatefulDeclarativeComponent<
         }
 
         protected void ensureInsideBody() {
+            // TODO: currently, memos are evaluated immediately inside the body, so
+            //       using useMemo inside a memo does not fail fast, as it should
             if(!outer.isInvokingBody)
                 throw new UnsupportedOperationException("Invalid state/attribute invocation, can only be done inside body");
 
@@ -309,7 +312,6 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
 
@@ -321,20 +323,37 @@ abstract class StatefulDeclarativeComponent<
                         " before " + getCurrMemoizedIdx() + ", " +
                         "now" + outer.context.getCurrMemoizedIdx());
 
+            final int idx = currMemoizedIdx++;
+            return doUseMemo(idx, value, equalityFn);
+        }
+
+        protected <V> void reserveMemo(ReservedMemoProxy<V> reservedMemoProxy) {
+            final int idx = currMemoizedIdx++;
+            final BiPredicate<V, V> equalityFn = reservedMemoProxy.getEqualityFn();
+            reservedMemoProxy.setReservedMemo(fn -> doUseMemo(idx, fn, equalityFn));
+        }
+
+        @SuppressWarnings("unchecked")
+        protected <V> Memoized<V> doUseMemo(int index, IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
             final List<Object> dependencies = Arrays.asList(value.deps());
-            if(currMemoizedIdx < outer.memoizedVars.size()) {
-                final int idx = currMemoizedIdx++;
-                final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(idx);
-                return outer.updateMemoWithStateDependency(idx, () -> memo.updateIfNecessary(value, dependencies));
+            if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
+                final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
+                return outer.updateMemoWithStateDependency(index, () -> memo.updateIfNecessary(value, dependencies));
             }
 
-            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(currMemoizedIdx,
+            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(index,
                     () -> new Memoized<>(value, dependencies, equalityFn));
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
-                        new Object[] { currMemoizedIdx, newMemo.value, newMemo.dependencies });
-            outer.memoizedVars.add(newMemo);
-            currMemoizedIdx++;
+                        new Object[] { index, newMemo.value, newMemo.dependencies });
+            if(index < outer.memoizedVars.size()) {
+                outer.memoizedVars.set(index, newMemo);
+            } else {
+                // There might be reserved values before, so fill missing spots with nulls
+                while (outer.memoizedVars.size() < index)
+                    outer.memoizedVars.add(null);
+                outer.memoizedVars.add(newMemo);
+            }
             return newMemo;
         }
 

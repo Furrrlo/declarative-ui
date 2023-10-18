@@ -19,8 +19,11 @@ public class JDComponent {
 
         private static final String PREFIX = "__JDComponent__";
 
+        private final ReservedMemo<List<Child<?>>> reservedChildMemo;
+
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
+            reservedChildMemo = reserveMemo(Collections::emptyList);
         }
 
         public void maximumSize(Supplier<Dimension> dimension) {
@@ -77,22 +80,23 @@ public class JDComponent {
             attribute(PREFIX + "layout", Container::setLayout, layoutManager);
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        public void children(Consumer<ChildCollector> childCollector) {
-            final List<Child<? extends Component>> children = new ArrayList<>();
-            childCollector.accept((key, comp, constraints) -> children.add(new Child<>(key, comp, constraints)));
+        public void children(IdentifiableConsumer<ChildCollector> childCollector) {
+            final Memo<List<Child<?>>> children = reservedChildMemo.apply(IdentifiableSupplier.explicit(() -> {
+                final List<Child<?>> children0 = new ArrayList<>();
+                childCollector.accept((key, comp, constraints) -> children0.add(new Child<>(key, comp, constraints)));
+                return children0;
+            }, childCollector.deps()));
 
             listFnAttribute(
                     PREFIX + "children",
-                    (p, idx, s, v) -> {
+                    (T p, int idx, Child<?> s, Component v) -> {
                         if (idx >= p.getComponentCount())
                             p.add(v, s.constraints);
                         else
                             p.add(v, s.constraints, idx);
                     },
                     Container::remove,
-                    // No idea why this cast is even needed, IntelliJ says it's fine without while javac complains
-                    () -> (List<Child<Component>>) (List) children);
+                    children);
             listAttribute(
                     PREFIX + "constraints",
                     Object.class,
@@ -107,7 +111,7 @@ public class JDComponent {
                         p.remove(idx);
                         p.add(c, constraints, idx);
                     },
-                    () -> children.stream().map(Child::constraints).collect(Collectors.toList()));
+                    () -> children.get().stream().map(Child::constraints).collect(Collectors.toList()));
         }
 
         public interface ChildCollector {

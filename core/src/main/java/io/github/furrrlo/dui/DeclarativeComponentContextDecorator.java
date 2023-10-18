@@ -3,6 +3,7 @@ package io.github.furrrlo.dui;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.*;
@@ -15,6 +16,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     private final Consumer<Runnable> updateScheduler;
 
     private @Nullable DeclarativeComponentContext<T> toDecorate;
+    private final List<ReservedMemoProxy<?>> reservedMemos = new ArrayList<>();
 
     protected DeclarativeComponentContextDecorator(@Nullable Class<T> type,
                                                    Supplier<@Nullable T> factory,
@@ -26,8 +28,14 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         this.updateScheduler = updateScheduler;
     }
 
-    void setToDecorate(@Nullable DeclarativeComponentContext<T> toDecorate) {
+    void setToDecorate(@Nullable DeclarativeComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
         this.toDecorate = toDecorate;
+        this.reservedMemos.forEach(reserveMemo);
+    }
+
+    void endDecoration() {
+        this.toDecorate = null;
+        this.reservedMemos.forEach(ReservedMemoProxy::endDecoration);
     }
 
     private DeclarativeComponentContext<T> toDecorate() {
@@ -35,6 +43,65 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
                 toDecorate,
                 "Missing object to decorate");
     }
+
+    // Internal decoration api
+
+    protected <V> ReservedMemo<V> reserveMemo(IdentifiableSupplier<V> fallbackValue) {
+        return reserveMemo(fallbackValue, Objects::deepEquals);
+    }
+
+    protected <V> ReservedMemo<V> reserveMemo(IdentifiableSupplier<V> fallbackValue, BiPredicate<V, V> equalityFn) {
+        if(toDecorate != null)
+            throw new UnsupportedOperationException("Too late to reserve memos");
+
+        ReservedMemoProxy<V> proxy = new ReservedMemoProxy<>(fallbackValue, equalityFn);
+        reservedMemos.add(proxy);
+        return proxy;
+    }
+
+    protected interface ReservedMemo<T> extends Function<IdentifiableSupplier<T>, Memo<T>> {
+        @Override
+        Memo<T> apply(IdentifiableSupplier<T> value);
+    }
+
+    static class ReservedMemoProxy<T> implements ReservedMemo<T> {
+
+        private final IdentifiableSupplier<T> fallbackValue;
+        private final BiPredicate<T, T> equalityFn;
+
+        private @Nullable ReservedMemo<T> actual;
+        private boolean wasRun;
+
+        public ReservedMemoProxy(IdentifiableSupplier<T> fallbackValue, BiPredicate<T, T> equalityFn) {
+            this.fallbackValue = fallbackValue;
+            this.equalityFn = equalityFn;
+        }
+
+        public BiPredicate<T, T> getEqualityFn() {
+            return equalityFn;
+        }
+
+        void setReservedMemo(ReservedMemo<T> actual) {
+            this.actual = actual;
+        }
+
+        @Override
+        public Memo<T> apply(IdentifiableSupplier<T> value) {
+            if(wasRun)
+                throw new UnsupportedOperationException("Memo was already reserved");
+            wasRun = true;
+            return Objects.requireNonNull(actual, "Memo wasn't reserved yet").apply(value);
+        }
+
+        protected void endDecoration() {
+            if(!wasRun)
+                apply(fallbackValue);
+            actual = null;
+            wasRun = false;
+        }
+    }
+
+    // Getters
 
     public @Nullable Class<T> getType() {
         return type;
@@ -55,6 +122,8 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     public DeclarativeComponentFactory fn() {
         return DeclarativeComponentFactory.INSTANCE;
     }
+
+    // Delegate
 
     @Override
     public <V> State<V> useState(V value) {

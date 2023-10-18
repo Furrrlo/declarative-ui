@@ -68,7 +68,11 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                                         .collect(Collectors.toMap(prevValue::get, prevSuppliers::get)) :
                                 Collections.<StatefulDeclarativeComponent<?, C, ?, ?>, S>emptyMap())
                 .flatMap(m -> m.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
+                    // In case of memoized stuff, the values might be the same (so also the suppliers)
+                    if(v1 == v2) return v1;
+                    throw new UnsupportedOperationException("Same key for values " + v1 + " and " + v2);
+                }));
 
         // Wrappers need to invoke their body before they can say declarativeType
         for (int i = 0; i < value.size(); i++) {
