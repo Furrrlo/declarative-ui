@@ -215,12 +215,18 @@ abstract class StatefulDeclarativeComponent<
                     memo.markForUpdate();
                     // Schedule an update
                     c.scheduleOnFrameworkThread(() -> {
+                        if(!memo.isMarkedForUpdate())
+                            return;
                         // If when we get here the memo was not already updated, do it now
-                        if(memo.isMarkedForUpdate())
-                            c.runAsComponentUpdate(() -> c.updateMemoWithStateDependency(memoIdx, () -> {
-                                memo.update();
-                                return null;
-                            }));
+                        final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
+                        if(sub == null)
+                            return;
+                        // Even if the component was substituted, memos are shallowly passed to the new one
+                        // so no need to search back for it in the context
+                        sub.runAsComponentUpdate(() -> sub.updateMemoWithStateDependency(memoIdx, () -> {
+                            memo.update();
+                            return null;
+                        }));
                     });
                 },
                 (c, memo) -> new Object[] { memo });
