@@ -96,9 +96,18 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     public void triggerStateUpdate() {
-        // We do not want to eagerly execute the component update as possibly there are other updates
+        scheduleOnFrameworkThread(() -> {
+            StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
+            if(sub != null)
+                sub.updateComponent(UpdateFlags.FORCE);
+        });
+    }
+
+    @Override
+    public void scheduleOnFrameworkThread(Runnable runnable) {
+        // We do not want to eagerly execute component updates as there are possibly other updates
         // already scheduled in the framework specific scheduler, and we should respect that order,
-        // so try to schedule the update to be executed on said framework scheduler
+        // so try to schedule stuff to be executed on said framework scheduler
 
         StatefulDeclarativeComponent<?, ?, ?, ?> comp = wrapped;
         // Special case for nested wrappers, go on until we get to an actual component
@@ -106,24 +115,28 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
 
         if(comp != null) {
-            comp.scheduleOnFrameworkThread(() -> {
-                StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
-                if(sub != null)
-                    sub.updateComponent(UpdateFlags.FORCE);
-            });
+            comp.scheduleOnFrameworkThread(runnable);
         } else {
-            updateComponent(UpdateFlags.FORCE);
+            runnable.run();
         }
     }
 
     @Override
-    public void scheduleOnFrameworkThread(Runnable runnable) {
-        runnable.run();
-    }
-
-    @Override
     public void runOrScheduleOnFrameworkThread(Runnable runnable) {
-        runnable.run();
+        // We do not want to eagerly execute component updates as there are possibly other updates
+        // already scheduled in the framework specific scheduler, and we should respect that order,
+        // so try to schedule stuff to be executed on said framework scheduler
+
+        StatefulDeclarativeComponent<?, ?, ?, ?> comp = wrapped;
+        // Special case for nested wrappers, go on until we get to an actual component
+        while (comp instanceof DeclarativeComponentWrapper)
+            comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
+
+        if(comp != null) {
+            comp.runOrScheduleOnFrameworkThread(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     @Override
