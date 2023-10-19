@@ -1,11 +1,9 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> {
 
@@ -60,6 +58,13 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     @Override
     public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return parent.useCallbackExplicit(fun, dependencies);
+    }
+
+    @Override
+    public <V, R> List<DeclarativeComponent<R>> indexCollection(
+            IdentifiableSupplier<Collection<V>> collection,
+            IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
+        return parent.indexCollection(collection, mapFn);
     }
 
     @Override

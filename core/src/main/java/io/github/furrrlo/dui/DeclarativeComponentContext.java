@@ -1,13 +1,11 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface DeclarativeComponentContext<T> {
 
@@ -49,6 +47,10 @@ public interface DeclarativeComponentContext<T> {
     default <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return useMemo(IdentifiableSupplier.explicit(() -> fun, dependencies)).get();
     }
+
+    <V, R> List<DeclarativeComponent<R>> indexCollection(
+            IdentifiableSupplier<Collection<V>> collection,
+            IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn);
 
     <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 

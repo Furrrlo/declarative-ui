@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 abstract class StatefulDeclarativeComponent<
         T,
@@ -237,6 +239,24 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
+    private <RET> RET updateWithWrappedStateDependency(Predicate<StatefulDeclarativeComponent<?, ?, ?, ?>> wrappingCond,
+                                                       Supplier<RET> factory) {
+        IdentifiableRunnable prevStateDependency = currentStateDependency;
+        IdentifiableRunnable wrappedStateDependency = getCurrentStateDependency();
+        if(wrappedStateDependency != null)
+            this.currentStateDependency = this.makeStateDependency(
+                    c -> {
+                        if(wrappingCond.test(c))
+                            wrappedStateDependency.run();
+                    },
+                    c -> wrappedStateDependency.deps());
+        try {
+            return factory.get();
+        } finally {
+            this.currentStateDependency = prevStateDependency;
+        }
+    }
+
     protected void disposeComponent() {
         substituteComponentRef.set(null);
     }
@@ -361,6 +381,53 @@ abstract class StatefulDeclarativeComponent<
                 outer.memoizedVars.add(newMemo);
             }
             return newMemo;
+        }
+
+        @Override
+        public <V, R> List<DeclarativeComponent<R>> indexCollection(
+                IdentifiableSupplier<Collection<V>> collection,
+                IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
+
+            final AtomicReference<Integer> previousSize = new AtomicReference<>();
+            return outer.updateWithWrappedStateDependency(
+                    c -> {
+                        // If the size changed from the last time we ran, we want to re-run the
+                        // entire block anyway (either the whole component update or an attribute
+                        // update)
+                        final int currSize = collection.get().size();
+                        final Integer prev = previousSize.get();
+                        return prev == null || prev != currSize;
+                    },
+                    () -> {
+                        // We can access the collection here as we have set up a proper dependency
+                        // which will only fire updates if the size has changed
+                        int size = collection.get().size();
+                        previousSize.set(size);
+                        return IntStream.range(0, size).mapToObj(i -> DWrapper.fn(IdentifiableFunction.explicit(wrapper -> {
+                            final Memo<V> memo = wrapper.useMemo(IdentifiableSupplier.explicit(
+                                    () -> {
+                                        // If the collection changes this will be re-evaluated
+                                        Collection<V> coll = collection.get();
+                                        if(coll instanceof List<?>)
+                                            return ((List<V>) coll).get(i);
+                                        return coll.stream().skip(i).findFirst().orElseThrow(IndexOutOfBoundsException::new);
+                                    },
+                                    () -> {
+                                        final Object[] listDeps = collection.deps();
+                                        final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
+                                        memoDeps[memoDeps.length - 1] = i;
+                                        return memoDeps;
+                                    }));
+                            return mapFn.apply(memo, i);
+                        }, () -> {
+                            final Object[] listDeps = collection.deps();
+                            final Object[] mapFnDeps = mapFn.deps();
+                            final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + mapFnDeps.length + 1);
+                            System.arraycopy(mapFnDeps, 0, memoDeps, listDeps.length, mapFnDeps.length);
+                            memoDeps[memoDeps.length - 1] = i;
+                            return memoDeps;
+                        }))).collect(Collectors.toList());
+                    });
         }
 
         @Override

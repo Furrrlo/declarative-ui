@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.*;
@@ -168,6 +169,13 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return toDecorate().useCallbackExplicit(fun, dependencies);
+    }
+
+    @Override
+    public <V, R> List<DeclarativeComponent<R>> indexCollection(
+            IdentifiableSupplier<Collection<V>> collection,
+            IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
+        return toDecorate().indexCollection(collection, mapFn);
     }
 
     @Override
