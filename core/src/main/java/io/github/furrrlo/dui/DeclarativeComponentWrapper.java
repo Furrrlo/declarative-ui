@@ -13,6 +13,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     private final Function<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> wrapperBody;
 
     private boolean wasDeepUpdated;
+    private boolean isDeepUpdated;
     private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> wrapped;
     private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> prevWrapped;
 
@@ -33,8 +34,13 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     private void invokeWrappedBody(DeclarativeComponentContext<Object> ctx) {
+        if(wasDeepUpdated && !isDeepUpdated)
+            throw new UnsupportedOperationException("Wrapped component missed an update");
+
         prevWrapped = wrapped;
         wrapped = wrapperBody.apply(ctx).doApplyInternal();
+        wasDeepUpdated = isDeepUpdated;
+        isDeepUpdated = false;
     }
 
     @Override
@@ -43,6 +49,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         super.substitute(other0);
 
         final DeclarativeComponentWrapper<R> other = (DeclarativeComponentWrapper<R>) other0;
+        isDeepUpdated = other.isDeepUpdated;
         wasDeepUpdated = other.wasDeepUpdated;
         wrapped = other.wrapped;
         prevWrapped = other.prevWrapped;
@@ -145,8 +152,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
                 wrapped,
                 "updateAttributes(...) called without having invoked the wrapper body");
 
-        final boolean wasDeepUpdated = this.wasDeepUpdated;
-        this.wasDeepUpdated = true;
+        this.isDeepUpdated = true;
         Attribute.updateDeclarativeComponent(
                 wasDeepUpdated,
                 curr,
