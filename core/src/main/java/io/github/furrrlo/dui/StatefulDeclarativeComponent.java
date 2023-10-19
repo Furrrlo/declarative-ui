@@ -45,6 +45,8 @@ abstract class StatefulDeclarativeComponent<
 
         final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>) other0;
         substituteComponentRef = other.substituteComponentRef;
+        if(substituteComponentRef.get() == null)
+            throw new UnsupportedOperationException("Trying to resuscitate a disposed component");
         substituteComponentRef.set(this);
         deps = other.deps;
         memoizedVars = other.memoizedVars;
