@@ -51,7 +51,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     }
 
     private void updateAttribute(T obj, boolean wasSet, V value, V prevValue) {
-        if (!wasSet || !equalityFn.equals(obj, value, prevValue)) {
+        if (!wasSet || !equalityFn.equals(obj, prevValue, value)) {
             if(obj == null)
                 throw new NullPointerException(String.format(
                         "Attribute '%s' with old value '%s' and new value '%s'",
