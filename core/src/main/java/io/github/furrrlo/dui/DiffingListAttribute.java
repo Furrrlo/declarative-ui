@@ -104,20 +104,34 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
         outputMoves.forEach(move -> move.doMove(
                 (idx, item) -> {
-                    final S supplier = Objects.requireNonNull(implToSuppliers.get(item),
-                            "Missing supplier for impl " + item);
+                    final S supplier = Objects.requireNonNull(implToSuppliers.get(item), "Missing supplier for impl " + item);
+                    final StatefulDeclarativeComponent<?, C, ?, ?> prevItem = idx < prevValue.size() ? prevValue.get(idx) : null;
+                    final boolean canSubstitutePrevItem = prevItem != null && Objects.equals(
+                            item.getDeclarativeType(),
+                            Objects.requireNonNull(prevItem).getDeclarativeType());
+
                     if (idx >= toUpdate.size())
                         toUpdate.add(item);
                     else
                         toUpdate.add(idx, item);
 
                     toDispose.remove(item);
+                    if(canSubstitutePrevItem)
+                        toDispose.remove(prevItem);
                     alreadyDeepUpdated.add(item);
 
                     CompletableFuture<Void> future = new CompletableFuture<>();
                     item.runOrScheduleOnFrameworkThread(() -> {
                         try {
+                            if(canSubstitutePrevItem) {
+                                item.substitute(prevItem);
+                                item.updateComponent();
+                                return;
+                            }
+
                             item.updateOrCreateComponent();
+                        } catch (Throwable t) {
+                            future.completeExceptionally(t);
                         } finally {
                             future.complete(null);
                         }
