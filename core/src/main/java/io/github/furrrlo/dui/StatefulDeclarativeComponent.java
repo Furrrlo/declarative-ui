@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 abstract class StatefulDeclarativeComponent<
@@ -259,6 +258,62 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
+    public static <V> void indexCollection(
+            IdentifiableSupplier<Collection<V>> collection,
+            BiConsumer<Function<DeclarativeComponentContext<?>, Memo<V>>, Integer> fn) {
+
+        final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        if(currUpdatingComponent == null) {
+            CURR_UPDATING_COMPONENT.remove();
+            throw new UnsupportedOperationException("Currently not in a component update");
+        }
+
+        final AtomicReference<Integer> previousSize = new AtomicReference<>();
+        currUpdatingComponent.updateWithWrappedStateDependency(c -> {
+            // If the size changed from the last time we ran, we want to re-run the
+            // entire block anyway (either the whole component update or an attribute
+            // update)
+            final int currSize = collection.get().size();
+            final Integer prev = previousSize.get();
+            return prev == null || prev != currSize;
+        }, () -> {
+            // We can access the collection here as we have set up a proper dependency
+            // which will only fire updates if the size has changed
+            int size = collection.get().size();
+            previousSize.set(size);
+            IntStream.range(0, size).forEach(i -> fn.accept(
+                    // Declare memo on whatever context we are asked to
+                    ctx -> ctx.useMemo(IdentifiableSupplier.explicit(
+                            () -> {
+                                // If the collection changes this will be re-evaluated
+                                Collection<V> coll = collection.get();
+                                // This might be evaluated even if the size changes because of a removal,
+                                // as an example in a tabbed pane we are wrapping the state dependency of a memo
+                                // which will then trigger the update of the actual attributes, therefore the
+                                // update order will be:
+                                // 1. outer block where we iterate
+                                // 2...n these components which have yet to be updated and possibly disposed
+                                // n+1. tabs attribute which disposes of components (triggered by 1)
+                                // n+2. updates triggered by the 2...n memos
+                                // Let's just return null and hope the component gets disposed before the updates that this
+                                // memo schedules are actually executed
+                                if(i >= coll.size())
+                                    return null;
+                                if (coll instanceof List<?>)
+                                    return ((List<V>) coll).get(i);
+                                return coll.stream().skip(i).findFirst().orElseThrow(IndexOutOfBoundsException::new);
+                            },
+                            () -> {
+                                final Object[] listDeps = collection.deps();
+                                final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
+                                memoDeps[memoDeps.length - 1] = i;
+                                return memoDeps;
+                            })),
+                    i));
+            return null;
+        });
+    }
+
     protected void disposeComponent() {
         substituteComponentRef.set(null);
     }
@@ -383,53 +438,6 @@ abstract class StatefulDeclarativeComponent<
                 outer.memoizedVars.add(newMemo);
             }
             return newMemo;
-        }
-
-        @Override
-        public <V, R> List<DeclarativeComponent<R>> indexCollection(
-                IdentifiableSupplier<Collection<V>> collection,
-                IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
-
-            final AtomicReference<Integer> previousSize = new AtomicReference<>();
-            return outer.updateWithWrappedStateDependency(
-                    c -> {
-                        // If the size changed from the last time we ran, we want to re-run the
-                        // entire block anyway (either the whole component update or an attribute
-                        // update)
-                        final int currSize = collection.get().size();
-                        final Integer prev = previousSize.get();
-                        return prev == null || prev != currSize;
-                    },
-                    () -> {
-                        // We can access the collection here as we have set up a proper dependency
-                        // which will only fire updates if the size has changed
-                        int size = collection.get().size();
-                        previousSize.set(size);
-                        return IntStream.range(0, size).mapToObj(i -> DWrapper.fn(IdentifiableFunction.explicit(wrapper -> {
-                            final Memo<V> memo = wrapper.useMemo(IdentifiableSupplier.explicit(
-                                    () -> {
-                                        // If the collection changes this will be re-evaluated
-                                        Collection<V> coll = collection.get();
-                                        if(coll instanceof List<?>)
-                                            return ((List<V>) coll).get(i);
-                                        return coll.stream().skip(i).findFirst().orElseThrow(IndexOutOfBoundsException::new);
-                                    },
-                                    () -> {
-                                        final Object[] listDeps = collection.deps();
-                                        final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
-                                        memoDeps[memoDeps.length - 1] = i;
-                                        return memoDeps;
-                                    }));
-                            return mapFn.apply(memo, i);
-                        }, () -> {
-                            final Object[] listDeps = collection.deps();
-                            final Object[] mapFnDeps = mapFn.deps();
-                            final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + mapFnDeps.length + 1);
-                            System.arraycopy(mapFnDeps, 0, memoDeps, listDeps.length, mapFnDeps.length);
-                            memoDeps[memoDeps.length - 1] = i;
-                            return memoDeps;
-                        }))).collect(Collectors.toList());
-                    });
         }
 
         @Override

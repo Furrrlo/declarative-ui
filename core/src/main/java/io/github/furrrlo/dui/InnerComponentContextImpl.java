@@ -61,13 +61,6 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     }
 
     @Override
-    public <V, R> List<DeclarativeComponent<R>> indexCollection(
-            IdentifiableSupplier<Collection<V>> collection,
-            IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
-        return parent.indexCollection(collection, mapFn);
-    }
-
-    @Override
     public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
         parent.inner(parent -> getter.apply(this.childGetter.apply(parent)), component);
         return this;

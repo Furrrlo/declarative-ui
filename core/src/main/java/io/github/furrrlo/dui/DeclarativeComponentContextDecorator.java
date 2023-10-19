@@ -172,13 +172,6 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V, R> List<DeclarativeComponent<R>> indexCollection(
-            IdentifiableSupplier<Collection<V>> collection,
-            IdentifiableBiFunction<Memo<V>, Integer, DeclarativeComponentSupplier<R>> mapFn) {
-        return toDecorate().indexCollection(collection, mapFn);
-    }
-
-    @Override
     public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
         return toDecorate().inner(getter, component);
     }
