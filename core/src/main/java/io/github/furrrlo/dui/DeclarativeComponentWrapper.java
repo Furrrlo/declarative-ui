@@ -103,7 +103,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     public void triggerStateUpdate() {
-        scheduleOnFrameworkThread(() -> {
+        scheduleOnFrameworkThread(COMPONENT_UPDATE_PRIORITY, () -> {
             StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
             if(sub != null)
                 sub.updateComponent(UpdateFlags.FORCE);
@@ -111,7 +111,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
-    public void scheduleOnFrameworkThread(Runnable runnable) {
+    public void scheduleOnFrameworkThread(int priority, Runnable runnable) {
         // We do not want to eagerly execute component updates as there are possibly other updates
         // already scheduled in the framework specific scheduler, and we should respect that order,
         // so try to schedule stuff to be executed on said framework scheduler
@@ -122,7 +122,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
 
         if(comp != null) {
-            comp.scheduleOnFrameworkThread(runnable);
+            comp.scheduleOnFrameworkThread(priority, runnable);
         } else {
             runnable.run();
         }

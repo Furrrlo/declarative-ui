@@ -13,6 +13,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
 
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
+    private final int updatePriority;
     private final DeclarativeComponentContext.ListReplacer<T, C, S> replacer;
     private final Supplier<List<S>> valueSuppliersSupplier;
     private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
@@ -21,15 +22,22 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
     private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
 
     public ReplacingListAttribute(String key,
+                                  int updatePriority,
                                   DeclarativeComponentContext.ListReplacer<T, C, S> replacer,
                                   Supplier<List<S>> suppliers,
                                   Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;
+        this.updatePriority = updatePriority;
         this.replacer = replacer;
         this.valueSuppliersSupplier = suppliers;
         this.suppliers = suppliers.get();
         this.valueFn = value;
         this.value = value.apply(this.suppliers);
+    }
+
+    @Override
+    public int updatePriority() {
+        return updatePriority;
     }
 
     @Override

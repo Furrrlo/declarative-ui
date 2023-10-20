@@ -16,17 +16,24 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
 
     private final String key;
+    private final int updatePriority;
     private final BiConsumer<T, V> setter;
     private final Supplier<?> valueSupplier;
     private final AttributeEqualityFn<T, V> equalityFn;
     private Object value;
 
-    public Attribute(String key, BiConsumer<T, V> setter, Supplier<?> valueSupplier, AttributeEqualityFn<T, V> equalityFn) {
+    public Attribute(String key, int updatePriority, BiConsumer<T, V> setter, Supplier<?> valueSupplier, AttributeEqualityFn<T, V> equalityFn) {
         this.key = key;
+        this.updatePriority = updatePriority;
         this.setter = setter;
         this.valueSupplier = valueSupplier;
         this.equalityFn = equalityFn;
         this.value = valueSupplier.get();
+    }
+
+    @Override
+    public int updatePriority() {
+        return updatePriority;
     }
 
     @Override

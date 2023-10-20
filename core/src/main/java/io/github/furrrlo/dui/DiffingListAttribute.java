@@ -20,6 +20,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
+    private final int updatePriority;
     private final DeclarativeComponentContext.ListAdder<T, C, S> adder;
     private final DeclarativeComponentContext.ListRemover<T> remover;
     private final Supplier<List<S>> valueSuppliersSupplier;
@@ -29,17 +30,24 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
 
     public DiffingListAttribute(String key,
+                                int updatePriority,
                                 DeclarativeComponentContext.ListAdder<T, C, S> adder,
                                 DeclarativeComponentContext.ListRemover<T> remover,
                                 Supplier<List<S>> suppliers,
                                 Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;
+        this.updatePriority = updatePriority;
         this.adder = adder;
         this.remover = remover;
         this.valueSuppliersSupplier = suppliers;
         this.suppliers = suppliers.get();
         this.valueFn = value;
         this.value = value.apply(this.suppliers);
+    }
+
+    @Override
+    public int updatePriority() {
+        return updatePriority;
     }
 
     @Override

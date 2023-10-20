@@ -14,6 +14,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
 
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
+    private final int updatePriority;
     private final DeclarativeComponentContext.ListSetter<T, C, S> setter;
     private final Supplier<List<S>> valueSuppliersSupplier;
     private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
@@ -22,15 +23,22 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
 
     public ListAttribute(String key,
+                         int updatePriority,
                          DeclarativeComponentContext.ListSetter<T, C, S> setter,
                          Supplier<List<S>> suppliers,
                          Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;
+        this.updatePriority = updatePriority;
         this.setter = setter;
         this.valueSuppliersSupplier = suppliers;
         this.suppliers = suppliers.get();
         this.valueFn = value;
         this.value = value.apply(this.suppliers);
+    }
+
+    @Override
+    public int updatePriority() {
+        return updatePriority;
     }
 
     @Override

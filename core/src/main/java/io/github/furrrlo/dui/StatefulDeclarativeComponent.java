@@ -18,6 +18,12 @@ abstract class StatefulDeclarativeComponent<
 
     private static final Logger LOGGER = Logger.getLogger(StatefulDeclarativeComponent.class.getName());
 
+    protected static final int COMPONENT_UPDATE_PRIORITY = 0;
+    protected static final int MEMO_UPDATE_PRIORITY = 1;
+    protected static final int SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY = 2;
+    protected static final int NORMAL_ATTRIBUTE_UPDATE_PRIORITY = 3;
+    protected static final int HIGHEST_PRIORITY = COMPONENT_UPDATE_PRIORITY;
+
     private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
 
@@ -80,7 +86,7 @@ abstract class StatefulDeclarativeComponent<
 
     public abstract void triggerStateUpdate();
 
-    public abstract void scheduleOnFrameworkThread(Runnable runnable);
+    public abstract void scheduleOnFrameworkThread(int priority, Runnable runnable);
 
     public abstract void runOrScheduleOnFrameworkThread(Runnable runnable);
 
@@ -217,7 +223,7 @@ abstract class StatefulDeclarativeComponent<
                     // the memo is updated right away (and not on the schedule below)
                     memo.markForUpdate();
                     // Schedule an update
-                    c.scheduleOnFrameworkThread(() -> {
+                    c.scheduleOnFrameworkThread(MEMO_UPDATE_PRIORITY, () -> {
                         if(!memo.isMarkedForUpdate())
                             return;
                         // If when we get here the memo was not already updated, do it now

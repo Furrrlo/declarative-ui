@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.*;
@@ -14,7 +13,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     private final @Nullable Class<T> type;
     private final Supplier<@Nullable T> factory;
     private final BooleanSupplier canUpdateInCurrentThread;
-    private final Consumer<Runnable> updateScheduler;
+    private final UpdateScheduler updateScheduler;
 
     private @Nullable DeclarativeComponentContext<T> toDecorate;
     private final List<ReservedMemoProxy<?>> reservedMemos = new ArrayList<>();
@@ -22,11 +21,11 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     protected DeclarativeComponentContextDecorator(@Nullable Class<T> type,
                                                    Supplier<@Nullable T> factory,
                                                    BooleanSupplier canUpdateInCurrentThread,
-                                                   Consumer<Runnable> updateScheduler) {
+                                                   FrameworkScheduler frameworkScheduler) {
         this.type = type;
         this.factory = factory;
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
-        this.updateScheduler = updateScheduler;
+        this.updateScheduler = frameworkScheduler.updateScheduler;
     }
 
     void setToDecorate(@Nullable DeclarativeComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
@@ -112,7 +111,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         return factory;
     }
 
-    public Consumer<Runnable> getUpdateScheduler() {
+    UpdateScheduler getUpdateScheduler() {
         return updateScheduler;
     }
 

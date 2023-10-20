@@ -7,6 +7,6 @@ import java.util.function.Supplier;
 public class NoFrameworkDecorator<T> extends DeclarativeComponentContextDecorator<T> {
 
     protected NoFrameworkDecorator(@Nullable Class<T> type, Supplier<@Nullable T> factory) {
-        super(type, factory, () -> true, Runnable::run);
+        super(type, factory, () -> true, new FrameworkScheduler(Runnable::run));
     }
 }

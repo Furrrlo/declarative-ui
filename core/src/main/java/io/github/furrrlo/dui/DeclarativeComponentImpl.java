@@ -15,13 +15,12 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         extends StatefulDeclarativeComponent<T, T, O_CTX, DeclarativeComponentImpl.ContextImpl<T>> {
 
     private static final Logger LOGGER = Logger.getLogger(DeclarativeComponentImpl.class.getName());
-    private static final boolean TRACE_UPDATE_SCHEDULES = true;
 
     private final @Nullable DeclarativeComponentContextDecorator<T> decorator;
     private final Supplier<@Nullable T> componentFactory;
     private final @Nullable Class<T> componentType;
     private final BooleanSupplier canUpdateInCurrentThread;
-    private final Consumer<Runnable> updateScheduler;
+    private final UpdateScheduler updateScheduler;
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
@@ -34,7 +33,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         this.decorator = decorator;
         this.componentType = decorator.getType();
         this.componentFactory = decorator.getFactory();
-        this.updateScheduler = traceUpdateSchedules(decorator.getUpdateScheduler());
+        this.updateScheduler = decorator.getUpdateScheduler();
         this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
 
@@ -42,28 +41,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     public DeclarativeComponentImpl(Class<T> componentType,
                                     Supplier<T> componentFactory,
                                     BooleanSupplier canUpdateInCurrentThread,
-                                    Consumer<Runnable> updateScheduler,
+                                    UpdateScheduler updateScheduler,
                                     @Nullable IdentifiableConsumer<DeclarativeComponentContext<T>> body) {
         super((IdentifiableConsumer<O_CTX>) body);
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
-        this.updateScheduler = traceUpdateSchedules(updateScheduler);
+        this.updateScheduler = updateScheduler;
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
-    }
-
-    private static Consumer<Runnable> traceUpdateSchedules(Consumer<Runnable> updateScheduler) {
-        return !TRACE_UPDATE_SCHEDULES ? updateScheduler : (update) -> {
-            final Throwable trace = new Exception("Called from here");
-            updateScheduler.accept(() -> {
-                try {
-                    update.run();
-                } catch (Throwable ex) {
-                    ex.addSuppressed(trace);
-                    throw ex;
-                }
-            });
-        };
     }
 
     @Override
@@ -113,7 +98,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     public void triggerStateUpdate() {
-        updateScheduler.accept(() -> {
+        scheduleOnFrameworkThread(COMPONENT_UPDATE_PRIORITY, () -> {
             StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
             if(sub != null)
                 sub.updateComponent(UpdateFlags.FORCE);
@@ -121,8 +106,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     }
 
     @Override
-    public void scheduleOnFrameworkThread(Runnable runnable) {
-        updateScheduler.accept(runnable);
+    public void scheduleOnFrameworkThread(int priority, Runnable runnable) {
+        updateScheduler.schedule(priority, runnable);
     }
 
     @Override
@@ -130,7 +115,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         if(canUpdateInCurrentThread.getAsBoolean())
             runnable.run();
         else
-            scheduleOnFrameworkThread(runnable);
+            scheduleOnFrameworkThread(HIGHEST_PRIORITY, runnable);
     }
 
     @Override
@@ -174,7 +159,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                                                          boolean wasSet,
                                                          @Nullable A prev,
                                                          @Nullable Object prevValue) {
-        this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, () -> {
+        this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, attr.updatePriority(), () -> {
             attr.update(obj, wasSet, prev, prevValue);
             return null;
         });
@@ -199,13 +184,15 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 });
     }
 
-    private <RET, A extends Attr<T, A>> RET buildOrChangeAttrWithStateDependency(String attrKey, Supplier<RET> factory) {
+    private <RET, A extends Attr<T, A>> RET buildOrChangeAttrWithStateDependency(
+            String attrKey, int updatePriority, Supplier<RET> factory) {
+
         IdentifiableRunnable prevStateDependency = currentStateDependency;
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
         this.currentStateDependency = this.<A>makeAttrStateDependency(
                 attrKey,
-                (c, attr) -> c.updateScheduler.accept(() -> {
+                (c, attr) -> scheduleOnFrameworkThread(updatePriority, () -> {
                     // If for any reason its parent component is scheduled before this, and therefore it's re-run
                     // before we can get to the update below, either:
                     // 1. the component would have been completely substituted
@@ -296,8 +283,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                                                             AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
-                    key,
-                    () -> new Attribute<>(key, setter, value, equalityFn)));
+                    key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
+                    () -> new Attribute<>(key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY, setter, value, equalityFn)));
             return this;
         }
 
@@ -309,8 +296,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 ListReplacer<T, V, S> replacer,
                 Supplier<List<V>> fn
         ) {
-            return listFnAttribute(
-                    key,
+            return doListFnAttribute(
+                    key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
                     (ListReplacer<T, V, SingleItem<V>>) replacer,
                     () -> fn.get().stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
                             Collectors.toList(),
@@ -326,8 +313,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 Supplier<List<V>> fn,
                 ListAdder<T, V, S> adder
         ) {
-            return listFnAttribute(
-                    key,
+            return doListFnAttribute(
+                    key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
                     (ListAdder<T, V, SingleItem<V>>) adder,
                     remover,
                     () -> fn.get().stream().map(v -> new SingleItem<>(type, v)).collect(Collectors.collectingAndThen(
@@ -338,20 +325,32 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         @Override
         public <C1> DeclarativeComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
             ensureInsideBody();
-            attributes.put(key, new Attribute<>(key, setter, fn::doApplyInternal, AttributeEqualityFn.never()));
+            attributes.put(key, new Attribute<>(
+                    key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY,
+                    setter, fn::doApplyInternal, AttributeEqualityFn.never()));
             return this;
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListSetter<T, C, S> setter,
                 Supplier<List<S>> fn
         ) {
+            return doListFnAttribute(key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY, setter, fn);
+        }
+
+        @SuppressWarnings("unchecked")
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+                String key,
+                int updatePriority,
+                ListSetter<T, C, S> setter,
+                Supplier<List<S>> fn
+        ) {
             ensureInsideBody();
-            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new ListAttribute<>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, updatePriority, () -> new ListAttribute<>(
                     key,
+                    updatePriority,
                     setter,
                     fn,
                     suppliers -> suppliers.stream()
@@ -363,15 +362,25 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListReplacer<T, C, S> replacer,
                 Supplier<List<S>> fn
         ) {
+            return doListFnAttribute(key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY, replacer, fn);
+        }
+
+        @SuppressWarnings("unchecked")
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+                String key,
+                int updatePriority,
+                ListReplacer<T, C, S> replacer,
+                Supplier<List<S>> fn
+        ) {
             ensureInsideBody();
-            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new ReplacingListAttribute<>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, updatePriority, () -> new ReplacingListAttribute<>(
                     key,
+                    updatePriority,
                     replacer,
                     fn,
                     suppliers -> suppliers.stream()
@@ -383,16 +392,27 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
                 String key,
                 ListAdder<T, C, S> adder,
                 ListRemover<T> remover,
                 Supplier<List<S>> fn
         ) {
+            return doListFnAttribute(key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY, adder, remover, fn);
+        }
+
+        @SuppressWarnings("unchecked")
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+                String key,
+                int updatePriority,
+                ListAdder<T, C, S> adder,
+                ListRemover<T> remover,
+                Supplier<List<S>> fn
+        ) {
             ensureInsideBody();
-            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, () -> new DiffingListAttribute<>(
+            attributes.put(key, outer.buildOrChangeAttrWithStateDependency(key, updatePriority, () -> new DiffingListAttribute<>(
                     key,
+                    updatePriority,
                     adder, remover,
                     fn,
                     suppliers -> suppliers.stream()
@@ -421,7 +441,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     () -> item,
                     // This in theory should never need to update any props anyway
                     () -> true,
-                    Runnable::run,
+                    new UpdateScheduler(Runnable::run),
                     null);
         }
 
@@ -432,6 +452,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     }
 
     interface Attr<T, SELF extends Attr<T, SELF>> {
+
+        int updatePriority();
 
         Object value();
 
