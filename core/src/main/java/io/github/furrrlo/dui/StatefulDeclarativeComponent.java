@@ -258,9 +258,8 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    public static <V> void indexCollection(
-            IdentifiableSupplier<Collection<V>> collection,
-            BiConsumer<Function<DeclarativeComponentContext<?>, Memo<V>>, Integer> fn) {
+    public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
+                                           BiConsumer<Memo.DeclareMemoFn<V>, Integer> fn) {
 
         final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         if(currUpdatingComponent == null) {
@@ -311,6 +310,42 @@ abstract class StatefulDeclarativeComponent<
                             })),
                     i));
             return null;
+        });
+    }
+
+    public static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection,
+                                         BiConsumer<V, Memo.DeclareMemoFn<Integer>> fn) {
+
+        collection.get().forEach(val -> {
+            // Declare memo on whatever context we are asked to
+            fn.accept(val, ctx -> ctx.useMemo(IdentifiableSupplier.explicit(() -> {
+                // If the collection changes this will be re-evaluated
+                Collection<V> coll = collection.get();
+                if (coll instanceof List<?>)
+                    return ((List<V>) coll).indexOf(val);
+                int i = 0;
+                for(V candidate : coll) {
+                    if(candidate.equals(val))
+                        return i;
+                    i++;
+                }
+                // This might be evaluated even if the size changes because of a removal,
+                // as an example in a tabbed pane we are wrapping the state dependency of a memo
+                // which will then trigger the update of the actual attributes, therefore the
+                // update order will be:
+                // 1. outer block where we iterate
+                // 2...n these components which have yet to be updated and possibly disposed
+                // n+1. tabs attribute which disposes of components (triggered by 1)
+                // n+2. updates triggered by the 2...n memos
+                // Let's just return -1 and hope the component gets disposed before the updates that this
+                // memo schedules are actually executed
+                return -1;
+            }, () -> {
+                final Object[] listDeps = collection.deps();
+                final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
+                memoDeps[memoDeps.length - 1] = val;
+                return memoDeps;
+            })));
         });
     }
 

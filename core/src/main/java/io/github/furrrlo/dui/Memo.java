@@ -9,10 +9,18 @@ public interface Memo<T> extends Supplier<T> {
 
     T get();
 
-    static <V> void indexCollection(
-            IdentifiableSupplier<Collection<V>> collection,
-            BiConsumer<Function<DeclarativeComponentContext<?>, Memo<V>>, Integer> fn) {
-
+    static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
+                                    BiConsumer<DeclareMemoFn<V>, Integer> fn) {
         StatefulDeclarativeComponent.indexCollection(collection, fn);
+    }
+
+    static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection,
+                                  BiConsumer<V, DeclareMemoFn<Integer>> fn) {
+        StatefulDeclarativeComponent.mapCollection(collection, fn);
+    }
+
+    interface DeclareMemoFn<V> extends Function<DeclarativeComponentContext<?>, Memo<V>> {
+        @Override
+        Memo<V> apply(DeclarativeComponentContext<?> ctx);
     }
 }
