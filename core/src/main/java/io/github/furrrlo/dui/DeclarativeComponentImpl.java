@@ -192,14 +192,19 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         // newer versions, and we do not want to update stale stuff
         this.currentStateDependency = this.<A>makeAttrStateDependency(
                 attrKey,
-                (c, attr) -> scheduleOnFrameworkThread(updatePriority, () -> {
-                    // If for any reason its parent component is scheduled before this, and therefore it's re-run
-                    // before we can get to the update below, either:
-                    // 1. the component would have been completely substituted
-                    // 2. the body would have been re-run and the attribute substituted
-                    // In both cases, we have a stale attribute and the actual one would have been updated anyway,
-                    // so we have to avoid updating the stale one
-                    if(c.substituteComponentRef.get() != c || (c.context != null && c.context.attributes.get(attrKey) != attr))
+                (c0, attr) -> c0.scheduleOnFrameworkThread(updatePriority, () -> {
+                    // - If for any reason its parent component is scheduled before this, and its body is re-run
+                    //   before we can get to the update below, the attribute would be substituted,
+                    //   we have a stale attribute and the actual one would have been updated anyway,
+                    //   so we have to avoid updating the stale one
+                    // - If its parent component is scheduled before this and is substituted, but the body not
+                    //   re-run as its deps have not changed, then this attribute is not stale, we still need
+                    //   to update it
+                    // - If the parent component was disposed, then c.substituteComponentRef.get() is null, we
+                    //   don't need to update anything
+                    final DeclarativeComponentImpl<T, O_CTX> c =
+                            (DeclarativeComponentImpl<T, O_CTX>) c0.substituteComponentRef.get();
+                    if(c == null || (c.context != null && c.context.attributes.get(attrKey) != attr))
                         return;
 
                     c.runAsComponentUpdate(() -> c.updateAttribute(attrKey, attr, c.component, true, attr, attr.value()));
