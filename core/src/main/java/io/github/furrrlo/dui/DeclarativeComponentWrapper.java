@@ -65,32 +65,9 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         context = toCopy == null ? null : new StatefulContext<>(this, toCopy);
     }
 
-    public String getDeclarativeWrapperType() {
-        return wrapperBody.getClass().getName();
-    }
-
     @Override
     public String getDeclarativeType() {
-        final StatefulDeclarativeComponent<?, R, ?, ?> wrapped = Objects.requireNonNull(
-                this.wrapped,
-                "getDeclarativeType() attribute called without having invoked the wrapper body");
-        return getDeclarativeWrapperType() + "[" + wrapped.getDeclarativeType() + "]";
-    }
-
-    @Override
-    protected void updateComponent(int flags) {
-        super.updateComponent(flags);
-
-        // Wrappers need to invoke their body before they can say declarativeType
-        // so if this was soft-updated, propagate the update to the child wrapper
-        final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
-        if(!deepUpdate && wrapped instanceof DeclarativeComponentWrapper) {
-            if (prevWrapped instanceof DeclarativeComponentWrapper && Objects.equals(
-                    ((DeclarativeComponentWrapper<?>) wrapped).getDeclarativeWrapperType(),
-                    Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevWrapped).getDeclarativeWrapperType()))
-                wrapped.substitute(prevWrapped);
-            wrapped.updateComponent(UpdateFlags.SOFT);
-        }
+        return wrapperBody.getClass().getName();
     }
 
     @Override

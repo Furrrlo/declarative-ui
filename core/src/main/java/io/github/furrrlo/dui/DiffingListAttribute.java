@@ -1,6 +1,5 @@
 package io.github.furrrlo.dui;
 
-import io.github.furrrlo.dui.StatefulDeclarativeComponent.UpdateFlags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -81,20 +80,6 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     if(v1 == v2) return v1;
                     throw new UnsupportedOperationException("Same key for values " + v1 + " and " + v2);
                 }));
-
-        // Wrappers need to invoke their body before they can say declarativeType
-        for (int i = 0; i < value.size(); i++) {
-            final StatefulDeclarativeComponent<?, C, ?, ?> currImpl = value.get(i);
-            if (!(currImpl instanceof DeclarativeComponentWrapper))
-                continue;
-
-            final StatefulDeclarativeComponent<?, C, ?, ?> prevImpl = i < prevValue.size() ? prevValue.get(i) : null;
-            if (prevImpl instanceof DeclarativeComponentWrapper && Objects.equals(
-                    ((DeclarativeComponentWrapper<?>) currImpl).getDeclarativeWrapperType(),
-                    Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevImpl).getDeclarativeWrapperType()))
-                currImpl.substitute(prevImpl);
-            currImpl.updateComponent(UpdateFlags.SOFT);
-        }
 
         final List<ListDiff.OutputMove<StatefulDeclarativeComponent<?, C, ?, ?>>> outputMoves = ListDiff.diff(
                 prevValue,

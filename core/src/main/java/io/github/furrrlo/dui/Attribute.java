@@ -1,7 +1,6 @@
 package io.github.furrrlo.dui;
 
 import io.github.furrrlo.dui.DeclarativeComponentContext.AttributeEqualityFn;
-import io.github.furrrlo.dui.StatefulDeclarativeComponent.UpdateFlags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -90,15 +89,6 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                                                @Nullable Consumer<V> createdComponent,
                                                @Nullable Consumer<V> updatedComponent) {
         value.runOrScheduleOnFrameworkThread(() -> {
-            // Wrappers need to invoke their body before they can say declarativeType
-            if(value instanceof DeclarativeComponentWrapper) {
-                if (wasSet && prevValue instanceof DeclarativeComponentWrapper && Objects.equals(
-                        ((DeclarativeComponentWrapper<?>) value).getDeclarativeWrapperType(),
-                        Objects.requireNonNull((DeclarativeComponentWrapper<?>) prevValue).getDeclarativeWrapperType()))
-                    value.substitute(prevValue);
-                value.updateComponent(UpdateFlags.SOFT);
-            }
-
             if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
                 value.substitute(prevValue);
                 value.updateComponent();
