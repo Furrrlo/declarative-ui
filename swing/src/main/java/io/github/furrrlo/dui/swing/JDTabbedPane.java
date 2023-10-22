@@ -66,7 +66,7 @@ public class JDTabbedPane {
             final Memo<List<Tab<?, ?>>> tabs = reservedTabsMemo.apply(IdentifiableSupplier.explicit(() -> {
                 final List<Tab<?, ?>> tabs0 = new ArrayList<>();
                 collector.accept((key, title, icon, tabComponent, component, tooltipText) ->
-                        tabs0.add(new Tab<>(key, title, icon, new TabComponent<>(tabComponent), component, tooltipText)));
+                        tabs0.add(new Tab<>(key, title, icon, new TabComponent<>(key, tabComponent), component, tooltipText)));
                 return tabs0;
             }, collector.deps()));
 
@@ -112,12 +112,11 @@ public class JDTabbedPane {
                     () -> tabs.get().stream().map(Tab::tooltipText).collect(Collectors.toList()));
             listFnAttribute(
                     PREFIX + "tabComponents",
-                    (tabbedPane, s, tabComponents) -> {
-                        for (int i = 0; i < tabComponents.size(); i++) {
-                            final Component tabComponent = tabComponents.get(i);
-                            if (!Objects.equals(tabbedPane.getTabComponentAt(i), tabComponent))
-                                tabbedPane.setTabComponentAt(i, tabComponent);
-                        }
+                    (T tabbedPane, int idx, TabComponent<?> s, Component component) ->
+                            // the components attr should already have added everything, we just need to replace stuff
+                            tabbedPane.setTabComponentAt(idx, component),
+                    (tabbedPane, idx) -> {
+                        // the components attr should already have removed everything
                     },
                     () -> tabs.get().stream().map(Tab::tabComponent).collect(Collectors.toList()));
         }
@@ -220,10 +219,12 @@ public class JDTabbedPane {
 
         private static class TabComponent<T extends Component> implements DeclarativeComponentWithIdSupplier<T> {
 
+            private final @Nullable String id;
             private final @Nullable DeclarativeComponentSupplier<T> component;
 
-            public TabComponent(@Nullable DeclarativeComponentSupplier<T> component) {
+            public TabComponent(@Nullable String id, @Nullable DeclarativeComponentSupplier<T> component) {
                 this.component = component;
+                this.id = id;
             }
 
             @Override
@@ -233,7 +234,7 @@ public class JDTabbedPane {
 
             @Override
             public String getId() {
-                return null;
+                return id;
             }
         }
 
