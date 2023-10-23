@@ -35,13 +35,7 @@ class Main {
 
 ## Hooks
 
-<table>
-<thead>
-</thead>
-<tbody>
-
-<tr>
-<td>
+#### useState
 
 ```java
 <V> State<V> useState(V value);
@@ -49,11 +43,10 @@ class Main {
 <V> State<V> useState(Supplier<V value);
 <V> State<V> useState(Supplier<V value, BiPredicate<V, V> equalityFn);
 ```
-</td>
-<td>
 Adds a state variable to your component, similar to 
-<a href="https://react.dev/reference/react/useState">React useState</a>. Additionally, the returned object
-is subject to automatic dependency tracking, as with 
+<a href="https://react.dev/reference/react/useState">React useState</a>. 
+
+Additionally, the returned object is subject to automatic dependency tracking, as with 
 <a href="https://www.solidjs.com/docs/latest#createsignal">Solidjs signals</a>, 
 which means that calling State#get() within a tracked scope causes the calling function to depend 
 on this variable, so it will re-run when this State gets updated. Contrary to Solidjs, components can still
@@ -68,51 +61,42 @@ State variable.
 
 TBD: The additional overloads accepting a `Supplier<V> value` are untracked, so that you can access
 other tracked variables without causing the parent component to possibly re-render.
-</td>
-</tr>
 
-<tr>
-<td>
+#### useMemo
 
 ```java
 <V> Memo<V> useMemo(IdentifiableSupplier<V> value);
 <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn);
 ```
-</td>
-<td>
 Lets you cache the result of a calculation between re-renders, same as 
 <a href="https://react.dev/reference/react/useMemo">React useMemo</a> but with (optionally) 
 automatic dependency tracking (see <a href="identifiables">Identifiables section</a>).
 
-Additionally, like 
-<a href="https://www.solidjs.com/docs/latest#creatememo">Solidjs createMemo</a>, 
-a memo can shield dependents from updating when the memo's dependencies change but the resulting memo value doesn't. 
+The value function is a tracking function, which means that calling the getter of a tracking variable
+inside it will cause the function to depend on that variable, so it will re-run when it gets updated.
+
+Additionally, like <a href="https://www.solidjs.com/docs/latest#creatememo">Solidjs createMemo</a>, 
+the returned memo is a tracking variable, which means that a memo can shield dependents from updating 
+when the memo's dependencies change but the resulting memo value doesn't.
+
 Like `useState`, the derived variable updates (and triggers dependents to rerun) only when the value returned by the 
 memo function actually changes from the previous value, according to Java `Objects#deepEquals(Object a, Object b)`.
 Alternatively, you can use the overload with `BiPredicate<V, V> equalityFn` for testing equality.
-</td>
-</tr>
 
-<tr>
-<td>
+#### useCallback
 
 ```java
 <V extends Serializable> V useCallback(V fun);
 <V> V useCallbackExplicit(V fun, Object dependency);
 <V> V useCallbackExplicit(V fun, List<Object> dependencies);
 ```
-</td>
-<td>
 Lets you cache a function definition between re-renders, same as 
 <a href="https://react.dev/reference/react/useCallback">React useCallback</a> but with (optionally) 
 automatic dependency tracking (see <a href="identifiables">Identifiables section</a>).
 
 There is no Solidjs counterpart, as it does not re-render components (see `useState` for more info)
-</td>
-</tr>
 
-<tr>
-<td>
+#### indexCollection
 
 ```java
 static <V void Memo#indexCollection(
@@ -120,8 +104,6 @@ static <V void Memo#indexCollection(
     BiConsumer<DeclareMemoFn<V, Integer> fn
 );
 ```
-</td>
-<td>
 Allows to iterate a collection (possibly coming from a tracked variable like a State or a Memo)
 and offers a function to declare a memo for each value in the collection.
 
@@ -138,11 +120,8 @@ does.
 
 The suggested approach is to declare a wrapper component, add it as a child specifying the index as key
 and declare the value memo inside said wrapper component.
-</td>
-</tr>
 
-<tr>
-<td>
+#### mapCollection
 
 ```java
 static <V void Memo#mapCollection(
@@ -150,8 +129,6 @@ static <V void Memo#mapCollection(
     BiConsumer<V, DeclareMemoFn<Integer>> fn
 );
 ```
-</td>
-<td>
 Allows to iterate a collection (possibly coming from a tracked variable like a State or a Memo)
 and offers a function to declare a memo on child components for each index in the collection.
 
@@ -170,20 +147,14 @@ as key and (optionally) declare the index memo inside said wrapper component. Ad
 declare a memo of the value itself in the wrapper, as it will prevent the wrapped component from having to be 
 fully re-rendered on each change of the value. Instead, only the wrapper body will be re-run and only tracked attributes
 and memos of the wrapped components will be re-run.
-</td>
-</tr>
 
-<tr>
-<td>
-
+#### inner
 ```java
 <V> DeclarativeComponentContext<T> inner(
     Function<T, V> getter,
     DeclarativeComponent<V component
 );
 ```
-</td>
-<td>
 Lets you extract a field out of a Swing component and decorate it. 
 
 This is useful for dealing with components that decorate other components by creating 
@@ -199,11 +170,6 @@ and then in the body call
 p.inner(o -> o.getTextArea(), JDTextArea.fn(textArea -> { ... })
 ```
 in order to decorate the underlying text area.
-</td>
-</tr>
-
-</tbody>
-</table>
 
 ## Identifiables
 
