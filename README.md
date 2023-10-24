@@ -79,7 +79,7 @@ Additionally, like <a href="https://www.solidjs.com/docs/latest#creatememo">Soli
 the returned memo is a tracking variable, which means that a memo can shield dependents from updating 
 when the memo's dependencies change but the resulting memo value doesn't.
 
-Like `useState`, the derived variable updates (and triggers dependents to rerun) only when the value returned by the 
+Like [useState](#useState), the derived variable updates (and triggers dependents to rerun) only when the value returned by the 
 memo function actually changes from the previous value, according to Java `Objects#deepEquals(Object a, Object b)`.
 Alternatively, you can use the overload with `BiPredicate<V, V> equalityFn` for testing equality.
 
@@ -94,7 +94,7 @@ Lets you cache a function definition between re-renders, same as
 <a href="https://react.dev/reference/react/useCallback">React useCallback</a> but with (optionally) 
 automatic dependency tracking (see <a href="identifiables">Identifiables section</a>).
 
-There is no Solidjs counterpart, as it does not re-render components (see `useState` for more info)
+There is no Solidjs counterpart, as it does not re-render components (see [useState](#useState) for more info)
 
 #### indexCollection
 
@@ -119,7 +119,19 @@ the same limitation on declaring memos in loops as <a href="https://react.dev/re
 does.
 
 The suggested approach is to declare a wrapper component, add it as a child specifying the index as key
-and declare the value memo inside said wrapper component.
+and declare the value memo inside said wrapper component:
+```java
+val elements = panel.useState(List.of());
+panel.children(panelChildren -> {
+    Memo.indexCollection(elements::get, (declareElementMemo, index) -> {
+        currentPanelChildren.add(index, DWrapper.fn(wrapper -> {
+            var element = declareElementMemo.apply(wrapper);
+            return SomeComponent.fn( /* additional stuff using the declared memo */ );
+        }));
+    });
+    // ... more children
+});
+```
 
 #### mapCollection
 
@@ -146,7 +158,22 @@ The suggested approach is to declare a wrapper component, add it as a child spec
 as key and (optionally) declare the index memo inside said wrapper component. Additionally, it is also suggested to 
 declare a memo of the value itself in the wrapper, as it will prevent the wrapped component from having to be 
 fully re-rendered on each change of the value. Instead, only the wrapper body will be re-run and only tracked attributes
-and memos of the wrapped components will be re-run.
+and memos of the wrapped components will be re-run:
+```java
+val elements = panel.useState(List.of());
+panel.children(panelChildren -> {
+    Memo.mapCollection(elements::get, (element0, declareIndexMemo) -> {
+        currentPanelChildren.add(element0.someKey(), DWrapper.fn(wrapper -> {
+            var hookIndex = declareIndexMemo.apply(wrapper);
+            // Turn the hook itself into a signal to propagate reactivity
+            var element = wrapper.useMemo(() -> element0);
+            
+            return SomeComponent.fn( /* additional stuff using the declared memos */ );
+        }));
+    });
+    // ... more children
+});
+```
 
 #### inner
 ```java
