@@ -24,6 +24,8 @@ abstract class StatefulDeclarativeComponent<
     protected static final int NORMAL_ATTRIBUTE_UPDATE_PRIORITY = 3;
     protected static final int HIGHEST_PRIORITY = COMPONENT_UPDATE_PRIORITY;
 
+    protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.of(() -> {});
+
     private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
 
@@ -170,7 +172,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
-        return currentStateDependency != null
+        return currentStateDependency == NO_STATE_DEPENDENCY ? null : currentStateDependency != null
                 ? currentStateDependency
                 : makeStateDependency(StatefulDeclarativeComponent::triggerStateUpdate, c -> new Object[] { c });
     }
@@ -261,6 +263,20 @@ abstract class StatefulDeclarativeComponent<
             return factory.get();
         } finally {
             this.currentStateDependency = prevStateDependency;
+        }
+    }
+
+    public static <V> V untrack(Supplier<V> value) {
+        final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        if(currUpdatingComponent == null)
+            return value.get();
+
+        IdentifiableRunnable prevStateDependency = currUpdatingComponent.currentStateDependency;
+        currUpdatingComponent.currentStateDependency = NO_STATE_DEPENDENCY;
+        try {
+            return value.get();
+        } finally {
+            currUpdatingComponent.currentStateDependency = prevStateDependency;
         }
     }
 

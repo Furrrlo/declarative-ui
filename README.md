@@ -175,6 +175,14 @@ panel.children(panelChildren -> {
 });
 ```
 
+#### untrack
+```java
+static <V> V Memo#untrack(Supplier<V> value);
+```
+
+Ignores tracking any of the dependencies in the executing code block and returns the value, same as
+[Solidjs untrack](https://www.solidjs.com/docs/latest#untrack).
+
 #### inner
 ```java
 <V> DeclarativeComponentContext<T> inner(
@@ -240,5 +248,4 @@ That means that:
     - re-run on component re-render
 
 ## Missing stuff
-- untrack
 - effects

@@ -9,6 +9,10 @@ public interface Memo<T> extends Supplier<T> {
 
     T get();
 
+    static <V> V untrack(Supplier<V> value) {
+        return StatefulDeclarativeComponent.untrack(value);
+    }
+
     static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
                                     BiConsumer<DeclareMemoFn<V>, Integer> fn) {
         StatefulDeclarativeComponent.indexCollection(collection, fn);
