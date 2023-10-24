@@ -446,7 +446,7 @@ abstract class StatefulDeclarativeComponent<
         @Override
         public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
             Memoized<State<V>> memo = useMemo(
-                    IdentifiableSupplier.explicit(() -> new StateImpl<>(value.get(), equalityFn)),
+                    IdentifiableSupplier.explicit(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
                     (prev, next) -> false);
             return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }

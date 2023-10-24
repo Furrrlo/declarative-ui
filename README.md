@@ -59,7 +59,7 @@ if the new value is different than the old value according to Java `Objects#deep
 The overloads with `BiPredicate<V, V> equalityFn` allows to change the equality function used for this 
 State variable.
 
-TBD: The additional overloads accepting a `Supplier<V> value` are untracked, so that you can access
+The additional overloads accepting a `Supplier<V> value` are untracked, so that you can access
 other tracked variables without causing the parent component to possibly re-render.
 
 #### useMemo
