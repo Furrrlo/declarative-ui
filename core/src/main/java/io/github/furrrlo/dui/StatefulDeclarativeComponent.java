@@ -24,7 +24,7 @@ abstract class StatefulDeclarativeComponent<
     protected static final int NORMAL_ATTRIBUTE_UPDATE_PRIORITY = 3;
     protected static final int HIGHEST_PRIORITY = COMPONENT_UPDATE_PRIORITY;
 
-    protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.of(() -> {});
+    protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.explicit(() -> {});
 
     private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
@@ -182,7 +182,7 @@ abstract class StatefulDeclarativeComponent<
             Consumer<C> runnable,
             Function<C, Object[]> deps) {
         Supplier<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
-        return IdentifiableRunnable.of(
+        return IdentifiableRunnable.explicit(
                 () -> {
                     C sub = (C) componentRef.get();
                     if(sub != null)

@@ -1,49 +1,71 @@
 package io.github.furrrlo.dui;
 
-import java.util.Arrays;
+import java.io.Serializable;
 import java.util.function.Supplier;
 
-abstract class IdentifiableRunnable implements Runnable, Identifiable.Explicit {
-
-    private Runnable runnable;
-
-    public IdentifiableRunnable(Runnable runnable) {
-        this.runnable = runnable;
-    }
+public interface IdentifiableRunnable extends Runnable, Identifiable, Serializable {
 
     @Override
-    public void run() {
-        runnable.run();
+    default Object[] deps() {
+        return Identifiables.computeDependencies(this);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof IdentifiableRunnable)) return false;
-        IdentifiableRunnable that = (IdentifiableRunnable) o;
-        return Arrays.equals(deps(), that.deps());
+    interface Explicit extends IdentifiableRunnable, Identifiable.Explicit {
+
+        @Override
+        Object[] deps();
     }
 
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(deps());
+    static Explicit explicit(Runnable runnable, Object... deps) {
+        return new Impl.ExplicitArray(runnable, deps);
     }
 
-    static IdentifiableRunnable of(Runnable runnable, Object... deps) {
-        return new IdentifiableRunnable(runnable) {
+    static Explicit explicit(Runnable runnable, Supplier<Object[]> deps) {
+        return new Impl.ExplicitSupplier(runnable, deps);
+    }
+
+    class Impl {
+
+        private static class ExplicitArray implements Explicit {
+
+            private final transient Runnable runnable;
+            private final Object[] deps;
+
+            public ExplicitArray(Runnable runnable, Object[] deps) {
+                this.runnable = runnable;
+                this.deps = deps;
+            }
+
+            @Override
+            public void run() {
+                runnable.run();
+            }
+
             @Override
             public Object[] deps() {
                 return deps;
             }
-        };
-    }
+        }
 
-    static IdentifiableRunnable of(Runnable runnable, Supplier<Object[]> deps) {
-        return new IdentifiableRunnable(runnable) {
+        private static class ExplicitSupplier implements Explicit {
+
+            private final transient Runnable runnable;
+            private final transient Supplier<Object[]> deps; // TODO: serialize the result
+
+            public ExplicitSupplier(Runnable runnable, Supplier<Object[]> deps) {
+                this.runnable = runnable;
+                this.deps = deps;
+            }
+
+            @Override
+            public void run() {
+                runnable.run();
+            }
+
             @Override
             public Object[] deps() {
                 return deps.get();
             }
-        };
+        }
     }
 }
