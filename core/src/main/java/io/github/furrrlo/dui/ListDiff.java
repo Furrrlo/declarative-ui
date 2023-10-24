@@ -99,13 +99,13 @@ class ListDiff {
                 simulate.add(newKeys.get(oldKey));
                 continue;
             }
-            // We have fewer values than before, mark index to be removed
-            if (freeIdx >= newFree.size()) {
-                simulate.add(null);
+            // Either free item or newly inserted keyed item, put a random value
+            if (freeIdx < newFree.size()) {
+                simulate.add(newFree.get(freeIdx++));
                 continue;
             }
-
-            simulate.add(newFree.get(freeIdx++));
+            // We have fewer values than before, mark index to be removed
+            simulate.add(null);
         }
 
         // Remove marked values
@@ -117,18 +117,14 @@ class ListDiff {
             }
         }
 
-        // Move and add stuff to go from oldList -> newList
+        // We got the old list to be the same size or smaller than the new one,
+        // now move and add stuff to go from oldList -> newList
         int newListIdx0, simulateIdx = 0;
-        for(newListIdx0 = 0; newListIdx0 < newList.size(); newListIdx0++) {
+        for(newListIdx0 = 0; newListIdx0 < newList.size() && simulateIdx < simulate.size(); newListIdx0++) {
             final int newListIdx = newListIdx0;
+
             final T newItem = newList.get(newListIdx);
             final String key = extractKeyFn.apply(newItem);
-            // We have fewer values than what we need, we need to add new ones
-            if (simulateIdx >= simulate.size()) {
-                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
-                continue;
-            }
-
             final T simulateItem = simulate.get(simulateIdx);
             final String simulateItemKey = extractKeyFn.apply(simulateItem);
             // Item is already in place
@@ -153,20 +149,30 @@ class ListDiff {
             }
 
             // Item is not in this position and not in the next one, so insert it (remove it first if present)
-            for(int offset = 2; simulateIdx + offset < simulate.size(); offset++) {
-                String nextItemKey = extractKeyFn.apply(simulate.get(simulateIdx + offset));
-                if (Objects.equals(key, nextItemKey)) {
-                    final int offset0 = offset;
-                    outputMoves.add((__, remove) -> remove.accept(newListIdx + offset0));
-                    simulate.remove(simulateIdx + offset);
-                    break;
+            if(key != null) { // A free item is not identifiable anyway, we would just remove the first free one
+                for (int offset = 2; simulateIdx + offset < simulate.size(); offset++) {
+                    String nextItemKey = extractKeyFn.apply(simulate.get(simulateIdx + offset));
+                    if (Objects.equals(key, nextItemKey)) {
+                        final int offset0 = offset;
+                        outputMoves.add((__, remove) -> remove.accept(newListIdx + offset0));
+                        simulate.remove(simulateIdx + offset);
+                        break;
+                    }
                 }
             }
 
             outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
         }
 
-        // if simulate is still longer than newList, remove items until both are the same length
+        // If the old list was smaller than the new one (simulateIdx >= simulate.size()),
+        // we have fewer values than what we need, just get them from the new ones
+        for(; newListIdx0 < newList.size(); newListIdx0++) {
+            final int newListIdx = newListIdx0;
+            final T newItem = newList.get(newListIdx);
+            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
+        }
+
+        // If simulate is still longer than newList, remove items until both are the same length
         final int newListFinalSize = newListIdx0;
         for (int i = simulateIdx; i < simulate.size(); i++)
             outputMoves.add((__, remove) -> remove.accept(newListFinalSize));
