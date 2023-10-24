@@ -187,10 +187,9 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     private <RET, A extends Attr<T, A>> RET buildOrChangeAttrWithStateDependency(
             String attrKey, int updatePriority, Supplier<RET> factory) {
 
-        IdentifiableRunnable prevStateDependency = currentStateDependency;
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
-        this.currentStateDependency = this.<A>makeAttrStateDependency(
+        IdentifiableRunnable stateDependency = this.<A>makeAttrStateDependency(
                 attrKey,
                 (c0, attr) -> c0.scheduleOnFrameworkThread(updatePriority, () -> {
                     // - If for any reason its parent component is scheduled before this, and its body is re-run
@@ -210,11 +209,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     c.runAsComponentUpdate(() -> c.updateAttribute(attrKey, attr, c.component, true, attr, attr.value()));
                 }),
                 (c, attr) -> new Object[] { attr });
-        try {
-            return factory.get();
-        } finally {
-            this.currentStateDependency = prevStateDependency;
-        }
+        return withStateDependency(stateDependency, factory);
     }
 
     @Override

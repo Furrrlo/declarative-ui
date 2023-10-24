@@ -177,6 +177,16 @@ abstract class StatefulDeclarativeComponent<
                 : makeStateDependency(StatefulDeclarativeComponent::triggerStateUpdate, c -> new Object[] { c });
     }
 
+    protected <RET> RET withStateDependency(@Nullable IdentifiableRunnable stateDependency, Supplier<RET> supp) {
+        IdentifiableRunnable prevStateDependency = currentStateDependency;
+        this.currentStateDependency = stateDependency;
+        try {
+            return supp.get();
+        } finally {
+            this.currentStateDependency = prevStateDependency;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public <C extends StatefulDeclarativeComponent<?, ?, ?, ?>> IdentifiableRunnable makeStateDependency(
             Consumer<C> runnable,
@@ -214,10 +224,9 @@ abstract class StatefulDeclarativeComponent<
     }
 
     private <RET, V, M extends Memoized<V>> RET updateMemoWithStateDependency(int memoIdx, Supplier<RET> factory) {
-        IdentifiableRunnable prevStateDependency = currentStateDependency;
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
-        this.currentStateDependency = this.<V, M>makeMemoStateDependency(
+        IdentifiableRunnable stateDependency = this.<V, M>makeMemoStateDependency(
                 memoIdx,
                 (c, memo) -> {
                     // Mark the memo to be updated, so if for any reason its parent component is scheduled
@@ -241,29 +250,23 @@ abstract class StatefulDeclarativeComponent<
                     });
                 },
                 (c, memo) -> new Object[] { memo });
-        try {
-            return factory.get();
-        } finally {
-            this.currentStateDependency = prevStateDependency;
-        }
+        return withStateDependency(stateDependency, factory);
     }
 
     private <RET> RET updateWithWrappedStateDependency(Predicate<StatefulDeclarativeComponent<?, ?, ?, ?>> wrappingCond,
                                                        Supplier<RET> factory) {
-        IdentifiableRunnable prevStateDependency = currentStateDependency;
         IdentifiableRunnable wrappedStateDependency = getCurrentStateDependency();
-        if(wrappedStateDependency != null)
-            this.currentStateDependency = this.makeStateDependency(
-                    c -> {
-                        if(wrappingCond.test(c))
-                            wrappedStateDependency.run();
-                    },
-                    c -> wrappedStateDependency.deps());
-        try {
+        if(wrappedStateDependency == null)
             return factory.get();
-        } finally {
-            this.currentStateDependency = prevStateDependency;
-        }
+
+        return withStateDependency(
+                makeStateDependency(
+                        c -> {
+                            if(wrappingCond.test(c))
+                                wrappedStateDependency.run();
+                        },
+                        c -> wrappedStateDependency.deps()),
+                factory);
     }
 
     public static <V> V untrack(Supplier<V> value) {
@@ -271,13 +274,7 @@ abstract class StatefulDeclarativeComponent<
         if(currUpdatingComponent == null)
             return value.get();
 
-        IdentifiableRunnable prevStateDependency = currUpdatingComponent.currentStateDependency;
-        currUpdatingComponent.currentStateDependency = NO_STATE_DEPENDENCY;
-        try {
-            return value.get();
-        } finally {
-            currUpdatingComponent.currentStateDependency = prevStateDependency;
-        }
+        return currUpdatingComponent.withStateDependency(NO_STATE_DEPENDENCY, value);
     }
 
     public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
