@@ -124,7 +124,7 @@ and declare the value memo inside said wrapper component:
 val elements = panel.useState(List.of());
 panel.children(panelChildren -> {
     Memo.indexCollection(elements::get, (declareElementMemo, index) -> {
-        currentPanelChildren.add(index, DWrapper.fn(wrapper -> {
+        panelChildren.add(index, DWrapper.fn(wrapper -> {
             var element = declareElementMemo.apply(wrapper);
             return SomeComponent.fn( /* additional stuff using the declared memo */ );
         }));
@@ -163,7 +163,7 @@ and memos of the wrapped components will be re-run:
 val elements = panel.useState(List.of());
 panel.children(panelChildren -> {
     Memo.mapCollection(elements::get, (element0, declareIndexMemo) -> {
-        currentPanelChildren.add(element0.someKey(), DWrapper.fn(wrapper -> {
+        panelChildren.add(element0.someKey(), DWrapper.fn(wrapper -> {
             var hookIndex = declareIndexMemo.apply(wrapper);
             // Turn the hook itself into a signal to propagate reactivity
             var element = wrapper.useMemo(() -> element0);
