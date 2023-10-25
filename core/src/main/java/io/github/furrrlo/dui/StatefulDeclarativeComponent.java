@@ -345,7 +345,7 @@ abstract class StatefulDeclarativeComponent<
         return currUpdatingComponent.withStateDependency(NO_STATE_DEPENDENCY, value);
     }
 
-    public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
+    public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection0,
                                            BiConsumer<Memo.DeclareMemoFn<V>, Integer> fn) {
 
         final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
@@ -354,6 +354,7 @@ abstract class StatefulDeclarativeComponent<
             throw new UnsupportedOperationException("Currently not in a component update");
         }
 
+        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
         final AtomicReference<Integer> previousSize = new AtomicReference<>();
         currUpdatingComponent.updateWithWrappedStateDependency(c -> {
             // If the size changed from the last time we ran, we want to re-run the
@@ -395,9 +396,10 @@ abstract class StatefulDeclarativeComponent<
         });
     }
 
-    public static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection,
+    public static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection0,
                                          BiConsumer<V, Memo.DeclareMemoFn<Integer>> fn) {
 
+        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
         collection.get().forEach(val -> {
             // Declare memo on whatever context we are asked to
             fn.accept(val, ctx -> ctx.useMemo(IdentifiableSupplier.explicit(() -> {
@@ -527,11 +529,13 @@ abstract class StatefulDeclarativeComponent<
                         "now" + outer.context.getCurrMemoizedIdx());
 
             final int idx = currMemoizedIdx++;
-            return doUseMemo(idx, value, equalityFn);
+            return doUseMemo(idx, IdentifiableSupplier.explicit(value), equalityFn);
         }
 
         @Override
-        public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+        public void useLaunchedEffect(IdentifiableThrowingRunnable effect0) {
+            final IdentifiableThrowingRunnable effect = IdentifiableThrowingRunnable.explicit(effect0);
+
             useDisposableEffect(IdentifiableConsumer.explicit((onDispose) -> {
                 // TODO: make the pool selectable
                 Future<?> future = ForkJoinPool.commonPool().submit(() -> {
@@ -548,7 +552,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+        public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect0) {
             ensureInsideBody();
 
             // Try to catch effect issues as soon as possible from within the component
@@ -559,6 +563,7 @@ abstract class StatefulDeclarativeComponent<
                         " before " + getCurrEffectsIdx() + ", " +
                         "now" + outer.context.getCurrEffectsIdx());
 
+            final IdentifiableConsumer<SetOnDisposeFn> effect = IdentifiableConsumer.explicit(effect0);
             final int index = currEffectsIdx++;
             if(index < outer.effects.size()) {
                 final Effect effectImpl = outer.effects.get(index);

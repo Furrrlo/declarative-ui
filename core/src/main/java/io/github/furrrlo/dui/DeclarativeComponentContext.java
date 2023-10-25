@@ -54,8 +54,9 @@ public interface DeclarativeComponentContext<T> {
 
     void useSideEffect(Runnable effect);
 
-    default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer) {
+    default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer0) {
         final State<V> state = useState(initialValue);
+        final IdentifiableThrowingConsumer<State<V>> producer = IdentifiableThrowingConsumer.explicit(producer0);
         useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(state), producer, state));
         return state;
     }
