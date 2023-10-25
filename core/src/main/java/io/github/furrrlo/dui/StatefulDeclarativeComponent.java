@@ -34,8 +34,7 @@ abstract class StatefulDeclarativeComponent<
             ThreadLocal.withInitial(() -> null);
 
     protected final @Nullable IdentifiableConsumer<O_CTX> body;
-    protected final List<Object> newDeps;
-    private @Nullable List<Object> deps;
+    protected @Nullable IdentifiableConsumer<O_CTX> prevBody;
 
     protected AtomicReference<@Nullable StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
@@ -47,8 +46,7 @@ abstract class StatefulDeclarativeComponent<
     protected @Nullable IdentifiableRunnable currentStateDependency;
 
     protected StatefulDeclarativeComponent(@Nullable IdentifiableConsumer<O_CTX> body) {
-        this.newDeps = body != null ? Arrays.asList(body.deps()) : Collections.emptyList();
-        this.body = body;
+        this.body = body != null ? IdentifiableConsumer.explicit(body) : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -60,7 +58,7 @@ abstract class StatefulDeclarativeComponent<
         if(substituteComponentRef.get() == null)
             throw new UnsupportedOperationException("Trying to resuscitate a disposed component");
         substituteComponentRef.set(this);
-        deps = other.deps;
+        prevBody = other.prevBody;
         memoizedVars = other.memoizedVars;
         effects = other.effects;
         copyContext(other.context);
@@ -127,7 +125,7 @@ abstract class StatefulDeclarativeComponent<
     protected void updateComponent(int flags) {
         runAsComponentUpdate(() -> {
             final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
-            final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0 || !newDeps.equals(deps);
+            final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0 || !Objects.equals(body, prevBody);
 
             final I_CTX newCtx;
             if(!depsChanged) {
@@ -161,7 +159,7 @@ abstract class StatefulDeclarativeComponent<
                     // if we have a soft update followed by a deep update, we would in practise
                     // skip the deep update also on the second call, as the first would consume
                     // the deps change
-                    deps = newDeps;
+                    prevBody = body;
 
                     if (depsChanged) {
                         updateAttributes(newCtx);
@@ -583,22 +581,21 @@ abstract class StatefulDeclarativeComponent<
         protected <V> void reserveMemo(ReservedMemoProxy<V> reservedMemoProxy) {
             final int idx = currMemoizedIdx++;
             final BiPredicate<V, V> equalityFn = reservedMemoProxy.getEqualityFn();
-            reservedMemoProxy.setReservedMemo(fn -> doUseMemo(idx, fn, equalityFn));
+            reservedMemoProxy.setReservedMemo(fn -> doUseMemo(idx, IdentifiableSupplier.explicit(fn), equalityFn));
         }
 
         @SuppressWarnings("unchecked")
         protected <V> Memoized<V> doUseMemo(int index, IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
-            final List<Object> dependencies = Arrays.asList(value.deps());
             if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
                 final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
-                return outer.updateMemoWithStateDependency(index, () -> memo.updateIfNecessary(value, dependencies));
+                return outer.updateMemoWithStateDependency(index, () -> memo.updateIfNecessary(value));
             }
 
             final Memoized<V> newMemo = outer.updateMemoWithStateDependency(index,
-                    () -> new Memoized<>(value, dependencies, equalityFn));
+                    () -> new Memoized<>(value, equalityFn));
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
-                        new Object[] { index, newMemo.value, newMemo.dependencies });
+                        new Object[] { index, newMemo.value, newMemo.supplier.deps() });
             if(index < outer.memoizedVars.size()) {
                 outer.memoizedVars.set(index, newMemo);
             } else {
@@ -725,15 +722,13 @@ abstract class StatefulDeclarativeComponent<
 
     private static class Memoized<V> extends BaseMemo<V> {
 
-        private Supplier<V> supplier;
+        private IdentifiableSupplier<V> supplier;
         private boolean markedForUpdate;
-        private List<Object> dependencies;
 
-        public Memoized(Supplier<V> supplier, List<Object> dependencies, BiPredicate<V, V> equalityFn) {
+        public Memoized(IdentifiableSupplier<V> supplier, BiPredicate<V, V> equalityFn) {
             super(equalityFn);
             this.value = supplier.get();
             this.supplier = supplier;
-            this.dependencies = dependencies;
         }
 
         public void markForUpdate() {
@@ -748,16 +743,15 @@ abstract class StatefulDeclarativeComponent<
             set(supplier.get());
 
             if(LOGGER.isLoggable(Level.FINE))
-                LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1} -> {2})",
-                        new Object[] { value, this.dependencies, dependencies });
+                LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1})",
+                        new Object[] { value, supplier.deps() });
 
             markedForUpdate = false;
         }
 
-        public Memoized<V> updateIfNecessary(Supplier<V> newValue, List<Object> dependencies) {
-            if(markedForUpdate || !this.dependencies.equals(dependencies)) {
+        public Memoized<V> updateIfNecessary(IdentifiableSupplier<V> newValue) {
+            if(markedForUpdate || !this.supplier.equals(newValue)) {
                 this.supplier = newValue;
-                this.dependencies = dependencies;
                 update();
             }
             return this;
@@ -786,13 +780,11 @@ abstract class StatefulDeclarativeComponent<
     private static class Effect {
 
         private IdentifiableConsumer<SetOnDisposeFn> effect;
-        private Object[] deps;
         private boolean shouldRun;
         private @Nullable Runnable onDispose;
 
         public Effect(IdentifiableConsumer<SetOnDisposeFn> effect) {
             this.effect = effect;
-            this.deps = effect.deps();
             this.shouldRun = true;
         }
 
@@ -804,9 +796,7 @@ abstract class StatefulDeclarativeComponent<
             // Avoid deepEquals if we should already run anyway
             if(shouldRun)
                 return;
-
-            final Object[] newDeps = effect.deps();
-            if (Objects.deepEquals(deps, newDeps))
+            if (Objects.equals(this.effect, effect))
                 return;
 
             this.effect = effect;
@@ -819,7 +809,6 @@ abstract class StatefulDeclarativeComponent<
 
             shouldRun = false;
             disposeEffect();
-            deps = effect.deps();
             effect.accept(onDispose -> this.onDispose = onDispose);
         }
 

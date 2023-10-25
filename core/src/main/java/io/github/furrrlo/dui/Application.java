@@ -41,7 +41,7 @@ public interface Application {
                 final List<Root<?>> roots0 = new ArrayList<>();
                 rootCollector.accept((key, comp) -> roots0.add(new Root<>(key, comp)));
                 return roots0;
-            }, rootCollector.deps()));
+            }, rootCollector));
 
             listFnAttribute(
                     PREFIX + "roots",

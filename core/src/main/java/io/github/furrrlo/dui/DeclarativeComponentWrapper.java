@@ -4,13 +4,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         Object, R, DeclarativeComponentContext<Object>, StatefulDeclarativeComponent.StatefulContext<Object>> {
 
 
-    private final Function<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> wrapperBody;
+    private final IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> wrapperBody;
 
     private boolean wasDeepUpdated;
     private boolean isDeepUpdated;
@@ -18,7 +17,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> prevWrapped;
 
     public DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> body) {
-        this(body, new AtomicReference<>());
+        this(IdentifiableFunction.explicit(body), new AtomicReference<>());
     }
 
     private DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> body,
@@ -28,7 +27,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
                     selfRef.get(),
                     "Body invoked before wrapper could set a reference to itself");
             self.invokeWrappedBody(ctx);
-        }, body.deps()));
+        }, body));
         this.wrapperBody = body;
         selfRef.set(this);
     }
@@ -67,7 +66,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     public String getDeclarativeType() {
-        return wrapperBody.getClass().getName();
+        return wrapperBody.getImplClass().getName();
     }
 
     @Override

@@ -68,7 +68,7 @@ public class JDTabbedPane {
                 collector.accept((key, title, icon, tabComponent, component, tooltipText) ->
                         tabs0.add(new Tab<>(key, title, icon, new TabComponent<>(key, tabComponent), component, tooltipText)));
                 return tabs0;
-            }, collector.deps()));
+            }, collector));
 
             listFnAttribute(
                     PREFIX + "components",

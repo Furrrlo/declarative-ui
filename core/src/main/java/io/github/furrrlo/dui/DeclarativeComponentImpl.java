@@ -77,7 +77,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     public @Nullable String getDeclarativeType() {
         return body != null ?
-                body.getClass().getName() :
+                body.getImplClass().getName() :
                 componentType != null ? componentType.getName() : null;
     }
 

@@ -85,7 +85,7 @@ public class JDComponent {
                 final List<Child<?>> children0 = new ArrayList<>();
                 childCollector.accept((key, comp, constraints) -> children0.add(new Child<>(key, comp, constraints)));
                 return children0;
-            }, childCollector.deps()));
+            }, childCollector));
 
             listFnAttribute(
                     PREFIX + "children",
