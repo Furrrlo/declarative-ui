@@ -217,7 +217,7 @@ abstract class StatefulDeclarativeComponent<
             Consumer<C> runnable,
             Function<C, Object[]> deps) {
         Supplier<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
-        return IdentifiableRunnable.explicit(
+        return IdentifiableRunnable.Impl.explicit(
                 () -> {
                     C sub = (C) componentRef.get();
                     if(sub != null)

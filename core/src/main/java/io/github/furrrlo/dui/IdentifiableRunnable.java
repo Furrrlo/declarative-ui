@@ -26,10 +26,6 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
         return new Impl.ExplicitArray(runnable, deps);
     }
 
-    static Explicit explicit(Runnable runnable, Supplier<Object[]> deps) {
-        return new Impl.ExplicitSupplier(runnable, deps);
-    }
-
     static Explicit alwaysChange(Runnable runnable) {
         return new Impl.ExplicitArray(runnable, new Object[] { /* Force to always change */ new Object() });
     }
@@ -71,6 +67,10 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             public int hashCode() {
                 return Identifiables.hashCode(this);
             }
+        }
+
+        public static Explicit explicit(Runnable runnable, Supplier<Object[]> deps) {
+            return new Impl.ExplicitSupplier(runnable, deps);
         }
 
         private static class ExplicitSupplier implements Explicit {

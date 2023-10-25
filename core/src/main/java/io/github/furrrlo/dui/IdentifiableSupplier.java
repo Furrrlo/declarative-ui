@@ -26,10 +26,6 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
         return new Impl.ExplicitArray<>(supplier, deps);
     }
 
-    static <T> Explicit<T> explicit(Supplier<T> supplier, Supplier<Object[]> deps) {
-        return new Impl.ExplicitSupplier<>(supplier, deps);
-    }
-
     static <T> Explicit<T> alwaysChange(Supplier<T> supplier) {
         return new Impl.ExplicitArray<>(supplier, new Object[] { /* Force to always change */ new Object() });
     }
@@ -54,43 +50,6 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
             @Override
             public Object[] deps() {
                 return deps;
-            }
-
-            @Override
-            public Class<?> getImplClass() {
-                return supplier.getClass();
-            }
-
-            @Override
-            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-            public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
-            }
-
-            @Override
-            public int hashCode() {
-                return Identifiables.hashCode(this);
-            }
-        }
-
-        private static class ExplicitSupplier<T> implements Explicit<T> {
-
-            private final transient Supplier<T> supplier;
-            private final transient Supplier<Object[]> deps; // TODO: serialize the result
-
-            public ExplicitSupplier(Supplier<T> supplier, Supplier<Object[]> deps) {
-                this.supplier = supplier;
-                this.deps = deps;
-            }
-
-            @Override
-            public T get() {
-                return supplier.get();
-            }
-
-            @Override
-            public Object[] deps() {
-                return deps.get();
             }
 
             @Override

@@ -1,7 +1,6 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
-import java.util.function.Supplier;
 
 public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifiable, Serializable {
 
@@ -24,10 +23,6 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
 
     static Explicit explicit(ThrowingRunnable runnable, Object... deps) {
         return new Impl.ExplicitArray(runnable, deps);
-    }
-
-    static Explicit explicit(ThrowingRunnable runnable, Supplier<Object[]> deps) {
-        return new Impl.ExplicitSupplier(runnable, deps);
     }
 
     static Explicit alwaysChange(ThrowingRunnable runnable) {
@@ -54,43 +49,6 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
             @Override
             public Object[] deps() {
                 return deps;
-            }
-
-            @Override
-            public Class<?> getImplClass() {
-                return runnable.getClass();
-            }
-
-            @Override
-            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-            public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
-            }
-
-            @Override
-            public int hashCode() {
-                return Identifiables.hashCode(this);
-            }
-        }
-
-        private static class ExplicitSupplier implements Explicit {
-
-            private final transient ThrowingRunnable runnable;
-            private final transient Supplier<Object[]> deps; // TODO: serialize the result
-
-            public ExplicitSupplier(ThrowingRunnable runnable, Supplier<Object[]> deps) {
-                this.runnable = runnable;
-                this.deps = deps;
-            }
-
-            @Override
-            public void run() throws Exception {
-                runnable.run();
-            }
-
-            @Override
-            public Object[] deps() {
-                return deps.get();
             }
 
             @Override

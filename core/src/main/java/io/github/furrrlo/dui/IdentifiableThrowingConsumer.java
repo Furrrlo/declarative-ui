@@ -1,7 +1,6 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
-import java.util.function.Supplier;
 
 public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Identifiable, Serializable {
 
@@ -24,10 +23,6 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
 
     static <T> Explicit<T> explicit(ThrowingConsumer<T> consumer, Object... deps) {
         return new Impl.ExplicitArray<>(consumer, deps);
-    }
-
-    static <T> Explicit<T> explicit(ThrowingConsumer<T> consumer, Supplier<Object[]> deps) {
-        return new Impl.ExplicitSupplier<>(consumer, deps);
     }
 
     static <T> Explicit<T> alwaysChange(ThrowingConsumer<T> consumer) {
@@ -54,43 +49,6 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
             @Override
             public Object[] deps() {
                 return deps;
-            }
-
-            @Override
-            public Class<?> getImplClass() {
-                return consumer.getClass();
-            }
-
-            @Override
-            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-            public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
-            }
-
-            @Override
-            public int hashCode() {
-                return Identifiables.hashCode(this);
-            }
-        }
-
-        private static class ExplicitSupplier<T> implements Explicit<T> {
-
-            private final transient ThrowingConsumer<T> consumer;
-            private final transient Supplier<Object[]> deps; // TODO: serialize the result
-
-            public ExplicitSupplier(ThrowingConsumer<T> consumer, Supplier<Object[]> deps) {
-                this.consumer = consumer;
-                this.deps = deps;
-            }
-
-            @Override
-            public void accept(T t) throws Exception {
-                consumer.accept(t);
-            }
-
-            @Override
-            public Object[] deps() {
-                return deps.get();
             }
 
             @Override

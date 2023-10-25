@@ -2,7 +2,6 @@ package io.github.furrrlo.dui;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Serializable {
 
@@ -25,10 +24,6 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
 
     static <T> Explicit<T> explicit(Consumer<T> consumer, Object... deps) {
         return new Impl.ExplicitArray<>(consumer, deps);
-    }
-
-    static <T> Explicit<T> explicit(Consumer<T> consumer, Supplier<Object[]> deps) {
-        return new Impl.ExplicitSupplier<>(consumer, deps);
     }
 
     static <T> Explicit<T> alwaysChange(Consumer<T> consumer) {
@@ -55,43 +50,6 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
             @Override
             public Object[] deps() {
                 return deps;
-            }
-
-            @Override
-            public Class<?> getImplClass() {
-                return consumer.getClass();
-            }
-
-            @Override
-            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-            public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
-            }
-
-            @Override
-            public int hashCode() {
-                return Identifiables.hashCode(this);
-            }
-        }
-
-        private static class ExplicitSupplier<T> implements Explicit<T> {
-
-            private final transient Consumer<T> consumer;
-            private final transient Supplier<Object[]> deps; // TODO: serialize the result
-
-            public ExplicitSupplier(Consumer<T> consumer, Supplier<Object[]> deps) {
-                this.consumer = consumer;
-                this.deps = deps;
-            }
-
-            @Override
-            public void accept(T t) {
-                consumer.accept(t);
-            }
-
-            @Override
-            public Object[] deps() {
-                return deps.get();
             }
 
             @Override
