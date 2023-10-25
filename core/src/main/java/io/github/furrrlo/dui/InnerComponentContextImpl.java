@@ -1,7 +1,6 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
 
@@ -58,6 +57,21 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     @Override
     public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return parent.useCallbackExplicit(fun, dependencies);
+    }
+
+    @Override
+    public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+        parent.useLaunchedEffect(effect);
+    }
+
+    @Override
+    public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+        parent.useDisposableEffect(effect);
+    }
+
+    @Override
+    public void useSideEffect(Runnable effect) {
+        parent.useSideEffect(effect);
     }
 
     @Override

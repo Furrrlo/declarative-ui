@@ -1,13 +1,11 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface DeclarativeComponentContext<T> {
 
@@ -48,6 +46,29 @@ public interface DeclarativeComponentContext<T> {
 
     default <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return useMemo(IdentifiableSupplier.explicit(() -> fun, dependencies)).get();
+    }
+
+    void useLaunchedEffect(IdentifiableThrowingRunnable effect);
+
+    void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect);
+
+    void useSideEffect(Runnable effect);
+
+    default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer) {
+        final State<V> state = useState(initialValue);
+        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(state), () -> {
+            final Object[] deps = producer.deps();
+            final Object[] newDeps = Arrays.copyOf(deps, deps.length + 1);
+            newDeps[deps.length] = state;
+            return newDeps;
+        }));
+        return state;
+    }
+
+    @FunctionalInterface
+    interface SetOnDisposeFn extends Consumer<Runnable> {
+        @Override
+        void accept(Runnable onDispose);
     }
 
     <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);

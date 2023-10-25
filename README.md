@@ -1,7 +1,10 @@
 [React](https://react.dev/) inspired declarative UI library written in Java. I initially started working
 on it 'cause I wanted to learn how it could work internally and while I was at it, I also started
-to add reactivity similar to [Solidjs signals](https://www.solidjs.com/). Currently based on
-Swing, can probably easily be adapted for use with JFX.
+to add reactivity similar to [Solidjs signals](https://www.solidjs.com/). Effects are inspired by 
+[Jetpack Compose](https://developer.android.com/jetpack/compose) 'cause Java thread model is more similar to 
+Kotlin compared to JS.
+
+Currently based on Swing, can probably easily be adapted for use with JFX.
 
 Everything might be broken btw
 
@@ -183,6 +186,66 @@ static <V> V Memo#untrack(Supplier<V> value);
 Ignores tracking any of the dependencies in the executing code block and returns the value, same as
 [Solidjs untrack](https://www.solidjs.com/docs/latest#untrack).
 
+#### useLaunchedEffect
+```java
+void useLaunchedEffect(IdentifiableThrowingRunnable effect);
+```
+Runs a side effect on a different thread. When the component is first rendered, it executes the effect on a different
+thread. When the component is disposed, the task is cancelled and the thread is interrupted (see
+`Future#cancel(boolean mayInterruptIfRunning)`). If any of the dependency of the effect change, the existing task will
+be cancelled and a new one will be started (see [Identifiables](#identifiables) for explicitly declaring dependencies).
+
+The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
+the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
+
+TBD: a way to change an application global ExecutorService (and set virtual threads one if possible)
+
+Similar to [Jetpack Compose LaunchedEffect](https://developer.android.com/jetpack/compose/side-effects#launchedeffect).
+
+#### useDisposableEffect
+```java
+void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect);
+```
+Runs a side effect that needs to be cleaned up. When the component is first rendered, it executes the effect which, 
+optionally, can register a cleanup function. When the component is disposed, the cleanup function is invoked.
+If any of the dependency of the effect change, the current cleanup function is invoked and the effect is re-executed
+(see [Identifiables](#identifiables) for explicitly declaring dependencies).
+
+The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
+the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
+
+Similar to [Jetpack Compose DisposableEffect](https://developer.android.com/jetpack/compose/side-effects#disposableeffect).
+
+#### useSideEffect
+```java
+void useSideEffect(Runnable effect);
+```
+Runs a side effect on every successful render. It should be used to share state with objects not managed by the
+library (eg. raw Swing components).
+
+The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
+the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
+
+Similar to [Jetpack Compose SideEffect](https://developer.android.com/jetpack/compose/side-effects#sideeffect-publish).
+
+#### produce
+```java
+<V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer);
+```
+Runs a producer in a different thread that can push values into a returned State. Use it to convert unmanaged variables 
+into State, for example bringing external subscription-driven state in the library.
+The producer is launched when the component is first rendered, and will be cancelled and the thread interrupted (see
+`Future#cancel(boolean mayInterruptIfRunning)`) when the component is disposed.
+If any of the dependency of the producer change, the existing task will be cancelled and the effect is re-executed
+(see [Identifiables](#identifiables) for explicitly declaring dependencies).
+
+The producer function is a tracking function, so calling the getter of a tracked variable inside it will also cause
+the producer to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
+
+TBD: [awaitDispose](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#awaitDispose(kotlin.Function0))
+
+Similar to [Jetpack Compose produceState](https://developer.android.com/jetpack/compose/side-effects#producestate).
+
 #### inner
 ```java
 <V> DeclarativeComponentContext<T> inner(
@@ -248,4 +311,4 @@ That means that:
     - re-run on component re-render
 
 ## Missing stuff
-- effects
+- refs

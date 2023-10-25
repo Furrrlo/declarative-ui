@@ -171,6 +171,21 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
+    public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+        toDecorate().useLaunchedEffect(effect);
+    }
+
+    @Override
+    public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+        toDecorate().useDisposableEffect(effect);
+    }
+
+    @Override
+    public void useSideEffect(Runnable effect) {
+        toDecorate().useSideEffect(effect);
+    }
+
+    @Override
     public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
         return toDecorate().inner(getter, component);
     }

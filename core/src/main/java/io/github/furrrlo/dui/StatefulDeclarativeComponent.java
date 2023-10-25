@@ -1,9 +1,12 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeComponentContext.SetOnDisposeFn;
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import java.util.logging.Level;
@@ -22,6 +25,7 @@ abstract class StatefulDeclarativeComponent<
     protected static final int MEMO_UPDATE_PRIORITY = 1;
     protected static final int SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY = 2;
     protected static final int NORMAL_ATTRIBUTE_UPDATE_PRIORITY = 3;
+    protected static final int EFFECT_UPDATE_PRIORITY = 4;
     protected static final int HIGHEST_PRIORITY = COMPONENT_UPDATE_PRIORITY;
 
     protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.explicit(() -> {});
@@ -36,6 +40,7 @@ abstract class StatefulDeclarativeComponent<
     protected AtomicReference<@Nullable StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
+    protected List<Effect> effects = new ArrayList<>();
     protected I_CTX context;
 
     protected boolean isInvokingBody;
@@ -57,6 +62,7 @@ abstract class StatefulDeclarativeComponent<
         substituteComponentRef.set(this);
         deps = other.deps;
         memoizedVars = other.memoizedVars;
+        effects = other.effects;
         copyContext(other.context);
     }
 
@@ -143,6 +149,12 @@ abstract class StatefulDeclarativeComponent<
                             "did you put any state/memo in conditionals?" +
                             " before " + context.getCurrMemoizedIdx() + ", " +
                             "after " + newCtx.getCurrMemoizedIdx());
+                if (context != null && newCtx.getCurrEffectsIdx() != context.getCurrEffectsIdx())
+                    throw new UnsupportedOperationException("Effects differ across re-renders " +
+                            "for component " + getDeclarativeType() + ", " +
+                            "did you put any in conditionals?" +
+                            " before " + context.getCurrEffectsIdx() + ", " +
+                            "after " + newCtx.getCurrEffectsIdx());
 
                 if (deepUpdate) {
                     // We only register the deps change if we are deep updating, otherwise
@@ -151,8 +163,10 @@ abstract class StatefulDeclarativeComponent<
                     // the deps change
                     deps = newDeps;
 
-                    if (depsChanged)
+                    if (depsChanged) {
                         updateAttributes(newCtx);
+                        updateEffects();
+                    }
                 }
                 context = newCtx;
             } catch (Throwable t) {
@@ -162,6 +176,17 @@ abstract class StatefulDeclarativeComponent<
                 throw t;
             }
         });
+    }
+
+    private void updateEffects() {
+        int idx = 0;
+        for(Effect e : effects) {
+            updateEffectWithStateDependency(idx, () -> {
+                e.runEffect();
+                return null;
+            });
+            idx++;
+        }
     }
 
     protected void invokeBody(IdentifiableConsumer<O_CTX> body, I_CTX underlyingNewCtx, O_CTX newCtx) {
@@ -219,7 +244,7 @@ abstract class StatefulDeclarativeComponent<
                     final Memoized<?> memo;
                     if(memoIdx < c.memoizedVars.size() && (memo = c.memoizedVars.get(memoIdx)) != null)
                         return deps.apply(c, (M) memo);
-                    return new Object[] { c, memoIdx };
+                    return new Object[] { c, "memo", memoIdx };
                 });
     }
 
@@ -250,6 +275,51 @@ abstract class StatefulDeclarativeComponent<
                     });
                 },
                 (c, memo) -> new Object[] { memo });
+        return withStateDependency(stateDependency, factory);
+    }
+
+    public IdentifiableRunnable makeEffectStateDependency(
+            int effectIdx,
+            BiConsumer<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, Effect> runnable,
+            BiFunction<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, Effect, Object[]> deps) {
+        return this.<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>>makeStateDependency(
+                c -> {
+                    final Effect effect;
+                    if(effectIdx < c.effects.size() && (effect = c.effects.get(effectIdx)) != null)
+                        runnable.accept(c, effect);
+                },
+                c -> {
+                    final Effect effect;
+                    if(effectIdx < c.effects.size() && (effect = c.effects.get(effectIdx)) != null)
+                        return deps.apply(c, effect);
+                    return new Object[] { c, "effect", effectIdx };
+                });
+    }
+
+    private <RET> RET updateEffectWithStateDependency(int effectIdx, Supplier<RET> factory) {
+        // Notice how it's not capturing neither this nor attr, as both  might be replaced with
+        // newer versions, and we do not want to update stale stuff
+        IdentifiableRunnable stateDependency = this.makeEffectStateDependency(
+                effectIdx,
+                (c, effect) -> {
+                    // Mark the effect to be updated, so if for any reason its parent component is scheduled
+                    // before this, and therefore it's re-run before we can get to the update scheduled below,
+                    // the effect is run right away (and not on the schedule below)
+                    effect.markForUpdate();
+                    // Schedule an update
+                    c.scheduleOnFrameworkThread(EFFECT_UPDATE_PRIORITY, () -> {
+                        final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
+                        if(sub == null)
+                            return;
+                        // Even if the component was substituted, effects are shallowly passed to the new one
+                        // so no need to search back for it in the context
+                        sub.runAsComponentUpdate(() -> sub.updateEffectWithStateDependency(effectIdx, () -> {
+                            effect.runEffect();
+                            return null;
+                        }));
+                    });
+                },
+                (c, effect) -> new Object[] { effect });
         return withStateDependency(stateDependency, factory);
     }
 
@@ -377,6 +447,7 @@ abstract class StatefulDeclarativeComponent<
         return "StatefulDeclarativeComponent{" +
                 "body=" + body +
                 ", memoizedVars=" + memoizedVars +
+                ", effects=" + effects +
                 ", context=" + context +
                 ", isInvokingBody=" + isInvokingBody +
                 '}';
@@ -393,22 +464,29 @@ abstract class StatefulDeclarativeComponent<
 
         private final StatefulDeclarativeComponent<T, ?, ?, ?> outer;
         private int currMemoizedIdx;
+        private int currEffectsIdx;
         private @Nullable Throwable capturedBodyStacktrace;
 
         public StatefulContext(StatefulDeclarativeComponent<T, ?, ?, ?> outer) {
             this.outer = outer;
             this.currMemoizedIdx = 0;
+            this.currEffectsIdx = 0;
         }
 
         public StatefulContext(StatefulDeclarativeComponent<T, ?, ?, ?> outer,
                                StatefulContext<T> other) {
             this.outer = outer;
             this.currMemoizedIdx = other.currMemoizedIdx;
+            this.currEffectsIdx = other.currEffectsIdx;
             this.capturedBodyStacktrace = other.capturedBodyStacktrace;
         }
 
         protected int getCurrMemoizedIdx() {
             return currMemoizedIdx;
+        }
+
+        protected int getCurrEffectsIdx() {
+            return currEffectsIdx;
         }
 
         protected @Nullable Throwable getCapturedBodyStacktrace() {
@@ -462,6 +540,54 @@ abstract class StatefulDeclarativeComponent<
 
             final int idx = currMemoizedIdx++;
             return doUseMemo(idx, value, equalityFn);
+        }
+
+        @Override
+        public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+            useDisposableEffect(IdentifiableConsumer.explicit((onDispose) -> {
+                // TODO: make the pool selectable
+                Future<?> future = ForkJoinPool.commonPool().submit(() -> {
+                    try {
+                        effect.run();
+                    } catch (InterruptedException ex) {
+                        // Interrupted, this got disposed
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.SEVERE, "Effect terminated with failure", t);
+                    }
+                });
+                onDispose.accept(() -> future.cancel(true));
+            }, effect::deps));
+        }
+
+        @Override
+        public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+            ensureInsideBody();
+
+            // Try to catch effect issues as soon as possible from within the component
+            // body so that the stacktrace is more helpful
+            if (outer.context != null && getCurrEffectsIdx() > outer.context.getCurrEffectsIdx())
+                throw new UnsupportedOperationException("Number of effects increased in this rerender, " +
+                        "did you put any in conditionals?" +
+                        " before " + getCurrEffectsIdx() + ", " +
+                        "now" + outer.context.getCurrEffectsIdx());
+
+            final int index = currEffectsIdx++;
+            if(index < outer.effects.size()) {
+                final Effect effectImpl = outer.effects.get(index);
+                outer.updateEffectWithStateDependency(index, () -> {
+                    effectImpl.updateIfNecessary(effect);
+                    return null;
+                });
+                return;
+            }
+
+            final Effect newEffectImpl = outer.updateEffectWithStateDependency(index, () -> new Effect(effect));
+            outer.effects.add(newEffectImpl);
+        }
+
+        @Override
+        public void useSideEffect(Runnable effect) {
+            useDisposableEffect(IdentifiableConsumer.alwaysChange(onDispose -> effect.run()));
         }
 
         protected <V> void reserveMemo(ReservedMemoProxy<V> reservedMemoProxy) {
@@ -664,6 +790,53 @@ abstract class StatefulDeclarativeComponent<
         public S update(Function<S, S> updater) {
             set(updater.apply(get()));
             return get();
+        }
+    }
+
+    private static class Effect {
+
+        private IdentifiableConsumer<SetOnDisposeFn> effect;
+        private Object[] deps;
+        private boolean shouldRun;
+        private @Nullable Runnable onDispose;
+
+        public Effect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+            this.effect = effect;
+            this.deps = effect.deps();
+            this.shouldRun = true;
+        }
+
+        public void markForUpdate() {
+            this.shouldRun = true;
+        }
+
+        public void updateIfNecessary(IdentifiableConsumer<SetOnDisposeFn> effect) {
+            // Avoid deepEquals if we should already run anyway
+            if(shouldRun)
+                return;
+
+            final Object[] newDeps = effect.deps();
+            if (Objects.deepEquals(deps, newDeps))
+                return;
+
+            this.effect = effect;
+            markForUpdate();
+        }
+
+        public void runEffect() {
+            if(!shouldRun)
+                return;
+
+            shouldRun = false;
+            disposeEffect();
+            deps = effect.deps();
+            effect.accept(onDispose -> this.onDispose = onDispose);
+        }
+
+        public void disposeEffect() {
+            if(onDispose != null)
+                onDispose.run();
+            onDispose = null;
         }
     }
 }
