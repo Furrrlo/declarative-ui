@@ -713,15 +713,16 @@ abstract class StatefulDeclarativeComponent<
             return value;
         }
 
-        protected void set(V value) {
+        protected boolean trySet(V value) {
             if(equalityFn.test(this.value, value))
-                return;
+                return false;
 
             this.value = value;
 
             Set<Runnable> dependencies = new LinkedHashSet<>(this.signalDeps);
             this.signalDeps.clear();
             dependencies.forEach(Runnable::run);
+            return true;
         }
     }
 
@@ -745,9 +746,9 @@ abstract class StatefulDeclarativeComponent<
         }
 
         public void update() {
-            set(supplier.get());
+            boolean wasSet = trySet(supplier.get());
 
-            if(LOGGER.isLoggable(Level.FINE))
+            if(wasSet && LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1})",
                         new Object[] { value, supplier.deps() });
 
@@ -772,7 +773,7 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public void set(S value) {
-            super.set(value);
+            trySet(value);
         }
 
         @Override
