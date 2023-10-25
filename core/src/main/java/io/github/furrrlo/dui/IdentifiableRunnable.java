@@ -30,6 +30,10 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
         return new Impl.ExplicitArray(runnable, new Object[] { /* Force to always change */ new Object() });
     }
 
+    static Explicit neverChange(Runnable runnable) {
+        return new Impl.ExplicitArray(runnable, new Object[] {});
+    }
+
     class Impl {
 
         private static class ExplicitArray implements Explicit {

@@ -25,6 +25,10 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
         return new Impl.ExplicitArray(runnable, deps);
     }
 
+    static Explicit neverChange(ThrowingRunnable runnable) {
+        return new Impl.ExplicitArray(runnable, new Object[] {});
+    }
+
     static Explicit alwaysChange(ThrowingRunnable runnable) {
         return new Impl.ExplicitArray(runnable, new Object[] { /* Force to always change */ new Object() });
     }

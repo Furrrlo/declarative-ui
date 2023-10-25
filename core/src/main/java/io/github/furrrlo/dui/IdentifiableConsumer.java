@@ -26,6 +26,10 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
         return new Impl.ExplicitArray<>(consumer, deps);
     }
 
+    static <T> Explicit<T> neverChange(Consumer<T> consumer) {
+        return new Impl.ExplicitArray<>(consumer, new Object[] {});
+    }
+
     static <T> Explicit<T> alwaysChange(Consumer<T> consumer) {
         return new Impl.ExplicitArray<>(consumer, new Object[] { /* Force to always change */ new Object() });
     }

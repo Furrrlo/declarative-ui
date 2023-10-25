@@ -26,6 +26,10 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
         return new Impl.ExplicitArray<>(fn, deps);
     }
 
+    static <T, R> Explicit<T, R> neverChange(Function<T, R> fn) {
+        return new Impl.ExplicitArray<>(fn, new Object[] {});
+    }
+
     static <T, R> Explicit<T, R> alwaysChange(Function<T, R> fn) {
         return new Impl.ExplicitArray<>(fn, new Object[] { /* Force to always change */ new Object() });
     }

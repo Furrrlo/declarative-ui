@@ -25,6 +25,10 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
         return new Impl.ExplicitArray<>(consumer, deps);
     }
 
+    static <T> Explicit<T> neverChange(ThrowingConsumer<T> consumer) {
+        return new Impl.ExplicitArray<>(consumer, new Object[] {});
+    }
+
     static <T> Explicit<T> alwaysChange(ThrowingConsumer<T> consumer) {
         return new Impl.ExplicitArray<>(consumer, new Object[] { /* Force to always change */ new Object() });
     }
