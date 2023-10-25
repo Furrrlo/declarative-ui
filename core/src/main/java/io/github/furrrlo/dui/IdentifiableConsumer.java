@@ -17,6 +17,12 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
         Object[] deps();
     }
 
+    static <T> Explicit<T> explicit(IdentifiableConsumer<T> consumer) {
+        return consumer instanceof Explicit
+                ? (Explicit<T>) consumer
+                : new Impl.ExplicitArray<>(consumer, consumer.deps());
+    }
+
     static <T> Explicit<T> explicit(Consumer<T> consumer, Object... deps) {
         return new Impl.ExplicitArray<>(consumer, deps);
     }

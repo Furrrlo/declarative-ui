@@ -16,6 +16,12 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
         Object[] deps();
     }
 
+    static Explicit explicit(IdentifiableThrowingRunnable runnable) {
+        return runnable instanceof Explicit
+                ? (Explicit) runnable
+                : new Impl.ExplicitArray(runnable, runnable.deps());
+    }
+
     static Explicit explicit(ThrowingRunnable runnable, Object... deps) {
         return new Impl.ExplicitArray(runnable, deps);
     }

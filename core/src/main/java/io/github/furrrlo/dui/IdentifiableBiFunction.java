@@ -17,6 +17,12 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
         Object[] deps();
     }
 
+    static <T, U, R> Explicit<T, U, R> explicit(IdentifiableBiFunction<T, U, R> fn) {
+        return fn instanceof Explicit
+                ? (Explicit<T, U, R>) fn
+                : new Impl.ExplicitArray<>(fn, fn.deps());
+    }
+
     static <T, U, R> Explicit<T, U, R> explicit(BiFunction<T, U, R> fn, Object... deps) {
         return new Impl.ExplicitArray<>(fn, deps);
     }

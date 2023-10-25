@@ -17,6 +17,12 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
         Object[] deps();
     }
 
+    static <T, R> Explicit<T, R> explicit(IdentifiableFunction<T, R> fn) {
+        return fn instanceof Explicit
+                ? (Explicit<T, R>) fn
+                : new Impl.ExplicitArray<>(fn, fn.deps());
+    }
+
     static <T, R> Explicit<T, R> explicit(Function<T, R> fn, Object... deps) {
         return new Impl.ExplicitArray<>(fn, deps);
     }

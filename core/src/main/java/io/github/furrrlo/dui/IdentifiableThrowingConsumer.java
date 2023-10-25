@@ -16,6 +16,12 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
         Object[] deps();
     }
 
+    static <T> Explicit<T> explicit(IdentifiableThrowingConsumer<T> consumer) {
+        return consumer instanceof Explicit
+                ? (Explicit<T>) consumer
+                : new Impl.ExplicitArray<>(consumer, consumer.deps());
+    }
+
     static <T> Explicit<T> explicit(ThrowingConsumer<T> consumer, Object... deps) {
         return new Impl.ExplicitArray<>(consumer, deps);
     }

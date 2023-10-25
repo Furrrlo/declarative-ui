@@ -16,6 +16,12 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
         Object[] deps();
     }
 
+    static <T> Explicit<T> explicit(IdentifiableSupplier<T> supplier) {
+        return supplier instanceof Explicit
+                ? (Explicit<T>) supplier
+                : new Impl.ExplicitArray<>(supplier, supplier.deps());
+    }
+
     static <T> Explicit<T> explicit(Supplier<T> supplier, Object... deps) {
         return new Impl.ExplicitArray<>(supplier, deps);
     }

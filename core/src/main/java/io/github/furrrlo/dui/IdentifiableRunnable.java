@@ -16,6 +16,12 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
         Object[] deps();
     }
 
+    static Explicit explicit(IdentifiableRunnable runnable) {
+        return runnable instanceof Explicit
+                ? (Explicit) runnable
+                : new Impl.ExplicitArray(runnable, runnable.deps());
+    }
+
     static Explicit explicit(Runnable runnable, Object... deps) {
         return new Impl.ExplicitArray(runnable, deps);
     }
