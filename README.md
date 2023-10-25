@@ -281,8 +281,11 @@ by default are the same as [React memo components](https://react.dev/reference/r
 
 You can usually tell when a requested function will only be conditionally re-run when its dependencies change
 when it's one of the following interfaces:
+- `IdentifiableRunnable`
+- `IdentifiableThrowingRunnable`
 - `IdentifiableSupplier`
 - `IdentifiableConsumer`
+- `IdentifiableThrowingConsumer`
 - `IdentifiableFunction`
 - `IdentifiableBiFunction`
 - `<T extends Serializable>` and wants a lambda
