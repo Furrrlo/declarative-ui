@@ -55,6 +55,22 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             public Object[] deps() {
                 return deps;
             }
+
+            @Override
+            public Class<?> getImplClass() {
+                return runnable.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
+            }
         }
 
         private static class ExplicitSupplier implements Explicit {
@@ -75,6 +91,22 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             @Override
             public Object[] deps() {
                 return deps.get();
+            }
+
+            @Override
+            public Class<?> getImplClass() {
+                return runnable.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
             }
         }
     }

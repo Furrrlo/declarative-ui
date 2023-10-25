@@ -56,6 +56,22 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
             public Object[] deps() {
                 return deps;
             }
+
+            @Override
+            public Class<?> getImplClass() {
+                return consumer.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
+            }
         }
 
         private static class ExplicitSupplier<T> implements Explicit<T> {
@@ -76,6 +92,22 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
             @Override
             public Object[] deps() {
                 return deps.get();
+            }
+
+            @Override
+            public Class<?> getImplClass() {
+                return consumer.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
             }
         }
     }

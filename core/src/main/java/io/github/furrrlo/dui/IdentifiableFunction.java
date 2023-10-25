@@ -56,6 +56,22 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
             public Object[] deps() {
                 return deps;
             }
+
+            @Override
+            public Class<?> getImplClass() {
+                return fn.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
+            }
         }
 
         private static class ExplicitSupplier<T, R> implements Explicit<T, R> {
@@ -76,6 +92,22 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
             @Override
             public Object[] deps() {
                 return deps.get();
+            }
+
+            @Override
+            public Class<?> getImplClass() {
+                return fn.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
             }
         }
     }

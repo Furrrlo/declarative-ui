@@ -56,6 +56,22 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
             public Object[] deps() {
                 return deps;
             }
+
+            @Override
+            public Class<?> getImplClass() {
+                return fn.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
+            }
         }
 
         private static class ExplicitSupplier<T, U, R> implements Explicit<T, U, R> {
@@ -76,6 +92,22 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
             @Override
             public Object[] deps() {
                 return deps.get();
+            }
+
+            @Override
+            public Class<?> getImplClass() {
+                return fn.getClass();
+            }
+
+            @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+            public boolean equals(Object o) {
+                return Identifiables.equals(this, o);
+            }
+
+            @Override
+            public int hashCode() {
+                return Identifiables.hashCode(this);
             }
         }
     }
