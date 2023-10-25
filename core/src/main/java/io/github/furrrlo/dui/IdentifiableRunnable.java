@@ -39,7 +39,7 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
 
             public ExplicitArray(Runnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override
@@ -90,7 +90,7 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
 
             @Override
             public Object[] deps() {
-                return deps.get();
+                return Identifiables.makeDependenciesExplicit(deps.get());
             }
 
             @Override

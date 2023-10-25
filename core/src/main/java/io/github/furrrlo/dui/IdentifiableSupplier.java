@@ -39,7 +39,7 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
 
             public ExplicitArray(Supplier<T> supplier, Object[] deps) {
                 this.supplier = supplier;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override

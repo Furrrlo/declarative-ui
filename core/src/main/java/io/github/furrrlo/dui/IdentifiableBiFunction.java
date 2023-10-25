@@ -39,7 +39,7 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
 
             public ExplicitArray(BiFunction<T, U, R> fn, Object[] deps) {
                 this.fn = fn;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override

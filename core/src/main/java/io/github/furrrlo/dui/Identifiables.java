@@ -58,6 +58,28 @@ class Identifiables {
         throw ex;
     }
 
+    public static Object[] makeDependenciesExplicit(Object[] deps) {
+        return Arrays.stream(deps)
+                .map(dep -> {
+                    if(dep instanceof IdentifiableRunnable)
+                        return IdentifiableRunnable.explicit((IdentifiableRunnable) dep);
+                    if(dep instanceof IdentifiableThrowingRunnable)
+                        return IdentifiableThrowingRunnable.explicit((IdentifiableThrowingRunnable) dep);
+                    if(dep instanceof IdentifiableSupplier)
+                        return IdentifiableSupplier.explicit((IdentifiableSupplier<?>) dep);
+                    if(dep instanceof IdentifiableConsumer)
+                        return IdentifiableConsumer.explicit((IdentifiableConsumer<?>) dep);
+                    if(dep instanceof IdentifiableThrowingConsumer)
+                        return IdentifiableThrowingConsumer.explicit((IdentifiableThrowingConsumer<?>) dep);
+                    if(dep instanceof IdentifiableFunction)
+                        return IdentifiableFunction.explicit((IdentifiableFunction<?, ?>) dep);
+                    if(dep instanceof IdentifiableBiFunction)
+                        return IdentifiableBiFunction.explicit((IdentifiableBiFunction<?, ?, ?>) dep);
+                    return dep;
+                })
+                .toArray();
+    }
+
     public static boolean equals(@Nullable Object o1, @Nullable Object o2) {
         // This is to avoid potential infinite cycles with Objects.equals
         if(o1 != o2 && (o1 == null || o2 == null))

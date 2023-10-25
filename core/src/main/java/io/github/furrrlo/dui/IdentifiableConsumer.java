@@ -39,7 +39,7 @@ public interface IdentifiableConsumer<T> extends Consumer<T>, Identifiable, Seri
 
             public ExplicitArray(Consumer<T> consumer, Object[] deps) {
                 this.consumer = consumer;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override

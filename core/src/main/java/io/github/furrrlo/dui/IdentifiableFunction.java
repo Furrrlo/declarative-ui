@@ -39,7 +39,7 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
 
             public ExplicitArray(Function<T, R> fn, Object[] deps) {
                 this.fn = fn;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override

@@ -38,7 +38,7 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
 
             public ExplicitArray(ThrowingRunnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override

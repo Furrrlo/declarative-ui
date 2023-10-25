@@ -38,7 +38,7 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
 
             public ExplicitArray(ThrowingConsumer<T> consumer, Object[] deps) {
                 this.consumer = consumer;
-                this.deps = deps;
+                this.deps = Identifiables.makeDependenciesExplicit(deps);
             }
 
             @Override
