@@ -391,12 +391,7 @@ abstract class StatefulDeclarativeComponent<
                                     return ((List<V>) coll).get(i);
                                 return coll.stream().skip(i).findFirst().orElseThrow(IndexOutOfBoundsException::new);
                             },
-                            () -> {
-                                final Object[] listDeps = collection.deps();
-                                final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
-                                memoDeps[memoDeps.length - 1] = i;
-                                return memoDeps;
-                            })),
+                            collection, i)),
                     i));
             return null;
         });
@@ -429,12 +424,7 @@ abstract class StatefulDeclarativeComponent<
                 // Let's just return -1 and hope the component gets disposed before the updates that this
                 // memo schedules are actually executed
                 return -1;
-            }, () -> {
-                final Object[] listDeps = collection.deps();
-                final Object[] memoDeps = Arrays.copyOf(listDeps, listDeps.length + 1);
-                memoDeps[memoDeps.length - 1] = val;
-                return memoDeps;
-            })));
+            }, collection, val)));
         });
     }
 
@@ -556,7 +546,7 @@ abstract class StatefulDeclarativeComponent<
                     }
                 });
                 onDispose.accept(() -> future.cancel(true));
-            }, effect::deps));
+            }, effect));
         }
 
         @Override

@@ -56,12 +56,7 @@ public interface DeclarativeComponentContext<T> {
 
     default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer) {
         final State<V> state = useState(initialValue);
-        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(state), () -> {
-            final Object[] deps = producer.deps();
-            final Object[] newDeps = Arrays.copyOf(deps, deps.length + 1);
-            newDeps[deps.length] = state;
-            return newDeps;
-        }));
+        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(state), producer, state));
         return state;
     }
 
