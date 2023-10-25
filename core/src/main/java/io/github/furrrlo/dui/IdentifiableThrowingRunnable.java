@@ -24,6 +24,10 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
         return new Impl.ExplicitSupplier(runnable, deps);
     }
 
+    static Explicit alwaysChange(ThrowingRunnable runnable) {
+        return new Impl.ExplicitArray(runnable, new Object[] { /* Force to always change */ new Object() });
+    }
+
     class Impl {
 
         private static class ExplicitArray implements Explicit {

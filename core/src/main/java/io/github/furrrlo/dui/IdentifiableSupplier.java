@@ -21,8 +21,11 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
     }
 
     static <T> Explicit<T> explicit(Supplier<T> supplier, Supplier<Object[]> deps) {
-
         return new Impl.ExplicitSupplier<>(supplier, deps);
+    }
+
+    static <T> Explicit<T> alwaysChange(Supplier<T> supplier) {
+        return new Impl.ExplicitArray<>(supplier, new Object[] { /* Force to always change */ new Object() });
     }
 
     class Impl {

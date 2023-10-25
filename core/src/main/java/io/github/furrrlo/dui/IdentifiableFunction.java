@@ -22,8 +22,11 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
     }
 
     static <T, R> Explicit<T, R> explicit(Function<T, R> fn, Supplier<Object[]> deps) {
-
         return new Impl.ExplicitSupplier<>(fn, deps);
+    }
+
+    static <T, R> Explicit<T, R> alwaysChange(Function<T, R> fn) {
+        return new Impl.ExplicitArray<>(fn, new Object[] { /* Force to always change */ new Object() });
     }
 
     class Impl {

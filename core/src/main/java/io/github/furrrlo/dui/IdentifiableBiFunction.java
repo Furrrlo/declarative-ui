@@ -25,6 +25,10 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
         return new Impl.ExplicitSupplier<>(fn, deps);
     }
 
+    static <T, U, R> Explicit<T, U, R> alwaysChange(BiFunction<T, U, R> fn) {
+        return new Impl.ExplicitArray<>(fn, new Object[] { /* Force to always change */ new Object() });
+    }
+
     class Impl {
 
         private static class ExplicitArray<T, U, R> implements Explicit<T, U, R> {
