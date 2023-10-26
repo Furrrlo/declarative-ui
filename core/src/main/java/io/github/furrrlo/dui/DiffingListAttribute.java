@@ -123,9 +123,9 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                             }
 
                             item.updateOrCreateComponent();
-                        } catch (Throwable t) {
-                            future.completeExceptionally(t);
                         } finally {
+                            // Complete the future even if an exception is thrown here, the stacktrace will be printed
+                            // in this thread and not on the one of the parent component (if it's not the same thread)
                             future.complete(null);
                         }
                     });
@@ -146,10 +146,15 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
         // This is shit but whatever I guess
         // It should allow components with a different framework thread to still execute actions in order
-        CompletableFuture.allOf(componentsCreations.toArray(new CompletableFuture[0])).thenRun(() -> {
-            // TODO: do this on the thread of the component which owns this attribute
-            actions.forEach(Runnable::run);
-        });
+        @SuppressWarnings("unused")
+        Void unused = CompletableFuture.allOf(componentsCreations.toArray(new CompletableFuture[0]))
+                .thenRun(() -> {
+                    // TODO: do this on the thread of the component which owns this attribute
+                    actions.forEach(Runnable::run);
+                })
+                // Get it now so in case stuff was run on this thread and an exception is thrown,
+                // it would be rethrown in this thread and not swallowed by the CompletableFuture
+                .getNow(null);
 
         // Deep updates
         for (int i = 0; i < toUpdate.size(); i++) {
