@@ -484,8 +484,6 @@ abstract class StatefulDeclarativeComponent<
         }
 
         protected void ensureInsideBody() {
-            // TODO: currently, memos are evaluated immediately inside the body, so
-            //       using useMemo inside a memo does not fail fast, as it should
             if(!outer.isInvokingBody)
                 throw new UnsupportedOperationException("Invalid state/attribute invocation, can only be done inside body");
 
@@ -593,14 +591,31 @@ abstract class StatefulDeclarativeComponent<
         protected <V> Memoized<V> doUseMemo(int index, IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
             if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
                 final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
-                return outer.updateMemoWithStateDependency(index, () -> memo.updateIfNecessary(value));
+                return outer.updateMemoWithStateDependency(index, () -> {
+                    final boolean wasInvokingBody = outer.isInvokingBody;
+                    outer.isInvokingBody = false;
+                    try {
+                        return memo.updateIfNecessary(value);
+                    } finally {
+                        outer.isInvokingBody = wasInvokingBody;
+                    }
+                });
             }
 
-            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(index,
-                    () -> new Memoized<>(value, equalityFn));
+            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(index, () -> {
+                final boolean wasInvokingBody = outer.isInvokingBody;
+                outer.isInvokingBody = false;
+                try {
+                    return new Memoized<>(value, equalityFn);
+                } finally {
+                    outer.isInvokingBody = wasInvokingBody;
+                }
+            });
+
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
                         new Object[] { index, newMemo.value, newMemo.supplier.deps() });
+
             if(index < outer.memoizedVars.size()) {
                 outer.memoizedVars.set(index, newMemo);
             } else {
@@ -609,6 +624,7 @@ abstract class StatefulDeclarativeComponent<
                     outer.memoizedVars.add(null);
                 outer.memoizedVars.add(newMemo);
             }
+
             return newMemo;
         }
 
