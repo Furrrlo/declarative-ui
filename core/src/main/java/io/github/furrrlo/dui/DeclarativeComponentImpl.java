@@ -160,7 +160,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                                                          @Nullable A prev,
                                                          @Nullable Object prevValue) {
         this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, attr.updatePriority(), () -> {
-            attr.update(obj, wasSet, prev, prevValue);
+            attr.update(this, obj, wasSet, prev, prevValue);
             return null;
         });
     }
@@ -457,7 +457,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
         Object value();
 
-        void update(T obj, boolean wasSet, @Nullable SELF prev, @Nullable Object prevValue);
+        void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
+                    T obj,
+                    boolean wasSet,
+                    @Nullable SELF prev,
+                    @Nullable Object prevValue);
 
         void dispose();
     }

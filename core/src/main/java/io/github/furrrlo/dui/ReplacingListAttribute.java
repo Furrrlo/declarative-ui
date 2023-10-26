@@ -47,7 +47,11 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
 
     @Override
     @SuppressWarnings("unchecked")
-    public void update(T obj, boolean wereSet, @Nullable ReplacingListAttribute<T, C, S> prev, @Nullable Object prevValues0) {
+    public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
+                       T obj,
+                       boolean wereSet,
+                       @Nullable ReplacingListAttribute<T, C, S> prev,
+                       @Nullable Object prevValues0) {
         this.suppliers = valueSuppliersSupplier.get();
         this.value = valueFn.apply(this.suppliers);
 

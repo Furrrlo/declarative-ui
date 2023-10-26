@@ -56,7 +56,11 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
     @Override
     @SuppressWarnings("unchecked")
-    public void update(T obj, boolean wasSet, @Nullable DiffingListAttribute<T, C, S> prev, @Nullable Object prevValue0) {
+    public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
+                       T obj,
+                       boolean wasSet,
+                       @Nullable DiffingListAttribute<T, C, S> prev,
+                       @Nullable Object prevValue0) {
         // prev might be this attribute itself, so we need to save the suppliers before we replace them
         final List<S> prevSuppliers = prev != null ? prev.suppliers : null;
         this.suppliers = valueSuppliersSupplier.get();

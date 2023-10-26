@@ -42,7 +42,11 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
 
     @Override
     @SuppressWarnings("unchecked")
-    public void update(T obj, boolean wasSet, @Nullable Attribute<T, V> prev, @Nullable Object prevValue) {
+    public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
+                       T obj,
+                       boolean wasSet,
+                       @Nullable Attribute<T, V> prev,
+                       @Nullable Object prevValue) {
         value = valueSupplier.get();
 
         if (value instanceof DeclarativeComponentSupplier) {
