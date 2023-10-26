@@ -152,10 +152,8 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
         // It should allow components with a different framework thread to still execute actions in order
         @SuppressWarnings("unused")
         Void unused = CompletableFuture.allOf(componentsCreations.toArray(new CompletableFuture[0]))
-                .thenRun(() -> {
-                    // TODO: do this on the thread of the component which owns this attribute
-                    actions.forEach(Runnable::run);
-                })
+                .thenRun(() -> declarativeComponent
+                        .runOrScheduleOnFrameworkThread(() -> actions.forEach(Runnable::run)))
                 // Get it now so in case stuff was run on this thread and an exception is thrown,
                 // it would be rethrown in this thread and not swallowed by the CompletableFuture
                 .getNow(null);
