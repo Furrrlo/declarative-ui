@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -121,10 +122,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     @SuppressWarnings("unchecked")
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
-                              DeclarativeComponentImpl.ContextImpl<T> underlyingNewCtx,
-                              O_CTX newCtx) {
+                              DeclarativeComponentContext<T> newCtx,
+                              Consumer<ReservedMemoProxy<?>> reserveMemo) {
         if(decorator != null) {
-            decorator.setToDecorate(newCtx, underlyingNewCtx::reserveMemo);
+            decorator.setToDecorate(newCtx, reserveMemo);
             try {
                 // This cast to C has to be guaranteed by the DeclarativeComponentFactory
                 body.accept((O_CTX) decorator);
@@ -134,7 +135,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
             return;
         }
 
-        super.invokeBody(body, underlyingNewCtx, newCtx);
+        super.invokeBody(body, newCtx, reserveMemo);
     }
 
     @Override
@@ -263,14 +264,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
             ensureInsideBody();
             // I trust this cast
-            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ContextImpl<V>> internalComponent =
-                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ContextImpl<V>>) component.doApplyInternal();
+            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?> internalComponent =
+                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?>) component.doApplyInternal();
             if (internalComponent.body != null) {
                 internalComponent.isInvokingBody = true;
                 internalComponent.invokeBody(
                         internalComponent.body,
-                        (ContextImpl<V>) this, // This cast is also incredibly unsafe
-                        new InnerComponentContextImpl<>(this, getter));
+                        new InnerComponentContextImpl<>(this, getter),
+                        this::reserveMemo);
                 internalComponent.isInvokingBody = false;
             }
             return this;

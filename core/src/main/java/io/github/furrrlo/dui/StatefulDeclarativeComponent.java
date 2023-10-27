@@ -121,7 +121,6 @@ abstract class StatefulDeclarativeComponent<
         updateComponent(0);
     }
 
-    @SuppressWarnings("unchecked")
     protected void updateComponent(int flags) {
         runAsComponentUpdate(() -> {
             final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
@@ -134,8 +133,7 @@ abstract class StatefulDeclarativeComponent<
                 newCtx = newContext();
                 if (body != null) {
                     isInvokingBody = true;
-                    // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
-                    invokeBody(body, newCtx, (O_CTX) newCtx);
+                    invokeBody(body, newCtx, newCtx::reserveMemo);
                     isInvokingBody = false;
                 }
             }
@@ -187,8 +185,12 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    protected void invokeBody(IdentifiableConsumer<O_CTX> body, I_CTX underlyingNewCtx, O_CTX newCtx) {
-        body.accept(newCtx);
+    @SuppressWarnings("unchecked")
+    protected void invokeBody(IdentifiableConsumer<O_CTX> body,
+                              DeclarativeComponentContext<T> newCtx,
+                              Consumer<ReservedMemoProxy<?>> reserveMemo) {
+        // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
+        body.accept((O_CTX) newCtx);
     }
 
     protected void updateAttributes(I_CTX newCtx) {
