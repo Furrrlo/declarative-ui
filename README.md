@@ -178,6 +178,31 @@ panel.children(panelChildren -> {
 });
 ```
 
+#### useRef
+```java
+<V> Ref<V> useRef(V initialValue);
+<V> Ref<V> useRef(Supplier<V> initialValue);
+<V> Ref<V> useThrowingRef(String msg);
+```
+Lets you reference a value that’s not needed for rendering. 
+
+On the first render, a new Ref is created. You can later set it to something else. 
+If you pass the ref object as an attribute to a component which holds an actual instance of something 
+(so basically not to a wrapper component), the ref will be set to said instance once the render function
+is finished.
+When the `Ref#curr()` getter is invoked:
+- if no value was previously set, `initialValue` is evaluated and assigned to curr if no exception are thrown
+- Otherwise, the last set value is returned
+On subsequent renders, `useRef` will return the same Ref object.
+
+When the ref curr value is changed, no re-renders are triggered, so it can be used to store information 
+and read it later.
+
+If you do not want to deal with nullability, use either use `useThrowingRef` or throw a custom exception
+in the initial value function, so the ref will be to a `@NotNull` type.
+
+Similar to [React useRef](https://react.dev/reference/react/useRef).
+
 #### untrack
 ```java
 static <V> V Memo#untrack(Supplier<V> value);
@@ -314,4 +339,4 @@ That means that:
     - re-run on component re-render
 
 ## Missing stuff
-- refs
+- Context/ComposableLocals

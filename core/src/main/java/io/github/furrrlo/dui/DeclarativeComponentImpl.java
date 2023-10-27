@@ -4,6 +4,7 @@ import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoPr
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -124,18 +125,26 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
                               DeclarativeComponentContext<T> newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
-        if(decorator != null) {
-            decorator.setToDecorate(newCtx, reserveMemo);
-            try {
-                // This cast to C has to be guaranteed by the DeclarativeComponentFactory
-                body.accept((O_CTX) decorator);
-            } finally {
-                decorator.endDecoration();
-            }
-            return;
-        }
+        try {
+            if(decorator != null) {
+                if(!(newCtx instanceof DeclarativeRefComponentContext))
+                    throw new UnsupportedOperationException("Trying to decorate a component which has no ref");
 
-        super.invokeBody(body, newCtx, reserveMemo);
+                final DeclarativeRefComponentContext<T> newRefCtx = (DeclarativeRefComponentContext<T>) newCtx;
+                decorator.setToDecorate(newRefCtx, reserveMemo);
+                try {
+                    // This cast to C has to be guaranteed by the DeclarativeComponentFactory
+                    body.accept((O_CTX) decorator);
+                } finally {
+                    decorator.endDecoration();
+                }
+            } else {
+                super.invokeBody(body, newCtx, reserveMemo);
+            }
+        } finally {
+            if(newCtx instanceof ContextImpl)
+                ((ContextImpl<T>) newCtx).populateRefs(component);
+        }
     }
 
     @Override
@@ -242,21 +251,48 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 "} " + super.toString();
     }
 
-    static class ContextImpl<T> extends StatefulDeclarativeComponent.StatefulContext<T> {
+    static class ContextImpl<T>
+            extends StatefulDeclarativeComponent.StatefulContext<T>
+            implements DeclarativeRefComponentContext<T> {
 
         private final DeclarativeComponentImpl<T, ?> outer;
         private final LinkedHashMap<String, Attr<T, ?>> attributes; // Important: this needs to maintain order
+        private final List<Consumer<? super T>> refsSetters;
 
         public ContextImpl(DeclarativeComponentImpl<T, ?> outer) {
             super(outer);
             this.outer = outer;
             this.attributes = new LinkedHashMap<>();
+            this.refsSetters = new ArrayList<>();
         }
 
         public ContextImpl(DeclarativeComponentImpl<T, ?> outer, ContextImpl<T> other) {
             super(outer, other);
             this.outer = outer;
             this.attributes = other.attributes;
+            this.refsSetters = other.refsSetters;
+        }
+
+        @Override
+        public void ref(Ref<? super T> ref) {
+            ref(Function.identity(), ref);
+        }
+
+        private <V> void ref(Function<T, V> getter, Ref<? super V> ref) {
+            if(!(ref instanceof RefImpl))
+                throw new UnsupportedOperationException("Ref was not created by the framework");
+            final RefImpl<? super V> refImpl = (RefImpl<? super V>) ref;
+            refsSetters.add(actualComponent -> refImpl.curr(getter.apply(actualComponent)));
+        }
+
+        @Override
+        public void ref(Consumer<? super T> ref) {
+            refsSetters.add(ref);
+        }
+
+        void populateRefs(T actualComponent) {
+            this.refsSetters.forEach(ref -> ref.accept(actualComponent));
+            this.refsSetters.clear();
         }
 
         @Override
@@ -270,7 +306,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                 internalComponent.isInvokingBody = true;
                 internalComponent.invokeBody(
                         internalComponent.body,
-                        new InnerComponentContextImpl<>(this, getter),
+                        new InnerComponentContextImpl<>(this, ref -> ref(getter, ref), getter),
                         this::reserveMemo);
                 internalComponent.isInvokingBody = false;
             }

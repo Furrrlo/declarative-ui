@@ -4,14 +4,28 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.*;
 
-class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> {
+class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<T> {
 
-    private final DeclarativeComponentContext<P> parent;
+    private final DeclarativeRefComponentContext<P> parent;
     private final Function<P, T> childGetter;
+    private final Consumer<Ref<? super T>> registerRefs;
 
-    public InnerComponentContextImpl(DeclarativeComponentContext<P> parent, Function<P, T> childGetter) {
+    public InnerComponentContextImpl(DeclarativeRefComponentContext<P> parent,
+                                     Consumer<Ref<? super T>> registerRefs,
+                                     Function<P, T> childGetter) {
         this.parent = parent;
         this.childGetter = childGetter;
+        this.registerRefs = registerRefs;
+    }
+
+    @Override
+    public void ref(Ref<? super T> ref) {
+        registerRefs.accept(ref);
+    }
+
+    @Override
+    public void ref(Consumer<? super T> ref) {
+        parent.ref(p -> ref.accept(childGetter.apply(p)));
     }
 
     @Override
@@ -57,6 +71,11 @@ class InnerComponentContextImpl<P, T> implements DeclarativeComponentContext<T> 
     @Override
     public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return parent.useCallbackExplicit(fun, dependencies);
+    }
+
+    @Override
+    public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
+        return parent.useRef(fallbackValue);
     }
 
     @Override

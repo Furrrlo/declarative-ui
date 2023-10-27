@@ -533,6 +533,11 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
+        public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
+            return useMemo(IdentifiableSupplier.neverChange(() -> new RefImpl<>(fallbackValue))).get();
+        }
+
+        @Override
         public void useLaunchedEffect(IdentifiableThrowingRunnable effect0) {
             final IdentifiableThrowingRunnable effect = IdentifiableThrowingRunnable.explicit(effect0);
 
@@ -840,6 +845,30 @@ abstract class StatefulDeclarativeComponent<
             if(onDispose != null)
                 onDispose.run();
             onDispose = null;
+        }
+    }
+
+    static class RefImpl<T> implements Ref<T> {
+
+        private final Supplier<T> fallback;
+        private T ref;
+        private boolean wasSet;
+
+        RefImpl(Supplier<T> fallback) {
+            this.fallback = fallback;
+        }
+
+        @Override
+        public T curr() {
+            if(!wasSet)
+                curr(fallback.get());
+            return ref;
+        }
+
+        @Override
+        public void curr(T ref) {
+            this.ref = ref;
+            this.wasSet = true;
         }
     }
 }

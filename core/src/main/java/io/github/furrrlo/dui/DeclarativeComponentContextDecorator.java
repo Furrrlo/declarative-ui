@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.*;
 
-public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeComponentContext<T> {
+public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentContext<T> {
 
     private final @Nullable Class<T> type;
     private final Supplier<@Nullable T> factory;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
 
-    private @Nullable DeclarativeComponentContext<T> toDecorate;
+    private @Nullable DeclarativeRefComponentContext<T> toDecorate;
     private final List<ReservedMemoProxy<?>> reservedMemos = new ArrayList<>();
 
     protected DeclarativeComponentContextDecorator(@Nullable Class<T> type,
@@ -28,7 +28,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         this.updateScheduler = frameworkScheduler.updateScheduler;
     }
 
-    void setToDecorate(@Nullable DeclarativeComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
+    void setToDecorate(@Nullable DeclarativeRefComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
         this.toDecorate = toDecorate;
         this.reservedMemos.forEach(reserveMemo);
     }
@@ -38,7 +38,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         this.reservedMemos.forEach(ReservedMemoProxy::endDecoration);
     }
 
-    private DeclarativeComponentContext<T> toDecorate() {
+    private DeclarativeRefComponentContext<T> toDecorate() {
         return Objects.requireNonNull(
                 toDecorate,
                 "Missing object to decorate");
@@ -126,6 +126,16 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     // Delegate
 
     @Override
+    public void ref(Ref<? super T> ref) {
+        toDecorate().ref(ref);
+    }
+
+    @Override
+    public void ref(Consumer<? super T> ref) {
+        toDecorate().ref(ref);
+    }
+
+    @Override
     public <V> State<V> useState(V value) {
         return toDecorate().useState(value);
     }
@@ -168,6 +178,11 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return toDecorate().useCallbackExplicit(fun, dependencies);
+    }
+
+    @Override
+    public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
+        return toDecorate().useRef(fallbackValue);
     }
 
     @Override

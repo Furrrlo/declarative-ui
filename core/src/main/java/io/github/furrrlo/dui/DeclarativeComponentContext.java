@@ -1,10 +1,7 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.*;
 
 public interface DeclarativeComponentContext<T> {
@@ -46,6 +43,18 @@ public interface DeclarativeComponentContext<T> {
 
     default <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
         return useMemo(IdentifiableSupplier.explicit(() -> fun, dependencies)).get();
+    }
+
+    <V> Ref<V> useRef(Supplier<V> initialValue);
+
+    default <V> Ref<V> useRef(V initialValue) {
+        return useRef(() -> initialValue);
+    }
+
+    default <V> Ref<V> useThrowingRef(String msg) {
+        return useRef(() -> {
+            throw new NoSuchElementException(msg);
+        });
     }
 
     void useLaunchedEffect(IdentifiableThrowingRunnable effect);
