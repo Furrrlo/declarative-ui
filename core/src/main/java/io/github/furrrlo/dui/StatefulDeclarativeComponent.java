@@ -14,10 +14,9 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 abstract class StatefulDeclarativeComponent<
-        T,
         R,
-        O_CTX extends DeclarativeComponentContext<T>,
-        I_CTX extends StatefulDeclarativeComponent.StatefulContext<T>> implements DeclarativeComponent<R> {
+        O_CTX extends DeclarativeComponentContext,
+        I_CTX extends StatefulDeclarativeComponent.StatefulContext> implements DeclarativeComponent<R> {
 
     private static final Logger LOGGER = Logger.getLogger(StatefulDeclarativeComponent.class.getName());
 
@@ -30,13 +29,13 @@ abstract class StatefulDeclarativeComponent<
 
     protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.explicit(() -> {});
 
-    private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?, ?>> CURR_UPDATING_COMPONENT =
+    private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
 
     protected final @Nullable IdentifiableConsumer<O_CTX> body;
     protected @Nullable IdentifiableConsumer<O_CTX> prevBody;
 
-    protected AtomicReference<@Nullable StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> substituteComponentRef =
+    protected AtomicReference<@Nullable StatefulDeclarativeComponent<R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected List<Effect> effects = new ArrayList<>();
@@ -50,10 +49,10 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?> other0) {
         ensureSame("type", other0, StatefulDeclarativeComponent::getClass);
 
-        final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>) other0;
+        final StatefulDeclarativeComponent<R, O_CTX, I_CTX> other = (StatefulDeclarativeComponent<R, O_CTX, I_CTX>) other0;
         substituteComponentRef = other.substituteComponentRef;
         if(substituteComponentRef.get() == null)
             throw new UnsupportedOperationException("Trying to resuscitate a disposed component");
@@ -100,7 +99,7 @@ abstract class StatefulDeclarativeComponent<
         if(substituteComponentRef.get() != this)
             throw new UnsupportedOperationException("Trying to update substituted component");
 
-        final StatefulDeclarativeComponent<?, ?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        final StatefulDeclarativeComponent<?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         CURR_UPDATING_COMPONENT.set(this);
         try {
             runnable.run();
@@ -187,7 +186,7 @@ abstract class StatefulDeclarativeComponent<
 
     @SuppressWarnings("unchecked")
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
-                              DeclarativeComponentContext<T> newCtx,
+                              DeclarativeComponentContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
         body.accept((O_CTX) newCtx);
@@ -213,10 +212,10 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    public <C extends StatefulDeclarativeComponent<?, ?, ?, ?>> IdentifiableRunnable makeStateDependency(
+    public <C extends StatefulDeclarativeComponent<?, ?, ?>> IdentifiableRunnable makeStateDependency(
             Consumer<C> runnable,
             Function<C, Object[]> deps) {
-        Supplier<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
+        Supplier<StatefulDeclarativeComponent<R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
         return IdentifiableRunnable.Impl.explicit(
                 () -> {
                     C sub = (C) componentRef.get();
@@ -232,9 +231,9 @@ abstract class StatefulDeclarativeComponent<
     @SuppressWarnings("unchecked")
     public <V, M extends Memoized<V>> IdentifiableRunnable makeMemoStateDependency(
             int memoIdx,
-            BiConsumer<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, M> runnable,
-            BiFunction<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, M, Object[]> deps) {
-        return this.<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>>makeStateDependency(
+            BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M> runnable,
+            BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M, Object[]> deps) {
+        return this.<StatefulDeclarativeComponent<R, O_CTX, I_CTX>>makeStateDependency(
                 c -> {
                     final Memoized<?> memo;
                     if(memoIdx < c.memoizedVars.size() && (memo = c.memoizedVars.get(memoIdx)) != null)
@@ -263,7 +262,7 @@ abstract class StatefulDeclarativeComponent<
                         if(!memo.isMarkedForUpdate())
                             return;
                         // If when we get here the memo was not already updated, do it now
-                        final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
+                        final StatefulDeclarativeComponent<R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
                         if(sub == null)
                             return;
                         // Even if the component was substituted, memos are shallowly passed to the new one
@@ -280,9 +279,9 @@ abstract class StatefulDeclarativeComponent<
 
     public IdentifiableRunnable makeEffectStateDependency(
             int effectIdx,
-            BiConsumer<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, Effect> runnable,
-            BiFunction<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>, Effect, Object[]> deps) {
-        return this.<StatefulDeclarativeComponent<T, R, O_CTX, I_CTX>>makeStateDependency(
+            BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect> runnable,
+            BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect, Object[]> deps) {
+        return this.<StatefulDeclarativeComponent<R, O_CTX, I_CTX>>makeStateDependency(
                 c -> {
                     final Effect effect;
                     if(effectIdx < c.effects.size() && (effect = c.effects.get(effectIdx)) != null)
@@ -308,7 +307,7 @@ abstract class StatefulDeclarativeComponent<
                     effect.markForUpdate();
                     // Schedule an update
                     c.scheduleOnFrameworkThread(EFFECT_UPDATE_PRIORITY, () -> {
-                        final StatefulDeclarativeComponent<T, R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
+                        final StatefulDeclarativeComponent<R, O_CTX, I_CTX> sub = c.substituteComponentRef.get();
                         if(sub == null)
                             return;
                         // Even if the component was substituted, effects are shallowly passed to the new one
@@ -323,7 +322,7 @@ abstract class StatefulDeclarativeComponent<
         return withStateDependency(stateDependency, factory);
     }
 
-    private <RET> RET updateWithWrappedStateDependency(Predicate<StatefulDeclarativeComponent<?, ?, ?, ?>> wrappingCond,
+    private <RET> RET updateWithWrappedStateDependency(Predicate<StatefulDeclarativeComponent<?, ?, ?>> wrappingCond,
                                                        Supplier<RET> factory) {
         IdentifiableRunnable wrappedStateDependency = getCurrentStateDependency();
         if(wrappedStateDependency == null)
@@ -340,7 +339,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     public static <V> V untrack(Supplier<V> value) {
-        final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         if(currUpdatingComponent == null)
             return value.get();
 
@@ -350,7 +349,7 @@ abstract class StatefulDeclarativeComponent<
     public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection0,
                                            BiConsumer<Memo.DeclareMemoFn<V>, Integer> fn) {
 
-        final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
         if(currUpdatingComponent == null) {
             CURR_UPDATING_COMPONENT.remove();
             throw new UnsupportedOperationException("Currently not in a component update");
@@ -445,7 +444,7 @@ abstract class StatefulDeclarativeComponent<
                 '}';
     }
 
-    protected static class StatefulContext<T> implements DeclarativeComponentContext<T> {
+    protected static class StatefulContext implements DeclarativeComponentContext {
 
         private static final Throwable STACKTRACE_SENTINEL = new Exception("StatefulContext sentinel");
         private static final String DUI_PACKAGE;
@@ -454,19 +453,18 @@ abstract class StatefulDeclarativeComponent<
             DUI_PACKAGE = name.substring(0, name.lastIndexOf("."));
         }
 
-        private final StatefulDeclarativeComponent<T, ?, ?, ?> outer;
+        private final StatefulDeclarativeComponent<?, ?, ?> outer;
         private int currMemoizedIdx;
         private int currEffectsIdx;
         private @Nullable Throwable capturedBodyStacktrace;
 
-        public StatefulContext(StatefulDeclarativeComponent<T, ?, ?, ?> outer) {
+        public StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer) {
             this.outer = outer;
             this.currMemoizedIdx = 0;
             this.currEffectsIdx = 0;
         }
 
-        public StatefulContext(StatefulDeclarativeComponent<T, ?, ?, ?> outer,
-                               StatefulContext<T> other) {
+        public StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer, StatefulContext other) {
             this.outer = outer;
             this.currMemoizedIdx = other.currMemoizedIdx;
             this.currEffectsIdx = other.currEffectsIdx;
@@ -649,7 +647,7 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public V get() {
-            final StatefulDeclarativeComponent<?, ?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+            final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
             if(currUpdatingComponent == null) {
                 CURR_UPDATING_COMPONENT.remove();
             } else {

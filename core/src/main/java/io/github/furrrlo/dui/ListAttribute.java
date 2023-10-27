@@ -18,16 +18,16 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     private final int updatePriority;
     private final ListSetter<T, C, S> setter;
     private final Supplier<List<S>> valueSuppliersSupplier;
-    private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
+    private final Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> valueFn;
 
     private List<S> suppliers;
-    private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
+    private List<StatefulDeclarativeComponent<C, ?, ?>> value;
 
     public ListAttribute(String key,
                          int updatePriority,
                          ListSetter<T, C, S> setter,
                          Supplier<List<S>> suppliers,
-                         Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
+                         Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> value) {
         this.key = key;
         this.updatePriority = updatePriority;
         this.setter = setter;
@@ -57,8 +57,8 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
         this.suppliers = valueSuppliersSupplier.get();
         this.value = valueFn.apply(this.suppliers);
 
-        final List<StatefulDeclarativeComponent<?, C, ?, ?>> prevValues = wereSet ?
-                (List<StatefulDeclarativeComponent<?, C, ?, ?>>) Objects.requireNonNull(prevValues0) :
+        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValues = wereSet ?
+                (List<StatefulDeclarativeComponent<C, ?, ?>>) Objects.requireNonNull(prevValues0) :
                 Collections.emptyList();
 
         final List<C> children = new ArrayList<>();
@@ -75,7 +75,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
 
         // These were all removed
         for (; idx < prevValues.size(); idx++) {
-            final StatefulDeclarativeComponent<?, ? extends C, ?, ?> prevValue = prevValues.get(idx);
+            final StatefulDeclarativeComponent<? extends C, ?, ?> prevValue = prevValues.get(idx);
             if (prevValue != null)
                 prevValue.runOrScheduleOnFrameworkThread(prevValue::disposeComponent);
         }

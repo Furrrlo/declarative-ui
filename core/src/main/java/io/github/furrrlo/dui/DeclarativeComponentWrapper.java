@@ -6,23 +6,23 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
-        Object, R, DeclarativeComponentContext<Object>, StatefulDeclarativeComponent.StatefulContext<Object>> {
+        R, DeclarativeComponentContext, StatefulDeclarativeComponent.StatefulContext> {
 
 
-    private final IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> wrapperBody;
+    private final IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> wrapperBody;
 
     private boolean wasDeepUpdated;
     private boolean isDeepUpdated;
-    private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> wrapped;
-    private @Nullable StatefulDeclarativeComponent<?, R, ?, ?> prevWrapped;
+    private @Nullable StatefulDeclarativeComponent<R, ?, ?> wrapped;
+    private @Nullable StatefulDeclarativeComponent<R, ?, ?> prevWrapped;
 
-    public DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> body) {
+    public DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body) {
         this(IdentifiableFunction.explicit(body), new AtomicReference<>());
     }
 
-    private DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<R>> body,
+    private DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body,
                                         AtomicReference<DeclarativeComponentWrapper<R>> selfRef) {
-        super(IdentifiableConsumer.explicit((DeclarativeComponentContext<Object> ctx) -> {
+        super(IdentifiableConsumer.explicit((DeclarativeComponentContext ctx) -> {
             final DeclarativeComponentWrapper<R> self = Objects.requireNonNull(
                     selfRef.get(),
                     "Body invoked before wrapper could set a reference to itself");
@@ -32,7 +32,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         selfRef.set(this);
     }
 
-    private void invokeWrappedBody(DeclarativeComponentContext<Object> ctx) {
+    private void invokeWrappedBody(DeclarativeComponentContext ctx) {
         if(wasDeepUpdated && !isDeepUpdated)
             throw new UnsupportedOperationException("Wrapped component missed an update");
 
@@ -44,7 +44,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?> other0) {
         super.substitute(other0);
 
         final DeclarativeComponentWrapper<R> other = (DeclarativeComponentWrapper<R>) other0;
@@ -55,13 +55,13 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
-    protected StatefulContext<Object> newContext() {
-        return new StatefulContext<>(this);
+    protected StatefulContext newContext() {
+        return new StatefulContext(this);
     }
 
     @Override
-    protected void copyContext(@Nullable StatefulContext<Object> toCopy) {
-        context = toCopy == null ? null : new StatefulContext<>(this, toCopy);
+    protected void copyContext(@Nullable StatefulContext toCopy) {
+        context = toCopy == null ? null : new StatefulContext(this, toCopy);
     }
 
     @Override
@@ -71,7 +71,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
     @Override
     public R getComponent() {
-        final StatefulDeclarativeComponent<?, R, ?, ?> wrapped = Objects.requireNonNull(
+        final StatefulDeclarativeComponent<R, ?, ?> wrapped = Objects.requireNonNull(
                 this.wrapped,
                 "getComponent(...) attribute called without having invoked the wrapper body");
         return wrapped.getComponent();
@@ -80,7 +80,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     @Override
     public void triggerStateUpdate() {
         scheduleOnFrameworkThread(COMPONENT_UPDATE_PRIORITY, () -> {
-            StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
+            StatefulDeclarativeComponent<?, ?, ?> sub = substituteComponentRef.get();
             if(sub != null)
                 sub.updateComponent(UpdateFlags.FORCE);
         });
@@ -92,7 +92,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         // already scheduled in the framework specific scheduler, and we should respect that order,
         // so try to schedule stuff to be executed on said framework scheduler
 
-        StatefulDeclarativeComponent<?, ?, ?, ?> comp = wrapped;
+        StatefulDeclarativeComponent<?, ?, ?> comp = wrapped;
         // Special case for nested wrappers, go on until we get to an actual component
         while (comp instanceof DeclarativeComponentWrapper)
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
@@ -110,7 +110,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         // already scheduled in the framework specific scheduler, and we should respect that order,
         // so try to schedule stuff to be executed on said framework scheduler
 
-        StatefulDeclarativeComponent<?, ?, ?, ?> comp = wrapped;
+        StatefulDeclarativeComponent<?, ?, ?> comp = wrapped;
         // Special case for nested wrappers, go on until we get to an actual component
         while (comp instanceof DeclarativeComponentWrapper)
             comp = ((DeclarativeComponentWrapper<?>) comp).wrapped;
@@ -123,8 +123,8 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     }
 
     @Override
-    protected void updateAttributes(StatefulContext<Object> newCtx) {
-        final StatefulDeclarativeComponent<?, R, ?, ?> curr = Objects.requireNonNull(
+    protected void updateAttributes(StatefulContext newCtx) {
+        final StatefulDeclarativeComponent<R, ?, ?> curr = Objects.requireNonNull(
                 wrapped,
                 "updateAttributes(...) called without having invoked the wrapper body");
 

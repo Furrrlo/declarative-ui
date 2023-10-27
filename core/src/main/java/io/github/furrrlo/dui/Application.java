@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 public interface Application {
 
     static void create(Consumer<Context> app) {
-        final StatefulDeclarativeComponent<?, BaseApplication, ?, ?> ctx =
+        final StatefulDeclarativeComponent<BaseApplication, ?, ?> ctx =
                 DeclarativeComponentFactory.INSTANCE.of(Context::new, app::accept).doApplyInternal();
         ctx.triggerStateUpdate();
     }

@@ -23,8 +23,8 @@ public interface Memo<T> extends Supplier<T> {
         StatefulDeclarativeComponent.mapCollection(collection, fn);
     }
 
-    interface DeclareMemoFn<V> extends Function<DeclarativeComponentContext<?>, Memo<V>> {
+    interface DeclareMemoFn<V> extends Function<DeclarativeComponentContext, Memo<V>> {
         @Override
-        Memo<V> apply(DeclarativeComponentContext<?> ctx);
+        Memo<V> apply(DeclarativeComponentContext ctx);
     }
 }

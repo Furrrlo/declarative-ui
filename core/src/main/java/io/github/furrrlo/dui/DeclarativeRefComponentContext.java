@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentContext<T> {
+public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentContext {
 
     void ref(Ref<? super T> ref);
 

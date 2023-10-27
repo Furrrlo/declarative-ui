@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.*;
 
-public interface DeclarativeComponentContext<T> {
+public interface DeclarativeComponentContext {
 
     default <V> State<V> useState(V value) {
         return useState(value, Objects::deepEquals);

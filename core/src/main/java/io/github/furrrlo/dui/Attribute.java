@@ -52,8 +52,8 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         if (value instanceof DeclarativeComponentSupplier) {
             updateAttribute(obj,
                     wasSet,
-                    (StatefulDeclarativeComponent<?, V, ?, ?>) value,
-                    (StatefulDeclarativeComponent<?, V, ?, ?>) prevValue);
+                    (StatefulDeclarativeComponent<V, ?, ?>) value,
+                    (StatefulDeclarativeComponent<V, ?, ?>) prevValue);
             return;
         }
 
@@ -77,8 +77,8 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
 
     private void updateAttribute(T obj,
                                  boolean wasSet,
-                                 StatefulDeclarativeComponent<?, V, ?, ?> value,
-                                 @Nullable StatefulDeclarativeComponent<?, V, ?, ?> prevValue) {
+                                 StatefulDeclarativeComponent<V, ?, ?> value,
+                                 @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue) {
         updateDeclarativeComponent(
                 wasSet,
                 value,
@@ -88,8 +88,8 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     }
 
     static <V> void updateDeclarativeComponent(boolean wasSet,
-                                               StatefulDeclarativeComponent<?, ? extends V, ?, ?> value,
-                                               @Nullable StatefulDeclarativeComponent<?, V, ?, ?> prevValue,
+                                               StatefulDeclarativeComponent<? extends V, ?, ?> value,
+                                               @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue,
                                                @Nullable Consumer<V> createdComponent,
                                                @Nullable Consumer<V> updatedComponent) {
         value.runOrScheduleOnFrameworkThread(() -> {
@@ -118,7 +118,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         if (!(value instanceof DeclarativeComponentSupplier))
             return;
 
-        StatefulDeclarativeComponent<?, V, ?, ?> comp = (StatefulDeclarativeComponent<?, V, ?, ?>) value;
+        StatefulDeclarativeComponent<V, ?, ?> comp = (StatefulDeclarativeComponent<V, ?, ?>) value;
         comp.runOrScheduleOnFrameworkThread(comp::disposeComponent);
     }
 }

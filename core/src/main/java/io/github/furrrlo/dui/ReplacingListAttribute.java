@@ -17,16 +17,16 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
     private final int updatePriority;
     private final ListReplacer<T, C, S> replacer;
     private final Supplier<List<S>> valueSuppliersSupplier;
-    private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
+    private final Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> valueFn;
 
     private List<S> suppliers;
-    private List<StatefulDeclarativeComponent<?, C, ?, ?>> value;
+    private List<StatefulDeclarativeComponent<C, ?, ?>> value;
 
     public ReplacingListAttribute(String key,
                                   int updatePriority,
                                   ListReplacer<T, C, S> replacer,
                                   Supplier<List<S>> suppliers,
-                                  Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
+                                  Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> value) {
         this.key = key;
         this.updatePriority = updatePriority;
         this.replacer = replacer;
@@ -56,8 +56,8 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
         this.suppliers = valueSuppliersSupplier.get();
         this.value = valueFn.apply(this.suppliers);
 
-        final List<StatefulDeclarativeComponent<?, C, ?, ?>> prevValues = wereSet ?
-                (List<StatefulDeclarativeComponent<?, C, ?, ?>>) Objects.requireNonNull(prevValues0) :
+        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValues = wereSet ?
+                (List<StatefulDeclarativeComponent<C, ?, ?>>) Objects.requireNonNull(prevValues0) :
                 Collections.emptyList();
 
         int idx;
@@ -74,7 +74,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
 
         // These were all removed
         for (; idx < prevValues.size(); idx++) {
-            final StatefulDeclarativeComponent<?, C, ?, ?> prevValue = prevValues.get(idx);
+            final StatefulDeclarativeComponent<C, ?, ?> prevValue = prevValues.get(idx);
             // TODO: what to do with these?
 //                replacer.replace(obj, idx, null, null);
             if (prevValue != null)

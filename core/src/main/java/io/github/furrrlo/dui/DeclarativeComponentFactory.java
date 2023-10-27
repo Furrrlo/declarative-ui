@@ -20,7 +20,7 @@ public class DeclarativeComponentFactory {
         return new DeclarativeComponentImpl<>(decoratorFactory, body);
     }
 
-    public <T> DeclarativeComponent<T> wrapper(IdentifiableFunction<DeclarativeComponentContext<?>, DeclarativeComponentSupplier<T>> body) {
+    public <T> DeclarativeComponent<T> wrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<T>> body) {
         return new DeclarativeComponentWrapper<>(body);
     }
 }

@@ -13,11 +13,11 @@ public interface DeclarativeComponentSupplier<T> extends Function<DeclarativeCom
         return apply(DeclarativeComponentFactory.INSTANCE);
     }
 
-    default StatefulDeclarativeComponent<?, T, ?, ?> doApplyInternal() {
+    default StatefulDeclarativeComponent<T, ?, ?> doApplyInternal() {
         final DeclarativeComponent<T> declarative = doApply();
         if(!(declarative instanceof StatefulDeclarativeComponent))
             throw new UnsupportedOperationException("Unexpected declarative component " + declarative);
-        return (StatefulDeclarativeComponent<?, T, ?, ?>) declarative;
+        return (StatefulDeclarativeComponent<T, ?, ?>) declarative;
     }
 
     interface FactoryLess<T> extends DeclarativeComponentSupplier<T> {

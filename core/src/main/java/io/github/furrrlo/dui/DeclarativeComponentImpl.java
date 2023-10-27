@@ -13,8 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
-        extends StatefulDeclarativeComponent<T, T, O_CTX, DeclarativeComponentImpl.ContextImpl<T>> {
+class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
+        extends StatefulDeclarativeComponent<T, O_CTX, DeclarativeComponentImpl.ContextImpl<T>> {
 
     private static final Logger LOGGER = Logger.getLogger(DeclarativeComponentImpl.class.getName());
 
@@ -44,7 +44,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                                     Supplier<T> componentFactory,
                                     BooleanSupplier canUpdateInCurrentThread,
                                     UpdateScheduler updateScheduler,
-                                    @Nullable IdentifiableConsumer<DeclarativeComponentContext<T>> body) {
+                                    @Nullable IdentifiableConsumer<DeclarativeComponentContext> body) {
         super((IdentifiableConsumer<O_CTX>) body);
         this.decorator = null;
         this.componentType = componentType;
@@ -55,7 +55,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void substitute(StatefulDeclarativeComponent<?, ?, ?, ?> other0) {
+    protected void substitute(StatefulDeclarativeComponent<?, ?, ?> other0) {
         super.substitute(other0);
 
         final DeclarativeComponentImpl<T, ?> other = (DeclarativeComponentImpl<T, ?>) other0;
@@ -101,7 +101,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     public void triggerStateUpdate() {
         scheduleOnFrameworkThread(COMPONENT_UPDATE_PRIORITY, () -> {
-            StatefulDeclarativeComponent<?, ?, ?, ?> sub = substituteComponentRef.get();
+            StatefulDeclarativeComponent<?, ?, ?> sub = substituteComponentRef.get();
             if(sub != null)
                 sub.updateComponent(UpdateFlags.FORCE);
         });
@@ -123,7 +123,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     @Override
     @SuppressWarnings("unchecked")
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
-                              DeclarativeComponentContext<T> newCtx,
+                              DeclarativeComponentContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         try {
             if(decorator != null) {
@@ -252,7 +252,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
     }
 
     static class ContextImpl<T>
-            extends StatefulDeclarativeComponent.StatefulContext<T>
+            extends StatefulDeclarativeComponent.StatefulContext
             implements DeclarativeRefComponentContext<T> {
 
         private final DeclarativeComponentImpl<T, ?> outer;
@@ -300,8 +300,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         public <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
             ensureInsideBody();
             // I trust this cast
-            StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?> internalComponent =
-                    (StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?>) component.doApplyInternal();
+            StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?> internalComponent =
+                    (StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?>) component.doApplyInternal();
             if (internalComponent.body != null) {
                 internalComponent.isInvokingBody = true;
                 internalComponent.invokeBody(
@@ -391,7 +391,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     setter,
                     fn,
                     suppliers -> suppliers.stream()
-                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
+                            .map(s -> (StatefulDeclarativeComponent<C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
                                     Collections::unmodifiableList)))));
@@ -421,7 +421,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     replacer,
                     fn,
                     suppliers -> suppliers.stream()
-                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
+                            .map(s -> (StatefulDeclarativeComponent<C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
                                     Collections::unmodifiableList)))));
@@ -453,7 +453,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
                     adder, remover,
                     fn,
                     suppliers -> suppliers.stream()
-                            .map(s -> (StatefulDeclarativeComponent<?, C, ?, ?>) s.doApplyInternal())
+                            .map(s -> (StatefulDeclarativeComponent<C, ?, ?>) s.doApplyInternal())
                             .collect(Collectors.collectingAndThen(
                                     Collectors.toList(),
                                     Collections::unmodifiableList)))));
