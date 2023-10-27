@@ -297,7 +297,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+        public <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
             ensureInsideBody();
             // I trust this cast
             StatefulDeclarativeComponent<V, V, DeclarativeComponentContext<V>, ?> internalComponent =
@@ -314,10 +314,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <V> DeclarativeComponentContext<T> attribute(String key,
-                                                            BiConsumer<T, V> setter,
-                                                            Supplier<V> value,
-                                                            AttributeEqualityFn<T, V> equalityFn) {
+        public <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                               BiConsumer<T, V> setter,
+                                                               Supplier<V> value,
+                                                               AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
@@ -327,7 +327,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+        public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
                 String key,
                 Class<V> type,
                 ListReplacer<T, V, S> replacer,
@@ -343,7 +343,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+        public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
                 String key,
                 Class<V> type,
                 ListRemover<T> remover,
@@ -360,7 +360,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <C1> DeclarativeComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
+        public <C1> DeclarativeRefComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
             ensureInsideBody();
             attributes.put(key, new Attribute<>(
                     key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY,
@@ -369,7 +369,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
                 String key,
                 ListSetter<T, C, S> setter,
                 Supplier<List<S>> fn
@@ -378,7 +378,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @SuppressWarnings("unchecked")
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> doListFnAttribute(
                 String key,
                 int updatePriority,
                 ListSetter<T, C, S> setter,
@@ -399,7 +399,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
                 String key,
                 ListReplacer<T, C, S> replacer,
                 Supplier<List<S>> fn
@@ -408,7 +408,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @SuppressWarnings("unchecked")
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> doListFnAttribute(
                 String key,
                 int updatePriority,
                 ListReplacer<T, C, S> replacer,
@@ -429,7 +429,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @Override
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
                 String key,
                 ListAdder<T, C, S> adder,
                 ListRemover<T> remover,
@@ -439,7 +439,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext<T>>
         }
 
         @SuppressWarnings("unchecked")
-        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> doListFnAttribute(
+        public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> doListFnAttribute(
                 String key,
                 int updatePriority,
                 ListAdder<T, C, S> adder,

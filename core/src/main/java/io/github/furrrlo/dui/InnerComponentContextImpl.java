@@ -94,22 +94,22 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+    public <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
         parent.inner(parent -> getter.apply(this.childGetter.apply(parent)), component);
         return this;
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
         return this;
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key,
-                                                        BiConsumer<T, V> setter,
-                                                        Supplier<V> value,
-                                                        AttributeEqualityFn<T, V> equalityFn) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                           BiConsumer<T, V> setter,
+                                                           Supplier<V> value,
+                                                           AttributeEqualityFn<T, V> equalityFn) {
         parent.attribute(
                 key,
                 (parent, val) -> setter.accept(childGetter.apply(parent), val),
@@ -119,7 +119,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
@@ -132,7 +132,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListRemover<T> remover,
@@ -147,15 +147,15 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <C> DeclarativeComponentContext<T> fnAttribute(String key,
-                                                          BiConsumer<T, C> setter,
-                                                          DeclarativeComponentSupplier<C> fn) {
+    public <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
+                                                             BiConsumer<T, C> setter,
+                                                             DeclarativeComponentSupplier<C> fn) {
         parent.fnAttribute(key, (parent, v) -> setter.accept(childGetter.apply(parent), v), fn);
         return this;
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
             Supplier<List<S>> fn
@@ -165,7 +165,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
             Supplier<List<S>> fn
@@ -177,7 +177,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,

@@ -13,45 +13,45 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
 
     void ref(Consumer<? super T> ref);
 
-    <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
+    <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 
-    default <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    default <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
     }
 
-    <V> DeclarativeComponentContext<T> attribute(String key,
+    <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                  BiConsumer<T, V> setter,
                                                  Supplier<V> value,
                                                  AttributeEqualityFn<T, V> equalityFn);
 
-    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
             Supplier<List<V>> fn);
 
-    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListRemover<T> remover,
             Supplier<List<V>> fn,
             ListAdder<T, V, S> adder);
 
-    <C> DeclarativeComponentContext<T> fnAttribute(String key,
+    <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
                                                    BiConsumer<T, C> setter,
                                                    DeclarativeComponentSupplier<C> fn);
 
-    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
             Supplier<List<S>> fn);
 
-    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
             Supplier<List<S>> fn);
 
-    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,

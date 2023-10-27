@@ -201,25 +201,25 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
+    public <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component) {
         return toDecorate().inner(getter, component);
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
         return toDecorate().attribute(key, setter, value);
     }
 
     @Override
-    public <V> DeclarativeComponentContext<T> attribute(String key,
-                                                        BiConsumer<T, V> setter,
-                                                        Supplier<V> value,
-                                                        AttributeEqualityFn<T, V> equalityFn) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                           BiConsumer<T, V> setter,
+                                                           Supplier<V> value,
+                                                           AttributeEqualityFn<T, V> equalityFn) {
         return toDecorate().attribute(key, setter, value, equalityFn);
     }
 
     @Override
-    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
@@ -229,7 +229,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeComponentContext<T> listAttribute(
+    public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListRemover<T> remover,
@@ -240,12 +240,12 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <C> DeclarativeComponentContext<T> fnAttribute(String key, BiConsumer<T, C> setter, DeclarativeComponentSupplier<C> fn) {
+    public <C> DeclarativeRefComponentContext<T> fnAttribute(String key, BiConsumer<T, C> setter, DeclarativeComponentSupplier<C> fn) {
         return toDecorate().fnAttribute(key, setter, fn);
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListSetter<T, C, S> setter,
             Supplier<List<S>> fn
@@ -254,7 +254,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListReplacer<T, C, S> replacer,
             Supplier<List<S>> fn
@@ -263,7 +263,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeComponentContext<T> listFnAttribute(
+    public <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,
             ListAdder<T, C, S> adder,
             ListRemover<T> remover,
