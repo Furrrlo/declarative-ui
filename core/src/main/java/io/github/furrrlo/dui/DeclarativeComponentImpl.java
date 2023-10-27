@@ -39,13 +39,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
 
-    @SuppressWarnings("unchecked")
-    public DeclarativeComponentImpl(Class<T> componentType,
-                                    Supplier<T> componentFactory,
-                                    BooleanSupplier canUpdateInCurrentThread,
-                                    UpdateScheduler updateScheduler,
-                                    @Nullable IdentifiableConsumer<DeclarativeComponentContext> body) {
-        super((IdentifiableConsumer<O_CTX>) body);
+    private DeclarativeComponentImpl(Class<T> componentType,
+                                     Supplier<T> componentFactory,
+                                     BooleanSupplier canUpdateInCurrentThread,
+                                     UpdateScheduler updateScheduler) {
+        super(null);
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
@@ -478,8 +476,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                     () -> item,
                     // This in theory should never need to update any props anyway
                     () -> true,
-                    new UpdateScheduler(Runnable::run),
-                    null);
+                    new UpdateScheduler(Runnable::run));
         }
 
         @Override
