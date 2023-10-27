@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListSetter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
     private final int updatePriority;
-    private final DeclarativeComponentContext.ListSetter<T, C, S> setter;
+    private final ListSetter<T, C, S> setter;
     private final Supplier<List<S>> valueSuppliersSupplier;
     private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
 
@@ -24,7 +25,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
 
     public ListAttribute(String key,
                          int updatePriority,
-                         DeclarativeComponentContext.ListSetter<T, C, S> setter,
+                         ListSetter<T, C, S> setter,
                          Supplier<List<S>> suppliers,
                          Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;

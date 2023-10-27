@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListReplacer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -14,7 +15,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
     private final int updatePriority;
-    private final DeclarativeComponentContext.ListReplacer<T, C, S> replacer;
+    private final ListReplacer<T, C, S> replacer;
     private final Supplier<List<S>> valueSuppliersSupplier;
     private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
 
@@ -23,7 +24,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
 
     public ReplacingListAttribute(String key,
                                   int updatePriority,
-                                  DeclarativeComponentContext.ListReplacer<T, C, S> replacer,
+                                  ListReplacer<T, C, S> replacer,
                                   Supplier<List<S>> suppliers,
                                   Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;

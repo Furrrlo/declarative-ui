@@ -1,5 +1,7 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListAdder;
+import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListRemover;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -20,8 +22,8 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final String key;
     private final int updatePriority;
-    private final DeclarativeComponentContext.ListAdder<T, C, S> adder;
-    private final DeclarativeComponentContext.ListRemover<T> remover;
+    private final ListAdder<T, C, S> adder;
+    private final ListRemover<T> remover;
     private final Supplier<List<S>> valueSuppliersSupplier;
     private final Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> valueFn;
 
@@ -30,8 +32,8 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
     public DiffingListAttribute(String key,
                                 int updatePriority,
-                                DeclarativeComponentContext.ListAdder<T, C, S> adder,
-                                DeclarativeComponentContext.ListRemover<T> remover,
+                                ListAdder<T, C, S> adder,
+                                ListRemover<T> remover,
                                 Supplier<List<S>> suppliers,
                                 Function<List<S>, List<StatefulDeclarativeComponent<?, C, ?, ?>>> value) {
         this.key = key;

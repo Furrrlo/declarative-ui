@@ -1,6 +1,6 @@
 package io.github.furrrlo.dui;
 
-import io.github.furrrlo.dui.DeclarativeComponentContext.AttributeEqualityFn;
+import io.github.furrrlo.dui.DeclarativeRefComponentContext.AttributeEqualityFn;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
