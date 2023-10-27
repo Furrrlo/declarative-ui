@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 public interface Memo<T> extends Supplier<T> {
 
+    @Override
     T get();
 
     static <V> V untrack(Supplier<V> value) {
