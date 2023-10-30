@@ -224,8 +224,6 @@ be cancelled and a new one will be started (see [Identifiables](#identifiables) 
 The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
 the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
 
-TBD: a way to change an application global ExecutorService (and set virtual threads one if possible)
-
 Similar to [Jetpack Compose LaunchedEffect](https://developer.android.com/jetpack/compose/side-effects#launchedeffect).
 
 #### useDisposableEffect

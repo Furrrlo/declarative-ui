@@ -1,13 +1,37 @@
 package io.github.furrrlo.dui;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplicationConfig {
 
     private static final ExecutorService DEFAULT_EXECUTOR_SERVICE;
     static {
-        DEFAULT_EXECUTOR_SERVICE = ForkJoinPool.commonPool();
+        ExecutorService defaultExecutorService;
+        try {
+            // Try to use virtual threads if available
+            Method m = Executors.class.getMethod("newVirtualThreadPerTaskExecutor");
+            defaultExecutorService = (ExecutorService) m.invoke(null);
+        } catch (Exception ex) {
+            defaultExecutorService = Executors.newCachedThreadPool(new ThreadFactory() {
+                private final AtomicInteger count = new AtomicInteger();
+
+                @Override
+                public Thread newThread(@NotNull Runnable r) {
+                    Thread th = Executors.defaultThreadFactory().newThread(r);
+                    th.setDaemon(true);
+                    th.setName("dui-launched-effects-pool-" + count.getAndIncrement());
+                    return th;
+                }
+            });
+        }
+
+        DEFAULT_EXECUTOR_SERVICE = defaultExecutorService;
     }
 
     private final ExecutorService launchedEffectsExecutor;
