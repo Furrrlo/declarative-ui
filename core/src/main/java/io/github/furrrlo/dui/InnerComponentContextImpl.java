@@ -84,7 +84,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+    public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect) {
         parent.useDisposableEffect(effect);
     }
 

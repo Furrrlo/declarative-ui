@@ -191,7 +191,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+    public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect) {
         toDecorate().useDisposableEffect(effect);
     }
 

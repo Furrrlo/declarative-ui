@@ -228,7 +228,7 @@ Similar to [Jetpack Compose LaunchedEffect](https://developer.android.com/jetpac
 
 #### useDisposableEffect
 ```java
-void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect);
+void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect);
 ```
 Runs a side effect that needs to be cleaned up. When the component is first rendered, it executes the effect which, 
 optionally, can register a cleanup function. When the component is disposed, the cleanup function is invoked.

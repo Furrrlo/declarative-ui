@@ -1,6 +1,6 @@
 package io.github.furrrlo.dui;
 
-import io.github.furrrlo.dui.DeclarativeComponentContext.SetOnDisposeFn;
+import io.github.furrrlo.dui.DeclarativeComponentContext.DisposableEffectScope;
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
 import org.jetbrains.annotations.Nullable;
 
@@ -546,7 +546,7 @@ abstract class StatefulDeclarativeComponent<
         public void useLaunchedEffect(IdentifiableThrowingRunnable effect0) {
             final IdentifiableThrowingRunnable effect = IdentifiableThrowingRunnable.explicit(effect0);
 
-            useDisposableEffect(IdentifiableConsumer.explicit((onDispose) -> {
+            useDisposableEffect(IdentifiableConsumer.explicit(scope -> {
                 Future<?> future = outer.getAppConfig().launchedEffectsExecutor().submit(() -> {
                     try {
                         effect.run();
@@ -556,12 +556,12 @@ abstract class StatefulDeclarativeComponent<
                         LOGGER.log(Level.SEVERE, "Effect terminated with failure", t);
                     }
                 });
-                onDispose.accept(() -> future.cancel(true));
+                scope.onDispose(() -> future.cancel(true));
             }, effect));
         }
 
         @Override
-        public void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect0) {
+        public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect0) {
             ensureInsideBody();
 
             // Try to catch effect issues as soon as possible from within the component
@@ -572,7 +572,7 @@ abstract class StatefulDeclarativeComponent<
                         " before " + getCurrEffectsIdx() + ", " +
                         "now" + outer.context.getCurrEffectsIdx());
 
-            final IdentifiableConsumer<SetOnDisposeFn> effect = IdentifiableConsumer.explicit(effect0);
+            final IdentifiableConsumer<DisposableEffectScope> effect = IdentifiableConsumer.explicit(effect0);
             final int index = currEffectsIdx++;
             if(index < outer.effects.size()) {
                 final Effect effectImpl = outer.effects.get(index);
@@ -737,11 +737,11 @@ abstract class StatefulDeclarativeComponent<
 
     private static class Effect {
 
-        private IdentifiableConsumer<SetOnDisposeFn> effect;
+        private IdentifiableConsumer<DisposableEffectScope> effect;
         private boolean shouldRun;
         private @Nullable Runnable onDispose;
 
-        public Effect(IdentifiableConsumer<SetOnDisposeFn> effect) {
+        public Effect(IdentifiableConsumer<DisposableEffectScope> effect) {
             this.effect = effect;
             this.shouldRun = true;
         }
@@ -750,7 +750,7 @@ abstract class StatefulDeclarativeComponent<
             this.shouldRun = true;
         }
 
-        public void updateIfNecessary(IdentifiableConsumer<SetOnDisposeFn> effect) {
+        public void updateIfNecessary(IdentifiableConsumer<DisposableEffectScope> effect) {
             // Avoid deepEquals if we should already run anyway
             if(shouldRun)
                 return;

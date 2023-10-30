@@ -59,7 +59,7 @@ public interface DeclarativeComponentContext {
 
     void useLaunchedEffect(IdentifiableThrowingRunnable effect);
 
-    void useDisposableEffect(IdentifiableConsumer<SetOnDisposeFn> effect);
+    void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect);
 
     void useSideEffect(Runnable effect);
 
@@ -70,9 +70,8 @@ public interface DeclarativeComponentContext {
         return state;
     }
 
-    @FunctionalInterface
-    interface SetOnDisposeFn extends Consumer<Runnable> {
-        @Override
-        void accept(Runnable onDispose);
+    interface DisposableEffectScope {
+
+        void onDispose(Runnable onDispose);
     }
 }
