@@ -1,7 +1,12 @@
 package io.github.furrrlo.dui;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.*;
 
 public interface DeclarativeComponentContext {
@@ -66,7 +71,54 @@ public interface DeclarativeComponentContext {
     default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer0) {
         final State<V> state = useState(initialValue);
         final IdentifiableThrowingConsumer<ProduceScope<V>> producer = IdentifiableThrowingConsumer.explicit(producer0);
-        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(() -> state), producer, state));
+        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> {
+            class ProduceScopeImpl implements ProduceScope<V> {
+                @Nullable ThrowingRunnable onDispose;
+
+                @Override
+                public State<V> state() {
+                    return state;
+                }
+
+                @Override
+                public void awaitDispose(ThrowingRunnable onDispose) throws InterruptedException {
+                    this.onDispose = onDispose;
+
+                    // Wait on a brand-new condition until interrupted
+                    final Lock lock = new ReentrantLock();
+                    final Condition condition = lock.newCondition();
+
+                    lock.lock();
+                    try {
+                        while (!Thread.currentThread().isInterrupted())
+                            condition.await();
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+            }
+
+            final ProduceScopeImpl scope = new ProduceScopeImpl();
+            try {
+                producer.accept(scope);
+            } catch (Throwable t) {
+                if(scope.onDispose != null) {
+                    // Save and clear the interrupt status to run the onDispose function
+                    // without any interruption state set, and restore it afterward
+                    boolean wasInterrupted = Thread.interrupted();
+                    try {
+                        scope.onDispose.run();
+                    } catch (Throwable innerThrowable) {
+                        t.addSuppressed(new Exception("Failed to run onDispose", innerThrowable));
+                    } finally {
+                        if(wasInterrupted)
+                            Thread.currentThread().interrupt();
+                    }
+                }
+
+                throw t;
+            }
+        }, producer, state));
         return state;
     }
 
@@ -78,5 +130,7 @@ public interface DeclarativeComponentContext {
     interface ProduceScope<V> {
 
         State<V> state();
+
+        void awaitDispose(ThrowingRunnable onDispose) throws InterruptedException;
     }
 }

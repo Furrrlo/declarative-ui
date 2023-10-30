@@ -266,9 +266,11 @@ If any of the dependency of the producer change, the existing task will be cance
 The producer function is a tracking function, so calling the getter of a tracked variable inside it will also cause
 the producer to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
 
-TBD: [awaitDispose](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#awaitDispose(kotlin.Function0))
+Even though produceState launches in a different thread, it can also be used to observe non-blocking sources of data. 
+To remove the subscription to that source, use the `ProduceScope#awaitDispose(ThrowingRunnable)` function.
 
-Similar to [Jetpack Compose produceState](https://developer.android.com/jetpack/compose/side-effects#producestate).
+Similar to Jetpack Compose [produceState](https://developer.android.com/jetpack/compose/side-effects#producestate) and
+[awaitDispose](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#awaitDispose(kotlin.Function0)).
 
 #### inner
 ```java
