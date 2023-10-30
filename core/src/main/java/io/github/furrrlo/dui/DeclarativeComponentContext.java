@@ -63,15 +63,20 @@ public interface DeclarativeComponentContext {
 
     void useSideEffect(Runnable effect);
 
-    default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer0) {
+    default <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer0) {
         final State<V> state = useState(initialValue);
-        final IdentifiableThrowingConsumer<State<V>> producer = IdentifiableThrowingConsumer.explicit(producer0);
-        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(state), producer, state));
+        final IdentifiableThrowingConsumer<ProduceScope<V>> producer = IdentifiableThrowingConsumer.explicit(producer0);
+        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> producer.accept(() -> state), producer, state));
         return state;
     }
 
     interface DisposableEffectScope {
 
         void onDispose(Runnable onDispose);
+    }
+
+    interface ProduceScope<V> {
+
+        State<V> state();
     }
 }

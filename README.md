@@ -254,7 +254,7 @@ Similar to [Jetpack Compose SideEffect](https://developer.android.com/jetpack/co
 
 #### produce
 ```java
-<V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<State<V>> producer);
+<V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer);
 ```
 Runs a producer in a different thread that can push values into a returned State. Use it to convert unmanaged variables 
 into State, for example bringing external subscription-driven state in the library.
