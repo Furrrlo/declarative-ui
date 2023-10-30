@@ -11,9 +11,13 @@ import java.util.function.Consumer;
 public interface Application {
 
     static void create(Consumer<Context> app) {
+        create(ApplicationConfig.builder().build(), app);
+    }
+
+    static void create(ApplicationConfig appConfig, Consumer<Context> app) {
         final StatefulDeclarativeComponent<BaseApplication, ?, ?> ctx =
                 DeclarativeComponentFactory.INSTANCE.of(Context::new, app::accept).doApplyInternal();
-        ctx.triggerStateUpdate();
+        ctx.runOrScheduleOnFrameworkThread(() -> ctx.updateOrCreateComponent(appConfig));
     }
 
     class BaseApplication {

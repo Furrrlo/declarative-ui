@@ -130,6 +130,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
 
         this.isDeepUpdated = true;
         Attribute.updateDeclarativeComponent(
+                getAppConfig(),
                 wasDeepUpdated,
                 curr,
                 prevWrapped,

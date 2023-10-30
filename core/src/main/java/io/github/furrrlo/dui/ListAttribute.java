@@ -66,6 +66,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
         for (idx = 0; idx < value.size(); idx++) {
             final boolean wasSet = idx < prevValues.size();
             Attribute.updateDeclarativeComponent(
+                    declarativeComponent.getAppConfig(),
                     wasSet,
                     this.value.get(idx),
                     wasSet ? prevValues.get(idx) : null,

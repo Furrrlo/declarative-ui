@@ -87,13 +87,13 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     }
 
     @Override
-    public T updateOrCreateComponent() {
+    public T updateOrCreateComponent(ApplicationConfig appConfig) {
         if(component == null) {
             component = componentFactory.get();
             LOGGER.log(Level.FINE, "Created component {0}", component);
         }
 
-        return super.updateOrCreateComponent();
+        return super.updateOrCreateComponent(appConfig);
     }
 
     @Override

@@ -50,7 +50,9 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         value = valueSupplier.get();
 
         if (value instanceof DeclarativeComponentSupplier) {
-            updateAttribute(obj,
+            updateAttribute(
+                    declarativeComponent,
+                    obj,
                     wasSet,
                     (StatefulDeclarativeComponent<V, ?, ?>) value,
                     (StatefulDeclarativeComponent<V, ?, ?>) prevValue);
@@ -75,11 +77,13 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         }
     }
 
-    private void updateAttribute(T obj,
+    private void updateAttribute(DeclarativeComponentImpl<T, ?> declarativeComponent,
+                                 T obj,
                                  boolean wasSet,
                                  StatefulDeclarativeComponent<V, ?, ?> value,
                                  @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue) {
         updateDeclarativeComponent(
+                declarativeComponent.getAppConfig(),
                 wasSet,
                 value,
                 prevValue,
@@ -87,7 +91,8 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                 null);
     }
 
-    static <V> void updateDeclarativeComponent(boolean wasSet,
+    static <V> void updateDeclarativeComponent(ApplicationConfig appConfig,
+                                               boolean wasSet,
                                                StatefulDeclarativeComponent<? extends V, ?, ?> value,
                                                @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue,
                                                @Nullable Consumer<V> createdComponent,
@@ -103,7 +108,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                 return;
             }
 
-            V created = value.updateOrCreateComponent();
+            V created = value.updateOrCreateComponent(appConfig);
             if(createdComponent != null)
                 createdComponent.accept(created);
 

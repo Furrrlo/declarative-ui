@@ -5,7 +5,6 @@ import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoPr
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
@@ -32,6 +31,8 @@ abstract class StatefulDeclarativeComponent<
     private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?>> CURR_UPDATING_COMPONENT =
             ThreadLocal.withInitial(() -> null);
 
+    private @Nullable ApplicationConfig appConfig;
+
     protected final @Nullable IdentifiableConsumer<O_CTX> body;
     protected @Nullable IdentifiableConsumer<O_CTX> prevBody;
 
@@ -57,6 +58,7 @@ abstract class StatefulDeclarativeComponent<
         if(substituteComponentRef.get() == null)
             throw new UnsupportedOperationException("Trying to resuscitate a disposed component");
         substituteComponentRef.set(this);
+        appConfig = other.appConfig;
         prevBody = other.prevBody;
         memoizedVars = other.memoizedVars;
         effects = other.effects;
@@ -84,7 +86,12 @@ abstract class StatefulDeclarativeComponent<
 
     public abstract R getComponent();
 
-    public R updateOrCreateComponent() {
+    public ApplicationConfig getAppConfig() {
+        return Objects.requireNonNull(appConfig, "App config was not set yet");
+    }
+
+    public R updateOrCreateComponent(ApplicationConfig appConfig) {
+        this.appConfig = appConfig;
         updateComponent();
         return getComponent();
     }
@@ -540,8 +547,7 @@ abstract class StatefulDeclarativeComponent<
             final IdentifiableThrowingRunnable effect = IdentifiableThrowingRunnable.explicit(effect0);
 
             useDisposableEffect(IdentifiableConsumer.explicit((onDispose) -> {
-                // TODO: make the pool selectable
-                Future<?> future = ForkJoinPool.commonPool().submit(() -> {
+                Future<?> future = outer.getAppConfig().launchedEffectsExecutor().submit(() -> {
                     try {
                         effect.run();
                     } catch (InterruptedException ex) {
