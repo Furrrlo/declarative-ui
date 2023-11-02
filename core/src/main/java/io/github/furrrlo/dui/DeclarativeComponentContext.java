@@ -99,9 +99,13 @@ public interface DeclarativeComponentContext {
             }
 
             final ProduceScopeImpl scope = new ProduceScopeImpl();
+            Throwable primaryThrowable = null;
             try {
                 producer.accept(scope);
             } catch (Throwable t) {
+                primaryThrowable = t;
+                throw t;
+            } finally {
                 if(scope.onDispose != null) {
                     // Save and clear the interrupt status to run the onDispose function
                     // without any interruption state set, and restore it afterward
@@ -109,14 +113,15 @@ public interface DeclarativeComponentContext {
                     try {
                         scope.onDispose.run();
                     } catch (Throwable innerThrowable) {
-                        t.addSuppressed(new Exception("Failed to run onDispose", innerThrowable));
+                        if(primaryThrowable != null)
+                            primaryThrowable.addSuppressed(new Exception("Failed to run onDispose", innerThrowable));
+                        else
+                            throw innerThrowable;
                     } finally {
                         if(wasInterrupted)
                             Thread.currentThread().interrupt();
                     }
                 }
-
-                throw t;
             }
         }, producer, state));
         return state;
