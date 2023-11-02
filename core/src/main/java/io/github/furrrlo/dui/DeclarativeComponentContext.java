@@ -3,11 +3,13 @@ package io.github.furrrlo.dui;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.concurrent.locks.LockSupport;
+import java.util.function.BiPredicate;
+import java.util.function.Supplier;
 
 public interface DeclarativeComponentContext {
 
@@ -81,19 +83,14 @@ public interface DeclarativeComponentContext {
                 }
 
                 @Override
+                @SuppressWarnings("InfiniteLoopStatement")
                 public void awaitDispose(ThrowingRunnable onDispose) throws InterruptedException {
                     this.onDispose = onDispose;
 
-                    // Wait on a brand-new condition until interrupted
-                    final Lock lock = new ReentrantLock();
-                    final Condition condition = lock.newCondition();
-
-                    lock.lock();
-                    try {
-                        while (!Thread.currentThread().isInterrupted())
-                            condition.await();
-                    } finally {
-                        lock.unlock();
+                    while (true) {
+                        if(Thread.interrupted())
+                            throw new InterruptedException();
+                        LockSupport.park(onDispose);
                     }
                 }
             }
