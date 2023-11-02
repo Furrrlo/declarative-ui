@@ -102,7 +102,7 @@ There is no Solidjs counterpart, as it does not re-render components (see [useSt
 #### indexCollection
 
 ```java
-static <V void Memo#indexCollection(
+static <V> void Memo#indexCollection(
     IdentifiableSupplier<Collection<V> collection,
     BiConsumer<DeclareMemoFn<V, Integer> fn
 );
@@ -139,7 +139,7 @@ panel.children(panelChildren -> {
 #### mapCollection
 
 ```java
-static <V void Memo#mapCollection(
+static <V> void Memo#mapCollection(
     IdentifiableSupplier<Collection<V> collection,
     BiConsumer<V, DeclareMemoFn<Integer>> fn
 );
