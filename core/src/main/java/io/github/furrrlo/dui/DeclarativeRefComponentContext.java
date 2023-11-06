@@ -21,6 +21,13 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
         return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
     }
 
+    default <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                            Function<T, V> getter,
+                                                            BiConsumer<T, V> setter,
+                                                            Supplier<? extends V> value) {
+        return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
+    }
+
     <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                     BiConsumer<T, V> setter,
                                                     Supplier<? extends V> value,
@@ -38,6 +45,13 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
             ListRemover<T> remover,
             Supplier<List<V>> fn,
             ListAdder<T, V, S> adder);
+
+    default <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
+                                                              Function<T, C> getter,
+                                                              BiConsumer<T, C> setter,
+                                                              @Nullable DeclarativeComponentSupplier<? extends C> fn) {
+        return fnAttribute(key, setter, fn);
+    }
 
     <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
                                                       BiConsumer<T, C> setter,
