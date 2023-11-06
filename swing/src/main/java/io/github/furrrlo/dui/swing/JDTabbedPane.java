@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TabbedPaneUI;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class JDTabbedPane {
 
     public static DeclarativeComponent<JTabbedPane> fn(IdentifiableConsumer<Decorator<JTabbedPane>> body) {
@@ -245,22 +247,22 @@ public class JDTabbedPane {
                     JTabbedPane::addChangeListener,
                     l);
         }
-    
-public void ui(java.util.function.Supplier<? extends javax.swing.plaf.TabbedPaneUI> ui) {
-  attribute(PREFIX + "ui", javax.swing.JTabbedPane::getUI, javax.swing.JTabbedPane::setUI, ui);
-}
 
-public void model(java.util.function.Supplier<? extends javax.swing.SingleSelectionModel> model) {
-  attribute(PREFIX + "model", javax.swing.JTabbedPane::getModel, javax.swing.JTabbedPane::setModel, model);
-}
+        public void ui(Supplier<? extends TabbedPaneUI> ui) {
+            attribute(PREFIX + "ui", JTabbedPane::getUI, JTabbedPane::setUI, ui);
+        }
 
-public void selectedComponent(
-    io.github.furrrlo.dui. @org.jetbrains.annotations.Nullable DeclarativeComponentSupplier<? extends java.awt.Component> selectedComponent) {
-  fnAttribute(PREFIX + "selectedComponent", javax.swing.JTabbedPane::getSelectedComponent, javax.swing.JTabbedPane::setSelectedComponent, selectedComponent);
-}
+        public void model(Supplier<? extends SingleSelectionModel> model) {
+            attribute(PREFIX + "model", JTabbedPane::getModel, JTabbedPane::setModel, model);
+        }
 
-public void selectedIndex(java.util.function.Supplier<java.lang.Integer> selectedIndex) {
-  attribute(PREFIX + "selectedIndex", javax.swing.JTabbedPane::getSelectedIndex, javax.swing.JTabbedPane::setSelectedIndex, selectedIndex);
-}
-}
+        public void selectedComponent(
+                @Nullable DeclarativeComponentSupplier<? extends Component> selectedComponent) {
+            fnAttribute(PREFIX + "selectedComponent", JTabbedPane::getSelectedComponent, JTabbedPane::setSelectedComponent, selectedComponent);
+        }
+
+        public void selectedIndex(Supplier<Integer> selectedIndex) {
+            attribute(PREFIX + "selectedIndex", JTabbedPane::getSelectedIndex, JTabbedPane::setSelectedIndex, selectedIndex);
+        }
+    }
 }

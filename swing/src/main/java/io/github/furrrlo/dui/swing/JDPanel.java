@@ -5,8 +5,10 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
+import javax.swing.plaf.PanelUI;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class JDPanel {
 
     public static DeclarativeComponent<JPanel> fn(IdentifiableConsumer<Decorator<JPanel>> body) {
@@ -31,9 +33,9 @@ public class JDPanel {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    
-public void ui(java.util.function.Supplier<? extends javax.swing.plaf.PanelUI> ui) {
-  attribute(PREFIX + "ui", javax.swing.JPanel::getUI, javax.swing.JPanel::setUI, ui);
-}
-}
+
+        public void ui(Supplier<? extends PanelUI> ui) {
+            attribute(PREFIX + "ui", JPanel::getUI, JPanel::setUI, ui);
+        }
+    }
 }

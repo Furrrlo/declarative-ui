@@ -5,10 +5,12 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
+import javax.swing.plaf.ComboBoxUI;
 import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class JDComboBox {
 
 
@@ -61,63 +63,63 @@ public class JDComboBox {
                     JComboBox::addActionListener,
                     l);
         }
-    
-public void ui(java.util.function.Supplier<? extends javax.swing.plaf.ComboBoxUI> ui) {
-  attribute(PREFIX + "ui", javax.swing.JComboBox::getUI, javax.swing.JComboBox::setUI, ui);
-}
 
-public void action(java.util.function.Supplier<? extends javax.swing.Action> action) {
-  attribute(PREFIX + "action", javax.swing.JComboBox::getAction, javax.swing.JComboBox::setAction, action);
-}
+        public void ui(Supplier<? extends ComboBoxUI> ui) {
+            attribute(PREFIX + "ui", JComboBox::getUI, JComboBox::setUI, ui);
+        }
 
-public void actionCommand(java.util.function.Supplier<java.lang.String> actionCommand) {
-  attribute(PREFIX + "actionCommand", javax.swing.JComboBox::getActionCommand, javax.swing.JComboBox::setActionCommand, actionCommand);
-}
+        public void action(Supplier<? extends Action> action) {
+            attribute(PREFIX + "action", JComboBox::getAction, JComboBox::setAction, action);
+        }
 
-public void editable(java.util.function.Supplier<java.lang.Boolean> editable) {
-  attribute(PREFIX + "editable", javax.swing.JComboBox::isEditable, javax.swing.JComboBox::setEditable, editable);
-}
+        public void actionCommand(Supplier<String> actionCommand) {
+            attribute(PREFIX + "actionCommand", JComboBox::getActionCommand, JComboBox::setActionCommand, actionCommand);
+        }
 
-public void editor(java.util.function.Supplier<? extends javax.swing.ComboBoxEditor> editor) {
-  attribute(PREFIX + "editor", javax.swing.JComboBox::getEditor, javax.swing.JComboBox::setEditor, editor);
-}
+        public void editable(Supplier<Boolean> editable) {
+            attribute(PREFIX + "editable", JComboBox::isEditable, JComboBox::setEditable, editable);
+        }
 
-public void enabled(java.util.function.Supplier<java.lang.Boolean> enabled) {
-  attribute(PREFIX + "enabled", javax.swing.JComboBox::setEnabled, enabled);
-}
+        public void editor(Supplier<? extends ComboBoxEditor> editor) {
+            attribute(PREFIX + "editor", JComboBox::getEditor, JComboBox::setEditor, editor);
+        }
 
-public void keySelectionManager(
-    java.util.function.Supplier<? extends javax.swing.JComboBox.KeySelectionManager> keySelectionManager) {
-  attribute(PREFIX + "keySelectionManager", javax.swing.JComboBox::getKeySelectionManager, javax.swing.JComboBox::setKeySelectionManager, keySelectionManager);
-}
+        public void enabled(Supplier<Boolean> enabled) {
+            attribute(PREFIX + "enabled", JComboBox::setEnabled, enabled);
+        }
 
-public void lightWeightPopupEnabled(
-    java.util.function.Supplier<java.lang.Boolean> lightWeightPopupEnabled) {
-  attribute(PREFIX + "lightWeightPopupEnabled", javax.swing.JComboBox::isLightWeightPopupEnabled, javax.swing.JComboBox::setLightWeightPopupEnabled, lightWeightPopupEnabled);
-}
+        public void keySelectionManager(
+                Supplier<? extends JComboBox.KeySelectionManager> keySelectionManager) {
+            attribute(PREFIX + "keySelectionManager", JComboBox::getKeySelectionManager, JComboBox::setKeySelectionManager, keySelectionManager);
+        }
 
-public void maximumRowCount(java.util.function.Supplier<java.lang.Integer> maximumRowCount) {
-  attribute(PREFIX + "maximumRowCount", javax.swing.JComboBox::getMaximumRowCount, javax.swing.JComboBox::setMaximumRowCount, maximumRowCount);
-}
+        public void lightWeightPopupEnabled(
+                Supplier<Boolean> lightWeightPopupEnabled) {
+            attribute(PREFIX + "lightWeightPopupEnabled", JComboBox::isLightWeightPopupEnabled, JComboBox::setLightWeightPopupEnabled, lightWeightPopupEnabled);
+        }
 
-public void model(java.util.function.Supplier<? extends javax.swing.ComboBoxModel> model) {
-  attribute(PREFIX + "model", javax.swing.JComboBox::getModel, javax.swing.JComboBox::setModel, model);
-}
+        public void maximumRowCount(Supplier<Integer> maximumRowCount) {
+            attribute(PREFIX + "maximumRowCount", JComboBox::getMaximumRowCount, JComboBox::setMaximumRowCount, maximumRowCount);
+        }
 
-public void popupVisible(java.util.function.Supplier<java.lang.Boolean> popupVisible) {
-  attribute(PREFIX + "popupVisible", javax.swing.JComboBox::isPopupVisible, javax.swing.JComboBox::setPopupVisible, popupVisible);
-}
+        public void model(Supplier<? extends ComboBoxModel> model) {
+            attribute(PREFIX + "model", JComboBox::getModel, JComboBox::setModel, model);
+        }
 
-public void prototypeDisplayValue(java.util.function.Supplier<?> prototypeDisplayValue) {
-  attribute(PREFIX + "prototypeDisplayValue", javax.swing.JComboBox::getPrototypeDisplayValue, javax.swing.JComboBox::setPrototypeDisplayValue, prototypeDisplayValue);
-}
+        public void popupVisible(Supplier<Boolean> popupVisible) {
+            attribute(PREFIX + "popupVisible", JComboBox::isPopupVisible, JComboBox::setPopupVisible, popupVisible);
+        }
 
-public void renderer(java.util.function.Supplier<? extends javax.swing.ListCellRenderer> renderer) {
-  attribute(PREFIX + "renderer", javax.swing.JComboBox::getRenderer, javax.swing.JComboBox::setRenderer, renderer);
-}
+        public void prototypeDisplayValue(Supplier<?> prototypeDisplayValue) {
+            attribute(PREFIX + "prototypeDisplayValue", JComboBox::getPrototypeDisplayValue, JComboBox::setPrototypeDisplayValue, prototypeDisplayValue);
+        }
 
-public void selectedIndex(java.util.function.Supplier<java.lang.Integer> selectedIndex) {
-  attribute(PREFIX + "selectedIndex", javax.swing.JComboBox::getSelectedIndex, javax.swing.JComboBox::setSelectedIndex, selectedIndex);
-}
-}
+        public void renderer(Supplier<? extends ListCellRenderer> renderer) {
+            attribute(PREFIX + "renderer", JComboBox::getRenderer, JComboBox::setRenderer, renderer);
+        }
+
+        public void selectedIndex(Supplier<Integer> selectedIndex) {
+            attribute(PREFIX + "selectedIndex", JComboBox::getSelectedIndex, JComboBox::setSelectedIndex, selectedIndex);
+        }
+    }
 }

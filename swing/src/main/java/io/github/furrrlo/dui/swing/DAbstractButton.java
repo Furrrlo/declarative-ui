@@ -1,14 +1,16 @@
 package io.github.furrrlo.dui.swing;
 
 import javax.swing.*;
+import javax.swing.plaf.ButtonUI;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class DAbstractButton {
 
-    public static class Decorator <T extends AbstractButton> extends JDComponent.Decorator<T> {
+    public static class Decorator<T extends AbstractButton> extends JDComponent.Decorator<T> {
 
         private static final String PREFIX = "__DAbstractButton__";
 
@@ -55,107 +57,106 @@ public class DAbstractButton {
                     AbstractButton::addActionListener,
                     l);
         }
-    
-public void ui(java.util.function.Supplier<? extends javax.swing.plaf.ButtonUI> ui) {
-  attribute(PREFIX + "ui", javax.swing.AbstractButton::getUI, javax.swing.AbstractButton::setUI, ui);
-}
 
-public void action(java.util.function.Supplier<? extends javax.swing.Action> action) {
-  attribute(PREFIX + "action", javax.swing.AbstractButton::getAction, javax.swing.AbstractButton::setAction, action);
-}
+        public void ui(Supplier<? extends ButtonUI> ui) {
+            attribute(PREFIX + "ui", AbstractButton::getUI, AbstractButton::setUI, ui);
+        }
 
-public void actionCommand(java.util.function.Supplier<java.lang.String> actionCommand) {
-  attribute(PREFIX + "actionCommand", javax.swing.AbstractButton::getActionCommand, javax.swing.AbstractButton::setActionCommand, actionCommand);
-}
+        public void action(Supplier<? extends Action> action) {
+            attribute(PREFIX + "action", AbstractButton::getAction, AbstractButton::setAction, action);
+        }
 
-public void borderPainted(java.util.function.Supplier<java.lang.Boolean> borderPainted) {
-  attribute(PREFIX + "borderPainted", javax.swing.AbstractButton::isBorderPainted, javax.swing.AbstractButton::setBorderPainted, borderPainted);
-}
+        public void actionCommand(Supplier<String> actionCommand) {
+            attribute(PREFIX + "actionCommand", AbstractButton::getActionCommand, AbstractButton::setActionCommand, actionCommand);
+        }
 
-public void contentAreaFilled(java.util.function.Supplier<java.lang.Boolean> contentAreaFilled) {
-  attribute(PREFIX + "contentAreaFilled", javax.swing.AbstractButton::isContentAreaFilled, javax.swing.AbstractButton::setContentAreaFilled, contentAreaFilled);
-}
+        public void borderPainted(Supplier<Boolean> borderPainted) {
+            attribute(PREFIX + "borderPainted", AbstractButton::isBorderPainted, AbstractButton::setBorderPainted, borderPainted);
+        }
 
-public void disabledIcon(java.util.function.Supplier<? extends javax.swing.Icon> disabledIcon) {
-  attribute(PREFIX + "disabledIcon", javax.swing.AbstractButton::getDisabledIcon, javax.swing.AbstractButton::setDisabledIcon, disabledIcon);
-}
+        public void contentAreaFilled(Supplier<Boolean> contentAreaFilled) {
+            attribute(PREFIX + "contentAreaFilled", AbstractButton::isContentAreaFilled, AbstractButton::setContentAreaFilled, contentAreaFilled);
+        }
 
-public void disabledSelectedIcon(
-    java.util.function.Supplier<? extends javax.swing.Icon> disabledSelectedIcon) {
-  attribute(PREFIX + "disabledSelectedIcon", javax.swing.AbstractButton::getDisabledSelectedIcon, javax.swing.AbstractButton::setDisabledSelectedIcon, disabledSelectedIcon);
-}
+        public void disabledIcon(Supplier<? extends Icon> disabledIcon) {
+            attribute(PREFIX + "disabledIcon", AbstractButton::getDisabledIcon, AbstractButton::setDisabledIcon, disabledIcon);
+        }
 
-public void displayedMnemonicIndex(
-    java.util.function.Supplier<java.lang.Integer> displayedMnemonicIndex) {
-  attribute(PREFIX + "displayedMnemonicIndex", javax.swing.AbstractButton::getDisplayedMnemonicIndex, javax.swing.AbstractButton::setDisplayedMnemonicIndex, displayedMnemonicIndex);
-}
+        public void disabledSelectedIcon(
+                Supplier<? extends Icon> disabledSelectedIcon) {
+            attribute(PREFIX + "disabledSelectedIcon", AbstractButton::getDisabledSelectedIcon, AbstractButton::setDisabledSelectedIcon, disabledSelectedIcon);
+        }
 
-public void focusPainted(java.util.function.Supplier<java.lang.Boolean> focusPainted) {
-  attribute(PREFIX + "focusPainted", javax.swing.AbstractButton::isFocusPainted, javax.swing.AbstractButton::setFocusPainted, focusPainted);
-}
+        public void displayedMnemonicIndex(Supplier<Integer> displayedMnemonicIndex) {
+            attribute(PREFIX + "displayedMnemonicIndex", AbstractButton::getDisplayedMnemonicIndex, AbstractButton::setDisplayedMnemonicIndex, displayedMnemonicIndex);
+        }
 
-public void hideActionText(java.util.function.Supplier<java.lang.Boolean> hideActionText) {
-  attribute(PREFIX + "hideActionText", javax.swing.AbstractButton::getHideActionText, javax.swing.AbstractButton::setHideActionText, hideActionText);
-}
+        public void focusPainted(Supplier<Boolean> focusPainted) {
+            attribute(PREFIX + "focusPainted", AbstractButton::isFocusPainted, AbstractButton::setFocusPainted, focusPainted);
+        }
 
-public void horizontalAlignment(
-    java.util.function.Supplier<java.lang.Integer> horizontalAlignment) {
-  attribute(PREFIX + "horizontalAlignment", javax.swing.AbstractButton::getHorizontalAlignment, javax.swing.AbstractButton::setHorizontalAlignment, horizontalAlignment);
-}
+        public void hideActionText(Supplier<Boolean> hideActionText) {
+            attribute(PREFIX + "hideActionText", AbstractButton::getHideActionText, AbstractButton::setHideActionText, hideActionText);
+        }
 
-public void horizontalTextPosition(
-    java.util.function.Supplier<java.lang.Integer> horizontalTextPosition) {
-  attribute(PREFIX + "horizontalTextPosition", javax.swing.AbstractButton::getHorizontalTextPosition, javax.swing.AbstractButton::setHorizontalTextPosition, horizontalTextPosition);
-}
+        public void horizontalAlignment(
+                Supplier<Integer> horizontalAlignment) {
+            attribute(PREFIX + "horizontalAlignment", AbstractButton::getHorizontalAlignment, AbstractButton::setHorizontalAlignment, horizontalAlignment);
+        }
 
-public void iconTextGap(java.util.function.Supplier<java.lang.Integer> iconTextGap) {
-  attribute(PREFIX + "iconTextGap", javax.swing.AbstractButton::getIconTextGap, javax.swing.AbstractButton::setIconTextGap, iconTextGap);
-}
+        public void horizontalTextPosition(
+                Supplier<Integer> horizontalTextPosition) {
+            attribute(PREFIX + "horizontalTextPosition", AbstractButton::getHorizontalTextPosition, AbstractButton::setHorizontalTextPosition, horizontalTextPosition);
+        }
 
-public void layout(java.util.function.Supplier<? extends java.awt.LayoutManager> layout) {
-  attribute(PREFIX + "layout", javax.swing.AbstractButton::setLayout, layout);
-}
+        public void iconTextGap(Supplier<Integer> iconTextGap) {
+            attribute(PREFIX + "iconTextGap", AbstractButton::getIconTextGap, AbstractButton::setIconTextGap, iconTextGap);
+        }
 
-public void mnemonic(java.util.function.Supplier<java.lang.Integer> mnemonic) {
-  attribute(PREFIX + "mnemonic", javax.swing.AbstractButton::getMnemonic, javax.swing.AbstractButton::setMnemonic, mnemonic);
-}
+        public void layout(Supplier<? extends LayoutManager> layout) {
+            attribute(PREFIX + "layout", AbstractButton::setLayout, layout);
+        }
 
-public void model(java.util.function.Supplier<? extends javax.swing.ButtonModel> model) {
-  attribute(PREFIX + "model", javax.swing.AbstractButton::getModel, javax.swing.AbstractButton::setModel, model);
-}
+        public void mnemonic(Supplier<Integer> mnemonic) {
+            attribute(PREFIX + "mnemonic", AbstractButton::getMnemonic, AbstractButton::setMnemonic, mnemonic);
+        }
 
-public void multiClickThreshhold(java.util.function.Supplier<java.lang.Long> multiClickThreshhold) {
-  attribute(PREFIX + "multiClickThreshhold", javax.swing.AbstractButton::getMultiClickThreshhold, javax.swing.AbstractButton::setMultiClickThreshhold, multiClickThreshhold);
-}
+        public void model(Supplier<? extends ButtonModel> model) {
+            attribute(PREFIX + "model", AbstractButton::getModel, AbstractButton::setModel, model);
+        }
 
-public void pressedIcon(java.util.function.Supplier<? extends javax.swing.Icon> pressedIcon) {
-  attribute(PREFIX + "pressedIcon", javax.swing.AbstractButton::getPressedIcon, javax.swing.AbstractButton::setPressedIcon, pressedIcon);
-}
+        public void multiClickThreshhold(Supplier<Long> multiClickThreshhold) {
+            attribute(PREFIX + "multiClickThreshhold", AbstractButton::getMultiClickThreshhold, AbstractButton::setMultiClickThreshhold, multiClickThreshhold);
+        }
 
-public void rolloverEnabled(java.util.function.Supplier<java.lang.Boolean> rolloverEnabled) {
-  attribute(PREFIX + "rolloverEnabled", javax.swing.AbstractButton::isRolloverEnabled, javax.swing.AbstractButton::setRolloverEnabled, rolloverEnabled);
-}
+        public void pressedIcon(Supplier<? extends Icon> pressedIcon) {
+            attribute(PREFIX + "pressedIcon", AbstractButton::getPressedIcon, AbstractButton::setPressedIcon, pressedIcon);
+        }
 
-public void rolloverIcon(java.util.function.Supplier<? extends javax.swing.Icon> rolloverIcon) {
-  attribute(PREFIX + "rolloverIcon", javax.swing.AbstractButton::getRolloverIcon, javax.swing.AbstractButton::setRolloverIcon, rolloverIcon);
-}
+        public void rolloverEnabled(Supplier<Boolean> rolloverEnabled) {
+            attribute(PREFIX + "rolloverEnabled", AbstractButton::isRolloverEnabled, AbstractButton::setRolloverEnabled, rolloverEnabled);
+        }
 
-public void rolloverSelectedIcon(
-    java.util.function.Supplier<? extends javax.swing.Icon> rolloverSelectedIcon) {
-  attribute(PREFIX + "rolloverSelectedIcon", javax.swing.AbstractButton::getRolloverSelectedIcon, javax.swing.AbstractButton::setRolloverSelectedIcon, rolloverSelectedIcon);
-}
+        public void rolloverIcon(Supplier<? extends Icon> rolloverIcon) {
+            attribute(PREFIX + "rolloverIcon", AbstractButton::getRolloverIcon, AbstractButton::setRolloverIcon, rolloverIcon);
+        }
 
-public void selectedIcon(java.util.function.Supplier<? extends javax.swing.Icon> selectedIcon) {
-  attribute(PREFIX + "selectedIcon", javax.swing.AbstractButton::getSelectedIcon, javax.swing.AbstractButton::setSelectedIcon, selectedIcon);
-}
+        public void rolloverSelectedIcon(
+                Supplier<? extends Icon> rolloverSelectedIcon) {
+            attribute(PREFIX + "rolloverSelectedIcon", AbstractButton::getRolloverSelectedIcon, AbstractButton::setRolloverSelectedIcon, rolloverSelectedIcon);
+        }
 
-public void verticalAlignment(java.util.function.Supplier<java.lang.Integer> verticalAlignment) {
-  attribute(PREFIX + "verticalAlignment", javax.swing.AbstractButton::getVerticalAlignment, javax.swing.AbstractButton::setVerticalAlignment, verticalAlignment);
-}
+        public void selectedIcon(Supplier<? extends Icon> selectedIcon) {
+            attribute(PREFIX + "selectedIcon", AbstractButton::getSelectedIcon, AbstractButton::setSelectedIcon, selectedIcon);
+        }
 
-public void verticalTextPosition(
-    java.util.function.Supplier<java.lang.Integer> verticalTextPosition) {
-  attribute(PREFIX + "verticalTextPosition", javax.swing.AbstractButton::getVerticalTextPosition, javax.swing.AbstractButton::setVerticalTextPosition, verticalTextPosition);
-}
-}
+        public void verticalAlignment(Supplier<Integer> verticalAlignment) {
+            attribute(PREFIX + "verticalAlignment", AbstractButton::getVerticalAlignment, AbstractButton::setVerticalAlignment, verticalAlignment);
+        }
+
+        public void verticalTextPosition(
+                Supplier<Integer> verticalTextPosition) {
+            attribute(PREFIX + "verticalTextPosition", AbstractButton::getVerticalTextPosition, AbstractButton::setVerticalTextPosition, verticalTextPosition);
+        }
+    }
 }

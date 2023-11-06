@@ -7,6 +7,7 @@ import io.github.furrrlo.dui.IdentifiableConsumer;
 import javax.swing.*;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class JDButton {
 
     public static DeclarativeComponent<JButton> fn(IdentifiableConsumer<Decorator<JButton>> body) {
@@ -30,9 +31,9 @@ public class JDButton {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    
-public void defaultCapable(java.util.function.Supplier<java.lang.Boolean> defaultCapable) {
-  attribute(PREFIX + "defaultCapable", javax.swing.JButton::isDefaultCapable, javax.swing.JButton::setDefaultCapable, defaultCapable);
-}
-}
+
+        public void defaultCapable(Supplier<Boolean> defaultCapable) {
+            attribute(PREFIX + "defaultCapable", JButton::isDefaultCapable, JButton::setDefaultCapable, defaultCapable);
+        }
+    }
 }

@@ -5,8 +5,10 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
+import java.awt.Font;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class JDTextArea {
 
     public static DeclarativeComponent<JTextArea> fn(IdentifiableConsumer<Decorator<JTextArea>> body) {
@@ -31,29 +33,29 @@ public class JDTextArea {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    
-public void columns(java.util.function.Supplier<java.lang.Integer> columns) {
-  attribute(PREFIX + "columns", javax.swing.JTextArea::getColumns, javax.swing.JTextArea::setColumns, columns);
-}
 
-public void font(java.util.function.Supplier<? extends java.awt.Font> font) {
-  attribute(PREFIX + "font", javax.swing.JTextArea::setFont, font);
-}
+        public void columns(Supplier<Integer> columns) {
+            attribute(PREFIX + "columns", JTextArea::getColumns, JTextArea::setColumns, columns);
+        }
 
-public void lineWrap(java.util.function.Supplier<java.lang.Boolean> lineWrap) {
-  attribute(PREFIX + "lineWrap", javax.swing.JTextArea::getLineWrap, javax.swing.JTextArea::setLineWrap, lineWrap);
-}
+        public void font(Supplier<? extends Font> font) {
+            attribute(PREFIX + "font", JTextArea::setFont, font);
+        }
 
-public void rows(java.util.function.Supplier<java.lang.Integer> rows) {
-  attribute(PREFIX + "rows", javax.swing.JTextArea::getRows, javax.swing.JTextArea::setRows, rows);
-}
+        public void lineWrap(Supplier<Boolean> lineWrap) {
+            attribute(PREFIX + "lineWrap", JTextArea::getLineWrap, JTextArea::setLineWrap, lineWrap);
+        }
 
-public void tabSize(java.util.function.Supplier<java.lang.Integer> tabSize) {
-  attribute(PREFIX + "tabSize", javax.swing.JTextArea::getTabSize, javax.swing.JTextArea::setTabSize, tabSize);
-}
+        public void rows(Supplier<Integer> rows) {
+            attribute(PREFIX + "rows", JTextArea::getRows, JTextArea::setRows, rows);
+        }
 
-public void wrapStyleWord(java.util.function.Supplier<java.lang.Boolean> wrapStyleWord) {
-  attribute(PREFIX + "wrapStyleWord", javax.swing.JTextArea::getWrapStyleWord, javax.swing.JTextArea::setWrapStyleWord, wrapStyleWord);
-}
-}
+        public void tabSize(Supplier<Integer> tabSize) {
+            attribute(PREFIX + "tabSize", JTextArea::getTabSize, JTextArea::setTabSize, tabSize);
+        }
+
+        public void wrapStyleWord(Supplier<Boolean> wrapStyleWord) {
+            attribute(PREFIX + "wrapStyleWord", JTextArea::getWrapStyleWord, JTextArea::setWrapStyleWord, wrapStyleWord);
+        }
+    }
 }
