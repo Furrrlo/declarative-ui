@@ -31,5 +31,9 @@ public class JDCheckBox {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    }
+    
+public void borderPaintedFlat(java.util.function.Supplier<java.lang.Boolean> borderPaintedFlat) {
+  attribute(PREFIX + "borderPaintedFlat", javax.swing.JCheckBox::isBorderPaintedFlat, javax.swing.JCheckBox::setBorderPaintedFlat, borderPaintedFlat);
+}
+}
 }

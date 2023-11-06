@@ -30,5 +30,9 @@ public class JDButton {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    }
+    
+public void defaultCapable(java.util.function.Supplier<java.lang.Boolean> defaultCapable) {
+  attribute(PREFIX + "defaultCapable", javax.swing.JButton::isDefaultCapable, javax.swing.JButton::setDefaultCapable, defaultCapable);
+}
+}
 }

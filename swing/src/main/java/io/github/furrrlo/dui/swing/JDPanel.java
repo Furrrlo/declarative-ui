@@ -31,5 +31,9 @@ public class JDPanel {
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
         }
-    }
+    
+public void ui(java.util.function.Supplier<? extends javax.swing.plaf.PanelUI> ui) {
+  attribute(PREFIX + "ui", javax.swing.JPanel::getUI, javax.swing.JPanel::setUI, ui);
+}
+}
 }

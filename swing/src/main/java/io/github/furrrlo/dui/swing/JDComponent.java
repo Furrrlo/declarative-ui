@@ -165,5 +165,95 @@ public class JDComponent {
                         '}';
             }
         }
-    }
+    
+public void actionMap(java.util.function.Supplier<? extends javax.swing.ActionMap> actionMap) {
+  attribute(PREFIX + "actionMap", javax.swing.JComponent::getActionMap, javax.swing.JComponent::setActionMap, actionMap);
+}
+
+public void alignmentX(java.util.function.Supplier<java.lang.Float> alignmentX) {
+  attribute(PREFIX + "alignmentX", javax.swing.JComponent::getAlignmentX, javax.swing.JComponent::setAlignmentX, alignmentX);
+}
+
+public void alignmentY(java.util.function.Supplier<java.lang.Float> alignmentY) {
+  attribute(PREFIX + "alignmentY", javax.swing.JComponent::getAlignmentY, javax.swing.JComponent::setAlignmentY, alignmentY);
+}
+
+public void autoscrolls(java.util.function.Supplier<java.lang.Boolean> autoscrolls) {
+  attribute(PREFIX + "autoscrolls", javax.swing.JComponent::getAutoscrolls, javax.swing.JComponent::setAutoscrolls, autoscrolls);
+}
+
+public void border(java.util.function.Supplier<? extends javax.swing.border.Border> border) {
+  attribute(PREFIX + "border", javax.swing.JComponent::getBorder, javax.swing.JComponent::setBorder, border);
+}
+
+public void componentPopupMenu(
+    io.github.furrrlo.dui. @org.jetbrains.annotations.Nullable DeclarativeComponentSupplier<? extends javax.swing.JPopupMenu> componentPopupMenu) {
+  fnAttribute(PREFIX + "componentPopupMenu", javax.swing.JComponent::getComponentPopupMenu, javax.swing.JComponent::setComponentPopupMenu, componentPopupMenu);
+}
+
+public void debugGraphicsOptions(
+    java.util.function.Supplier<java.lang.Integer> debugGraphicsOptions) {
+  attribute(PREFIX + "debugGraphicsOptions", javax.swing.JComponent::getDebugGraphicsOptions, javax.swing.JComponent::setDebugGraphicsOptions, debugGraphicsOptions);
+}
+
+public void doubleBuffered(java.util.function.Supplier<java.lang.Boolean> doubleBuffered) {
+  attribute(PREFIX + "doubleBuffered", javax.swing.JComponent::isDoubleBuffered, javax.swing.JComponent::setDoubleBuffered, doubleBuffered);
+}
+
+public void enabled(java.util.function.Supplier<java.lang.Boolean> enabled) {
+  attribute(PREFIX + "enabled", javax.swing.JComponent::setEnabled, enabled);
+}
+
+public void font(java.util.function.Supplier<? extends java.awt.Font> font) {
+  attribute(PREFIX + "font", javax.swing.JComponent::setFont, font);
+}
+
+public void foreground(java.util.function.Supplier<? extends java.awt.Color> foreground) {
+  attribute(PREFIX + "foreground", javax.swing.JComponent::setForeground, foreground);
+}
+
+public void inheritsPopupMenu(java.util.function.Supplier<java.lang.Boolean> inheritsPopupMenu) {
+  attribute(PREFIX + "inheritsPopupMenu", javax.swing.JComponent::getInheritsPopupMenu, javax.swing.JComponent::setInheritsPopupMenu, inheritsPopupMenu);
+}
+
+public void inputVerifier(
+    java.util.function.Supplier<? extends javax.swing.InputVerifier> inputVerifier) {
+  attribute(PREFIX + "inputVerifier", javax.swing.JComponent::getInputVerifier, javax.swing.JComponent::setInputVerifier, inputVerifier);
+}
+
+public void maximumSize(java.util.function.Supplier<? extends java.awt.Dimension> maximumSize) {
+  attribute(PREFIX + "maximumSize", javax.swing.JComponent::getMaximumSize, javax.swing.JComponent::setMaximumSize, maximumSize);
+}
+
+public void minimumSize(java.util.function.Supplier<? extends java.awt.Dimension> minimumSize) {
+  attribute(PREFIX + "minimumSize", javax.swing.JComponent::getMinimumSize, javax.swing.JComponent::setMinimumSize, minimumSize);
+}
+
+public void opaque(java.util.function.Supplier<java.lang.Boolean> opaque) {
+  attribute(PREFIX + "opaque", javax.swing.JComponent::isOpaque, javax.swing.JComponent::setOpaque, opaque);
+}
+
+public void preferredSize(java.util.function.Supplier<? extends java.awt.Dimension> preferredSize) {
+  attribute(PREFIX + "preferredSize", javax.swing.JComponent::getPreferredSize, javax.swing.JComponent::setPreferredSize, preferredSize);
+}
+
+public void requestFocusEnabled(
+    java.util.function.Supplier<java.lang.Boolean> requestFocusEnabled) {
+  attribute(PREFIX + "requestFocusEnabled", javax.swing.JComponent::isRequestFocusEnabled, javax.swing.JComponent::setRequestFocusEnabled, requestFocusEnabled);
+}
+
+public void toolTipText(java.util.function.Supplier<java.lang.String> toolTipText) {
+  attribute(PREFIX + "toolTipText", javax.swing.JComponent::getToolTipText, javax.swing.JComponent::setToolTipText, toolTipText);
+}
+
+public void transferHandler(
+    java.util.function.Supplier<? extends javax.swing.TransferHandler> transferHandler) {
+  attribute(PREFIX + "transferHandler", javax.swing.JComponent::getTransferHandler, javax.swing.JComponent::setTransferHandler, transferHandler);
+}
+
+public void verifyInputWhenFocusTarget(
+    java.util.function.Supplier<java.lang.Boolean> verifyInputWhenFocusTarget) {
+  attribute(PREFIX + "verifyInputWhenFocusTarget", javax.swing.JComponent::getVerifyInputWhenFocusTarget, javax.swing.JComponent::setVerifyInputWhenFocusTarget, verifyInputWhenFocusTarget);
+}
+}
 }

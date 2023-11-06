@@ -245,5 +245,22 @@ public class JDTabbedPane {
                     JTabbedPane::addChangeListener,
                     l);
         }
-    }
+    
+public void ui(java.util.function.Supplier<? extends javax.swing.plaf.TabbedPaneUI> ui) {
+  attribute(PREFIX + "ui", javax.swing.JTabbedPane::getUI, javax.swing.JTabbedPane::setUI, ui);
+}
+
+public void model(java.util.function.Supplier<? extends javax.swing.SingleSelectionModel> model) {
+  attribute(PREFIX + "model", javax.swing.JTabbedPane::getModel, javax.swing.JTabbedPane::setModel, model);
+}
+
+public void selectedComponent(
+    io.github.furrrlo.dui. @org.jetbrains.annotations.Nullable DeclarativeComponentSupplier<? extends java.awt.Component> selectedComponent) {
+  fnAttribute(PREFIX + "selectedComponent", javax.swing.JTabbedPane::getSelectedComponent, javax.swing.JTabbedPane::setSelectedComponent, selectedComponent);
+}
+
+public void selectedIndex(java.util.function.Supplier<java.lang.Integer> selectedIndex) {
+  attribute(PREFIX + "selectedIndex", javax.swing.JTabbedPane::getSelectedIndex, javax.swing.JTabbedPane::setSelectedIndex, selectedIndex);
+}
+}
 }
