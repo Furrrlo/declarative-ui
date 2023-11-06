@@ -4,6 +4,7 @@ import javax.swing.text.JTextComponent;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class JDTextComponent {
 
     public static class Decorator<T extends JTextComponent> extends JDComponent.Decorator<T> {

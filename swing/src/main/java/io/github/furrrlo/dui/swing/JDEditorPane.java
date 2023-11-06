@@ -3,13 +3,11 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+
+import javax.swing.*;
+import javax.swing.text.EditorKit;
 import java.net.URL;
 import java.util.function.Supplier;
-import javax.swing.JEditorPane;
-import javax.swing.text.EditorKit;
 
 @SuppressWarnings("unused")
 public class JDEditorPane {
@@ -43,7 +41,9 @@ public class JDEditorPane {
     }
 
     public void page(Supplier<URL> page) {
-      attribute(PREFIX + "page", JEditorPane::getPage, JEditorPane::setPage, page);
+      // TODO: tf do I do here
+      throw new UnsupportedOperationException();
+//      attribute(PREFIX + "page", JEditorPane::getPage, JEditorPane::setPage, page);
     }
 
     public void text(Supplier<String> text) {

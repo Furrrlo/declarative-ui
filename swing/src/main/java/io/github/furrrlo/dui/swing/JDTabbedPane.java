@@ -235,7 +235,7 @@ public class JDTabbedPane {
             }
 
             @Override
-            public String getId() {
+            public @Nullable String getId() {
                 return id;
             }
         }

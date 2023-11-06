@@ -102,7 +102,7 @@ public class JDComboBox {
             attribute(PREFIX + "maximumRowCount", JComboBox::getMaximumRowCount, JComboBox::setMaximumRowCount, maximumRowCount);
         }
 
-        public void model(Supplier<? extends ComboBoxModel> model) {
+        public void model(Supplier<? extends ComboBoxModel<String>> model) {
             attribute(PREFIX + "model", JComboBox::getModel, JComboBox::setModel, model);
         }
 
@@ -110,12 +110,12 @@ public class JDComboBox {
             attribute(PREFIX + "popupVisible", JComboBox::isPopupVisible, JComboBox::setPopupVisible, popupVisible);
         }
 
-        public void prototypeDisplayValue(Supplier<?> prototypeDisplayValue) {
+        public void prototypeDisplayValue(Supplier<String> prototypeDisplayValue) {
             attribute(PREFIX + "prototypeDisplayValue", JComboBox::getPrototypeDisplayValue, JComboBox::setPrototypeDisplayValue, prototypeDisplayValue);
         }
 
-        public void renderer(Supplier<? extends ListCellRenderer> renderer) {
-            attribute(PREFIX + "renderer", JComboBox::getRenderer, JComboBox::setRenderer, renderer);
+        public void renderer(Supplier<? extends ListCellRenderer<? super String>> renderer) {
+            this.<ListCellRenderer<? super String>>attribute(PREFIX + "renderer", JComboBox::getRenderer, JComboBox::setRenderer, renderer);
         }
 
         public void selectedIndex(Supplier<Integer> selectedIndex) {

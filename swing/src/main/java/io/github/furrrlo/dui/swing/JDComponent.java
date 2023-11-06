@@ -223,10 +223,6 @@ public class JDComponent {
             attribute(PREFIX + "inputVerifier", JComponent::getInputVerifier, JComponent::setInputVerifier, inputVerifier);
         }
 
-        public void maximumSize(Supplier<? extends Dimension> maximumSize) {
-            attribute(PREFIX + "maximumSize", JComponent::getMaximumSize, JComponent::setMaximumSize, maximumSize);
-        }
-
         public void minimumSize(Supplier<? extends Dimension> minimumSize) {
             attribute(PREFIX + "minimumSize", JComponent::getMinimumSize, JComponent::setMinimumSize, minimumSize);
         }

@@ -14,29 +14,31 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDLayer {
-  public static DeclarativeComponent<JLayer> fn(IdentifiableConsumer<Decorator<JLayer>> body) {
-    return fn(JLayer.class, JLayer::new, body);
+  public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+    return fn(JLayer::new, body);
   }
 
-  public static DeclarativeComponent<JLayer> fn(Supplier<JLayer> factory,
-      IdentifiableConsumer<Decorator<JLayer>> body) {
-    return fn(JLayer.class, factory, body);
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public static <V extends Component> DeclarativeComponent<JLayer<V>>  fn(Supplier<JLayer<V>> factory,
+                                                                   IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+    return fn((Class<JLayer<V>>) (Class) JLayer.class, factory, body);
   }
 
-  public static <T extends JLayer> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+  public static <V extends Component, T extends JLayer<V>> DeclarativeComponent<T> fn(Class<T> type,
+                                                                               Supplier<T> factory,
+                                                                               IdentifiableConsumer<Decorator<V, T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
-  public static class Decorator<T extends JLayer> extends JDComponent.Decorator<T> {
+  public static class Decorator<V extends Component, T extends JLayer<V>> extends JDComponent.Decorator<T> {
     private static final String PREFIX = "__JDLayer__";
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends LayerUI> ui) {
-      attribute(PREFIX + "ui", JLayer::getUI, JLayer::setUI, ui);
+    public void ui(Supplier<? extends LayerUI<? super V>> ui) {
+      this.<LayerUI<? super V>>attribute(PREFIX + "ui", JLayer::getUI, JLayer::setUI, ui);
     }
 
     public void border(Supplier<? extends Border> border) {
@@ -55,7 +57,7 @@ public class JDLayer {
       attribute(PREFIX + "layout", JLayer::setLayout, layout);
     }
 
-    public void view(@Nullable DeclarativeComponentSupplier<? extends Component> view) {
+    public void view(@Nullable DeclarativeComponentSupplier<? extends V> view) {
       fnAttribute(PREFIX + "view", JLayer::getView, JLayer::setView, view);
     }
   }

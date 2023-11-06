@@ -3,19 +3,13 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.LayoutManager;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.function.Supplier;
-import javax.swing.Box;
 
 @SuppressWarnings("unused")
 public class DBox {
-  public static DeclarativeComponent<Box> fn(IdentifiableConsumer<Decorator<Box>> body) {
-    return fn(Box.class, Box::new, body);
-  }
-
   public static DeclarativeComponent<Box> fn(Supplier<Box> factory,
       IdentifiableConsumer<Decorator<Box>> body) {
     return fn(Box.class, factory, body);

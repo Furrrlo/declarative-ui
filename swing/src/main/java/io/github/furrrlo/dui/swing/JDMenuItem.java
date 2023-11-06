@@ -3,15 +3,9 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+
+import javax.swing.*;
 import java.util.function.Supplier;
-import javax.swing.ButtonModel;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-import javax.swing.plaf.MenuItemUI;
 
 @SuppressWarnings("unused")
 public class JDMenuItem {
@@ -34,10 +28,6 @@ public class JDMenuItem {
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
-    }
-
-    public void ui(Supplier<? extends MenuItemUI> ui) {
-      attribute(PREFIX + "ui", JMenuItem::setUI, ui);
     }
 
     public void accelerator(Supplier<? extends KeyStroke> accelerator) {

@@ -3,22 +3,17 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Color;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.DropMode;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
+
+import javax.swing.*;
 import javax.swing.plaf.ListUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDList {
+
+  // TODO: what generics do we use here?
+
   public static DeclarativeComponent<JList> fn(IdentifiableConsumer<Decorator<JList>> body) {
     return fn(JList.class, JList::new, body);
   }

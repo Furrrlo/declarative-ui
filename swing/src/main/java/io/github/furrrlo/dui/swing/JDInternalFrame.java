@@ -4,23 +4,12 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.Icon;
-import javax.swing.JInternalFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenuBar;
-import javax.swing.plaf.InternalFrameUI;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.InternalFrameUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDInternalFrame {
@@ -59,7 +48,9 @@ public class JDInternalFrame {
     }
 
     public void closed(Supplier<Boolean> closed) {
-      attribute(PREFIX + "closed", JInternalFrame::isClosed, JInternalFrame::setClosed, closed);
+      // TODO: what do I do here?
+      throw new UnsupportedOperationException();
+//      attribute(PREFIX + "closed", JInternalFrame::isClosed, JInternalFrame::setClosed, closed);
     }
 
     public void contentPane(
@@ -93,7 +84,9 @@ public class JDInternalFrame {
     }
 
     public void icon(Supplier<Boolean> icon) {
-      attribute(PREFIX + "icon", JInternalFrame::isIcon, JInternalFrame::setIcon, icon);
+      // TODO: what do I do here?
+      throw new UnsupportedOperationException();
+//      attribute(PREFIX + "icon", JInternalFrame::isIcon, JInternalFrame::setIcon, icon);
     }
 
     public void iconifiable(Supplier<Boolean> iconifiable) {
@@ -118,7 +111,9 @@ public class JDInternalFrame {
     }
 
     public void maximum(Supplier<Boolean> maximum) {
-      attribute(PREFIX + "maximum", JInternalFrame::isMaximum, JInternalFrame::setMaximum, maximum);
+      // TODO: what do I do here?
+      throw new UnsupportedOperationException();
+//      attribute(PREFIX + "maximum", JInternalFrame::isMaximum, JInternalFrame::setMaximum, maximum);
     }
 
     public void normalBounds(Supplier<? extends Rectangle> normalBounds) {
@@ -130,7 +125,9 @@ public class JDInternalFrame {
     }
 
     public void selected(Supplier<Boolean> selected) {
-      attribute(PREFIX + "selected", JInternalFrame::isSelected, JInternalFrame::setSelected, selected);
+      // TODO: what do I do here?
+      throw new UnsupportedOperationException();
+//      attribute(PREFIX + "selected", JInternalFrame::isSelected, JInternalFrame::setSelected, selected);
     }
 
     public void title(Supplier<String> title) {

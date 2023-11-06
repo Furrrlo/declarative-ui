@@ -3,17 +3,12 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Font;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+
+import javax.swing.*;
+import javax.swing.plaf.SliderUI;
+import java.awt.*;
 import java.util.Dictionary;
 import java.util.function.Supplier;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JSlider;
-import javax.swing.plaf.SliderUI;
 
 @SuppressWarnings("unused")
 public class JDSlider {
@@ -54,7 +49,7 @@ public class JDSlider {
       attribute(PREFIX + "inverted", JSlider::getInverted, JSlider::setInverted, inverted);
     }
 
-    public void labelTable(Supplier<? extends Dictionary> labelTable) {
+    public void labelTable(Supplier<? extends Dictionary<Integer, JComponent>> labelTable) {
       attribute(PREFIX + "labelTable", JSlider::getLabelTable, JSlider::setLabelTable, labelTable);
     }
 

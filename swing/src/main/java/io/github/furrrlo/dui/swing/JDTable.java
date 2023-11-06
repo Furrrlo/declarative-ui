@@ -4,24 +4,16 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.DropMode;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import javax.swing.plaf.TableUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import org.jetbrains.annotations.Nullable;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTable {
@@ -127,7 +119,7 @@ public class JDTable {
       attribute(PREFIX + "rowSelectionAllowed", JTable::getRowSelectionAllowed, JTable::setRowSelectionAllowed, rowSelectionAllowed);
     }
 
-    public void rowSorter(Supplier<? extends RowSorter> rowSorter) {
+    public void rowSorter(Supplier<? extends RowSorter<? extends TableModel>> rowSorter) {
       attribute(PREFIX + "rowSorter", JTable::getRowSorter, JTable::setRowSorter, rowSorter);
     }
 
