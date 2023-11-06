@@ -5,6 +5,7 @@ plugins {
     id("declarative-ui.testing")
     id("declarative-ui.mrjar")
     id("declarative-ui.publishing")
+    id("declarative-ui.java-beans")
 }
 
 dependencies {
