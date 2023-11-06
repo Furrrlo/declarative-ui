@@ -6,7 +6,6 @@ import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import java.util.function.Supplier;
@@ -36,10 +35,6 @@ public class JDTextPane {
 
     public void document(Supplier<? extends Document> document) {
       attribute(PREFIX + "document", JTextPane::setDocument, document);
-    }
-
-    public void editorKit(Supplier<? extends EditorKit> editorKit) {
-      attribute(PREFIX + "editorKit", JTextPane::setEditorKit, editorKit);
     }
 
     public void logicalStyle(Supplier<? extends Style> logicalStyle) {

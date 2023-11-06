@@ -4,17 +4,12 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JPopupMenu;
-import javax.swing.SingleSelectionModel;
-import javax.swing.plaf.PopupMenuUI;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.PopupMenuUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDPopupMenu {
@@ -69,10 +64,6 @@ public class JDPopupMenu {
 
     public void selectionModel(Supplier<? extends SingleSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JPopupMenu::getSelectionModel, JPopupMenu::setSelectionModel, selectionModel);
-    }
-
-    public void visible(Supplier<Boolean> visible) {
-      attribute(PREFIX + "visible", JPopupMenu::isVisible, JPopupMenu::setVisible, visible);
     }
   }
 }

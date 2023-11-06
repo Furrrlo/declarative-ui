@@ -3,15 +3,10 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JScrollBar;
+
+import javax.swing.*;
 import javax.swing.plaf.ScrollBarUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDScrollBar {
@@ -42,10 +37,6 @@ public class JDScrollBar {
 
     public void blockIncrement(Supplier<Integer> blockIncrement) {
       attribute(PREFIX + "blockIncrement", JScrollBar::getBlockIncrement, JScrollBar::setBlockIncrement, blockIncrement);
-    }
-
-    public void enabled(Supplier<Boolean> enabled) {
-      attribute(PREFIX + "enabled", JScrollBar::setEnabled, enabled);
     }
 
     public void maximum(Supplier<Integer> maximum) {

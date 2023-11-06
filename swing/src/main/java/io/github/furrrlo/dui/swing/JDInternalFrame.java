@@ -102,10 +102,6 @@ public class JDInternalFrame {
       fnAttribute(PREFIX + "layeredPane", JInternalFrame::getLayeredPane, JInternalFrame::setLayeredPane, layeredPane);
     }
 
-    public void layout(Supplier<? extends LayoutManager> layout) {
-      attribute(PREFIX + "layout", JInternalFrame::setLayout, layout);
-    }
-
     public void maximizable(Supplier<Boolean> maximizable) {
       attribute(PREFIX + "maximizable", JInternalFrame::isMaximizable, JInternalFrame::setMaximizable, maximizable);
     }

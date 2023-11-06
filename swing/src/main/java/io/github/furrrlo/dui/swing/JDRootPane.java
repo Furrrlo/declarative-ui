@@ -4,20 +4,12 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Component;
-import java.awt.Container;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JButton;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenuBar;
-import javax.swing.JRootPane;
-import javax.swing.plaf.RootPaneUI;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.RootPaneUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDRootPane {
@@ -58,10 +50,6 @@ public class JDRootPane {
     public void defaultButton(
         @Nullable DeclarativeComponentSupplier<? extends JButton> defaultButton) {
       fnAttribute(PREFIX + "defaultButton", JRootPane::getDefaultButton, JRootPane::setDefaultButton, defaultButton);
-    }
-
-    public void doubleBuffered(Supplier<Boolean> doubleBuffered) {
-      attribute(PREFIX + "doubleBuffered", JRootPane::setDoubleBuffered, doubleBuffered);
     }
 
     public void glassPane(@Nullable DeclarativeComponentSupplier<? extends Component> glassPane) {

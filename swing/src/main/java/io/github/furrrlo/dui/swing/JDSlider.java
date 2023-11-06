@@ -6,7 +6,6 @@ import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;
-import java.awt.*;
 import java.util.Dictionary;
 import java.util.function.Supplier;
 
@@ -39,10 +38,6 @@ public class JDSlider {
 
     public void extent(Supplier<Integer> extent) {
       attribute(PREFIX + "extent", JSlider::getExtent, JSlider::setExtent, extent);
-    }
-
-    public void font(Supplier<? extends Font> font) {
-      attribute(PREFIX + "font", JSlider::setFont, font);
     }
 
     public void inverted(Supplier<Boolean> inverted) {

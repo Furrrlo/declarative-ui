@@ -45,9 +45,5 @@ public class JDEditorPane {
       throw new UnsupportedOperationException();
 //      attribute(PREFIX + "page", JEditorPane::getPage, JEditorPane::setPage, page);
     }
-
-    public void text(Supplier<String> text) {
-      attribute(PREFIX + "text", JEditorPane::getText, JEditorPane::setText, text);
-    }
   }
 }

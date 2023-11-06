@@ -6,7 +6,6 @@ import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.Font;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -49,10 +48,6 @@ public class JDTextField {
 
         public void document(Supplier<? extends Document> document) {
             attribute(PREFIX + "document", JTextField::setDocument, document);
-        }
-
-        public void font(Supplier<? extends Font> font) {
-            attribute(PREFIX + "font", JTextField::setFont, font);
         }
 
         public void horizontalAlignment(

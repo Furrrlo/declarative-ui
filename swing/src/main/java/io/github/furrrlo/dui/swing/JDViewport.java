@@ -4,18 +4,12 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JViewport;
-import javax.swing.border.Border;
-import javax.swing.plaf.ViewportUI;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.ViewportUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDViewport {
@@ -42,10 +36,6 @@ public class JDViewport {
 
     public void ui(Supplier<? extends ViewportUI> ui) {
       attribute(PREFIX + "ui", JViewport::getUI, JViewport::setUI, ui);
-    }
-
-    public void border(Supplier<? extends Border> border) {
-      attribute(PREFIX + "border", JViewport::setBorder, border);
     }
 
     public void extentSize(Supplier<? extends Dimension> extentSize) {

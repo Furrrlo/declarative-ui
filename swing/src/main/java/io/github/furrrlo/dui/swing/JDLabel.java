@@ -45,10 +45,6 @@ public class JDLabel {
             attribute(PREFIX + "icon", JLabel::setIcon, icon);
         }
 
-        public void enabled(Supplier<Boolean> enabled) {
-            attribute(PREFIX + "enabled", JLabel::setEnabled, enabled);
-        }
-
         public void ui(Supplier<? extends LabelUI> ui) {
             attribute(PREFIX + "ui", JLabel::getUI, JLabel::setUI, ui);
         }

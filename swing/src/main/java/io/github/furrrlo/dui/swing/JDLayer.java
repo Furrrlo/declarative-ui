@@ -9,7 +9,6 @@ import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.util.function.Supplier;
@@ -48,20 +47,12 @@ public class JDLayer {
       this.<LayerUI<? super V>>attribute(PREFIX + "ui", JLayer::getUI, JLayer::setUI, ui);
     }
 
-    public void border(Supplier<? extends Border> border) {
-      attribute(PREFIX + "border", JLayer::getBorder, JLayer::setBorder, border);
-    }
-
     public void glassPane(@Nullable DeclarativeComponentSupplier<? extends JPanel> glassPane) {
       fnAttribute(PREFIX + "glassPane", JLayer::getGlassPane, JLayer::setGlassPane, glassPane);
     }
 
     public void layerEventMask(Supplier<Long> layerEventMask) {
       attribute(PREFIX + "layerEventMask", JLayer::getLayerEventMask, JLayer::setLayerEventMask, layerEventMask);
-    }
-
-    public void layout(Supplier<? extends LayoutManager> layout) {
-      attribute(PREFIX + "layout", JLayer::setLayout, layout);
     }
 
     public void view(@Nullable DeclarativeComponentSupplier<? extends V> view) {

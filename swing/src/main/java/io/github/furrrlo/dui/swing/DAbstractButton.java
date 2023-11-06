@@ -30,14 +30,6 @@ public class DAbstractButton {
             attribute(PREFIX + "margin", AbstractButton::setMargin, m);
         }
 
-        public void toolTipText(Supplier<String> tooltip) {
-            attribute(PREFIX + "toolTipText", AbstractButton::setToolTipText, tooltip);
-        }
-
-        public void enabled(Supplier<Boolean> enabled) {
-            attribute(PREFIX + "enabled", AbstractButton::setEnabled, enabled);
-        }
-
         public void selected(Supplier<Boolean> selected) {
             attribute(PREFIX + "selected", AbstractButton::setSelected, selected,
                     // For stuff that toggles, to avoid having to cancel events
@@ -111,10 +103,6 @@ public class DAbstractButton {
 
         public void iconTextGap(Supplier<Integer> iconTextGap) {
             attribute(PREFIX + "iconTextGap", AbstractButton::getIconTextGap, AbstractButton::setIconTextGap, iconTextGap);
-        }
-
-        public void layout(Supplier<? extends LayoutManager> layout) {
-            attribute(PREFIX + "layout", AbstractButton::setLayout, layout);
         }
 
         public void mnemonic(Supplier<Integer> mnemonic) {

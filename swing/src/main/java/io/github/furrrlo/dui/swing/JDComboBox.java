@@ -97,10 +97,6 @@ public class JDComboBox {
             attribute(PREFIX + "editor", JComboBox::getEditor, JComboBox::setEditor, editor);
         }
 
-        public void enabled(Supplier<Boolean> enabled) {
-            attribute(PREFIX + "enabled", JComboBox::setEnabled, enabled);
-        }
-
         public void keySelectionManager(
                 Supplier<? extends JComboBox.KeySelectionManager> keySelectionManager) {
             attribute(PREFIX + "keySelectionManager", JComboBox::getKeySelectionManager, JComboBox::setKeySelectionManager, keySelectionManager);

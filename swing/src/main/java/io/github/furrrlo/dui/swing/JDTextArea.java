@@ -5,7 +5,6 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
-import java.awt.Font;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -36,10 +35,6 @@ public class JDTextArea {
 
         public void columns(Supplier<Integer> columns) {
             attribute(PREFIX + "columns", JTextArea::getColumns, JTextArea::setColumns, columns);
-        }
-
-        public void font(Supplier<? extends Font> font) {
-            attribute(PREFIX + "font", JTextArea::setFont, font);
         }
 
         public void lineWrap(Supplier<Boolean> lineWrap) {

@@ -3,13 +3,9 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+
+import javax.swing.*;
 import java.util.function.Supplier;
-import javax.swing.JFormattedTextField;
-import javax.swing.text.Document;
 
 @SuppressWarnings("unused")
 public class JDFormattedTextField {
@@ -33,10 +29,6 @@ public class JDFormattedTextField {
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
-    }
-
-    public void document(Supplier<? extends Document> document) {
-      attribute(PREFIX + "document", JFormattedTextField::setDocument, document);
     }
 
     public void focusLostBehavior(Supplier<Integer> focusLostBehavior) {

@@ -4,12 +4,9 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 import io.github.furrrlo.dui.swing.JDLabel;
-import java.awt.Color;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
+
 import javax.swing.table.DefaultTableCellRenderer;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class DDefaultTableCellRenderer {
@@ -34,14 +31,6 @@ public class DDefaultTableCellRenderer {
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
-    }
-
-    public void background(Supplier<? extends Color> background) {
-      attribute(PREFIX + "background", DefaultTableCellRenderer::setBackground, background);
-    }
-
-    public void foreground(Supplier<? extends Color> foreground) {
-      attribute(PREFIX + "foreground", DefaultTableCellRenderer::setForeground, foreground);
     }
   }
 }

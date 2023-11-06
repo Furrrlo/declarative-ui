@@ -37,13 +37,5 @@ public class JDMenuItem {
     public void armed(Supplier<Boolean> armed) {
       attribute(PREFIX + "armed", JMenuItem::isArmed, JMenuItem::setArmed, armed);
     }
-
-    public void enabled(Supplier<Boolean> enabled) {
-      attribute(PREFIX + "enabled", JMenuItem::setEnabled, enabled);
-    }
-
-    public void model(Supplier<? extends ButtonModel> model) {
-      attribute(PREFIX + "model", JMenuItem::setModel, model);
-    }
   }
 }

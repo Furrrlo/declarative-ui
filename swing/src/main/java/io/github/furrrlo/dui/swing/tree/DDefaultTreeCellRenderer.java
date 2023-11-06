@@ -4,14 +4,11 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 import io.github.furrrlo.dui.swing.JDLabel;
-import java.awt.Color;
-import java.awt.Font;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.Icon;
+
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class DDefaultTreeCellRenderer {
@@ -37,10 +34,6 @@ public class DDefaultTreeCellRenderer {
       super(type, factory);
     }
 
-    public void background(Supplier<? extends Color> background) {
-      attribute(PREFIX + "background", DefaultTreeCellRenderer::setBackground, background);
-    }
-
     public void backgroundNonSelectionColor(Supplier<? extends Color> backgroundNonSelectionColor) {
       attribute(PREFIX + "backgroundNonSelectionColor", DefaultTreeCellRenderer::getBackgroundNonSelectionColor, DefaultTreeCellRenderer::setBackgroundNonSelectionColor, backgroundNonSelectionColor);
     }
@@ -55,10 +48,6 @@ public class DDefaultTreeCellRenderer {
 
     public void closedIcon(Supplier<? extends Icon> closedIcon) {
       attribute(PREFIX + "closedIcon", DefaultTreeCellRenderer::getClosedIcon, DefaultTreeCellRenderer::setClosedIcon, closedIcon);
-    }
-
-    public void font(Supplier<? extends Font> font) {
-      attribute(PREFIX + "font", DefaultTreeCellRenderer::getFont, DefaultTreeCellRenderer::setFont, font);
     }
 
     public void leafIcon(Supplier<? extends Icon> leafIcon) {

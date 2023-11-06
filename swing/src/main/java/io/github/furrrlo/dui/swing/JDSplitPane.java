@@ -4,20 +4,16 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Component;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Double;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JSplitPane;
-import javax.swing.plaf.SplitPaneUI;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.SplitPaneUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSplitPane {
+  
   public static DeclarativeComponent<JSplitPane> fn(IdentifiableConsumer<Decorator<JSplitPane>> body) {
     return fn(JSplitPane.class, JSplitPane::new, body);
   }

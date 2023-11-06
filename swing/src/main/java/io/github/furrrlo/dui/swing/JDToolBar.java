@@ -3,16 +3,11 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JToolBar;
+
+import javax.swing.*;
 import javax.swing.plaf.ToolBarUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDToolBar {
@@ -47,10 +42,6 @@ public class JDToolBar {
 
     public void floatable(Supplier<Boolean> floatable) {
       attribute(PREFIX + "floatable", JToolBar::isFloatable, JToolBar::setFloatable, floatable);
-    }
-
-    public void layout(Supplier<? extends LayoutManager> layout) {
-      attribute(PREFIX + "layout", JToolBar::setLayout, layout);
     }
 
     public void margin(Supplier<? extends Insets> margin) {

@@ -9,9 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.ScrollPaneUI;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.LayoutManager;
+import java.awt.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -62,10 +60,6 @@ public class JDScrollPane {
 
         public void horizontalScrollBarPolicy(Supplier<Integer> horizontalScrollBarPolicy) {
             attribute(PREFIX + "horizontalScrollBarPolicy", JScrollPane::getHorizontalScrollBarPolicy, JScrollPane::setHorizontalScrollBarPolicy, horizontalScrollBarPolicy);
-        }
-
-        public void layout(Supplier<? extends LayoutManager> layout) {
-            attribute(PREFIX + "layout", JScrollPane::setLayout, layout);
         }
 
         public void rowHeader(@Nullable DeclarativeComponentSupplier<? extends JViewport> rowHeader) {
