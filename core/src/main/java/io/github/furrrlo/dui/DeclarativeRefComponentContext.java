@@ -1,5 +1,7 @@
 package io.github.furrrlo.dui;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -15,14 +17,14 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
 
     <V> DeclarativeRefComponentContext<T> inner(Function<T, V> getter, DeclarativeComponent<V> component);
 
-    default <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    default <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<? extends V> value) {
         return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
     }
 
     <V> DeclarativeRefComponentContext<T> attribute(String key,
-                                                 BiConsumer<T, V> setter,
-                                                 Supplier<V> value,
-                                                 AttributeEqualityFn<T, V> equalityFn);
+                                                    BiConsumer<T, V> setter,
+                                                    Supplier<? extends V> value,
+                                                    AttributeEqualityFn<T, V> equalityFn);
 
     <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
@@ -38,8 +40,8 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
             ListAdder<T, V, S> adder);
 
     <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
-                                                   BiConsumer<T, C> setter,
-                                                   DeclarativeComponentSupplier<C> fn);
+                                                      BiConsumer<T, C> setter,
+                                                      @Nullable DeclarativeComponentSupplier<? extends C> fn);
 
     <C, S extends DeclarativeComponentWithIdSupplier<? extends C>> DeclarativeRefComponentContext<T> listFnAttribute(
             String key,

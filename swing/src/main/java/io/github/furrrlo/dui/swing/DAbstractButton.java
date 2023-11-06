@@ -16,7 +16,7 @@ public class DAbstractButton {
             super(type, factory);
         }
 
-        public void icon(Supplier<Icon> icon) {
+        public void icon(Supplier<? extends Icon> icon) {
             attribute(PREFIX + "icon", AbstractButton::setIcon, icon);
         }
 
@@ -24,7 +24,7 @@ public class DAbstractButton {
             attribute(PREFIX + "text", AbstractButton::setText, text);
         }
 
-        public void margin(Supplier<Insets> m) {
+        public void margin(Supplier<? extends Insets> m) {
             attribute(PREFIX + "margin", AbstractButton::setMargin, m);
         }
 
@@ -42,7 +42,7 @@ public class DAbstractButton {
                     (c, oldV, newV) -> Objects.equals(c.isSelected(), newV));
         }
 
-        public void buttonGroup(Supplier<ButtonGroup> buttonGroup) {
+        public void buttonGroup(Supplier<? extends ButtonGroup> buttonGroup) {
             attribute(PREFIX + "buttonGroup",
                     (btn, group) -> group.add(btn),
                     buttonGroup);

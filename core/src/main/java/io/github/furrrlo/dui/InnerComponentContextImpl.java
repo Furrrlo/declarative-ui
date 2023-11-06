@@ -1,5 +1,7 @@
 package io.github.furrrlo.dui;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.*;
@@ -100,7 +102,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<? extends V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
         return this;
     }
@@ -108,7 +110,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           Supplier<V> value,
+                                                           Supplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         parent.attribute(
                 key,
@@ -149,7 +151,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     @Override
     public <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
                                                              BiConsumer<T, C> setter,
-                                                             DeclarativeComponentSupplier<C> fn) {
+                                                             @Nullable DeclarativeComponentSupplier<? extends C> fn) {
         parent.fnAttribute(key, (parent, v) -> setter.accept(childGetter.apply(parent), v), fn);
         return this;
     }

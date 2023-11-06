@@ -314,7 +314,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         @Override
         public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                                BiConsumer<T, V> setter,
-                                                               Supplier<V> value,
+                                                               Supplier<? extends V> value,
                                                                AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
@@ -358,8 +358,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         }
 
         @Override
-        public <C1> DeclarativeRefComponentContext<T> fnAttribute(String key, BiConsumer<T, C1> setter, DeclarativeComponentSupplier<C1> fn) {
+        public <C1> DeclarativeRefComponentContext<T> fnAttribute(String key,
+                                                                  BiConsumer<T, C1> setter,
+                                                                  @Nullable DeclarativeComponentSupplier<? extends C1> fn0) {
             ensureInsideBody();
+            final DeclarativeComponentSupplier<? extends C1> fn = fn0 != null ? fn0 : DNull.nullFn();
             attributes.put(key, new Attribute<>(
                     key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY,
                     setter, fn::doApplyInternal, AttributeEqualityFn.never()));

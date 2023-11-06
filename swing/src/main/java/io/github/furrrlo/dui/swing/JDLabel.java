@@ -36,7 +36,7 @@ public class JDLabel {
             attribute(PREFIX + "text", JLabel::setText, text);
         }
 
-        public void icon(Supplier<Icon> icon) {
+        public void icon(Supplier<? extends Icon> icon) {
             attribute(PREFIX + "icon", JLabel::setIcon, icon);
         }
 

@@ -5,10 +5,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ public class JDComponent {
             attribute(PREFIX + "visible", JComponent::setVisible, visible);
         }
 
-        public void background(Supplier<Color> color) {
+        public void background(Supplier<? extends Color> color) {
             attribute(PREFIX + "background", JComponent::setBackground, color);
         }
 
@@ -76,7 +75,7 @@ public class JDComponent {
                     () -> l);
         }
 
-        public void layout(Supplier<LayoutManager> layoutManager) {
+        public void layout(Supplier<? extends LayoutManager> layoutManager) {
             attribute(PREFIX + "layout", Container::setLayout, layoutManager);
         }
 

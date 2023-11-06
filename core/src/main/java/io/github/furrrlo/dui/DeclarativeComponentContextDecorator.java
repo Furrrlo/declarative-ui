@@ -206,14 +206,14 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<? extends V> value) {
         return toDecorate().attribute(key, setter, value);
     }
 
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           Supplier<V> value,
+                                                           Supplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         return toDecorate().attribute(key, setter, value, equalityFn);
     }
@@ -240,7 +240,9 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <C> DeclarativeRefComponentContext<T> fnAttribute(String key, BiConsumer<T, C> setter, DeclarativeComponentSupplier<C> fn) {
+    public <C> DeclarativeRefComponentContext<T> fnAttribute(String key,
+                                                             BiConsumer<T, C> setter,
+                                                             @Nullable DeclarativeComponentSupplier<? extends C> fn) {
         return toDecorate().fnAttribute(key, setter, fn);
     }
 

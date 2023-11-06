@@ -1,6 +1,9 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.*;
+import io.github.furrrlo.dui.DeclarativeComponent;
+import io.github.furrrlo.dui.DeclarativeComponentFactory;
+import io.github.furrrlo.dui.DeclarativeComponentSupplier;
+import io.github.furrrlo.dui.IdentifiableConsumer;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -44,19 +47,17 @@ public class JDFrame {
             attribute(PREFIX + "defaultCloseOperation", JFrame::setDefaultCloseOperation, operation);
         }
 
-        public <C extends Container> void contentPane(@Nullable DeclarativeComponentSupplier<C> contentPane) {
-            fnAttribute(PREFIX + "contentPane", JFrame::setContentPane, contentPane != null ?
-                    contentPane.doApply() :
-                    DNull.nullFn());
+        public void contentPane(@Nullable DeclarativeComponentSupplier<? extends Container> contentPane) {
+            fnAttribute(PREFIX + "contentPane", JFrame::setContentPane, contentPane);
         }
 
 
-        public void minimumSize(Supplier<Dimension> dimension) {
+        public void minimumSize(Supplier<? extends Dimension> dimension) {
             attribute(PREFIX + "minimumSize", JFrame::setMinimumSize, dimension);
         }
 
 
-        public void size(Supplier<Dimension> dimension) {
+        public void size(Supplier<? extends Dimension> dimension) {
             attribute(PREFIX + "size", JFrame::setSize, dimension);
         }
 
