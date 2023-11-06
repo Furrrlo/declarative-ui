@@ -1,16 +1,19 @@
 package io.github.furrrlo.dui;
 
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.function.*;
 
 public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentContext<T> {
 
-    private final @Nullable Class<T> type;
+    private final @Nullable TypeToken<T> type;
+    private final List<Type> typeArguments;
     private final Supplier<@Nullable T> factory;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
@@ -22,10 +25,43 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
                                                    Supplier<@Nullable T> factory,
                                                    BooleanSupplier canUpdateInCurrentThread,
                                                    FrameworkScheduler frameworkScheduler) {
+        this(type != null ? TypeToken.get(type) : null, factory, canUpdateInCurrentThread, frameworkScheduler);
+    }
+
+    protected DeclarativeComponentContextDecorator(@Nullable TypeToken<T> type,
+                                                   Supplier<@Nullable T> factory,
+                                                   BooleanSupplier canUpdateInCurrentThread,
+                                                   FrameworkScheduler frameworkScheduler) {
         this.type = type;
+        this.typeArguments = resolveTypeArguments(type);
         this.factory = factory;
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
         this.updateScheduler = frameworkScheduler.updateScheduler;
+    }
+
+    private static List<Type> resolveTypeArguments(@Nullable TypeToken<?> type) {
+        if(type == null)
+            return Collections.emptyList();
+
+        Type reflectedType = type.getType();
+        if(reflectedType instanceof ParameterizedType) {
+            ParameterizedType parametizedType = (ParameterizedType) reflectedType;
+            return Arrays.asList(parametizedType.getActualTypeArguments());
+        }
+
+        return Collections.emptyList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <E> TypeToken<E> getLiteralTypeArgumentAt(int index) {
+        TypeToken<E> type = (TypeToken<E>) TypeToken.get(typeArguments.get(index));
+        Type actualType = type.getType();
+        if(actualType instanceof Class ||
+                actualType instanceof ParameterizedType ||
+                actualType instanceof GenericArrayType)
+            return type;
+
+        throw new UnsupportedOperationException("Type argument at index " + index + " is not a concrete type: " + type);
     }
 
     void setToDecorate(@Nullable DeclarativeRefComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
@@ -103,7 +139,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
 
     // Getters
 
-    public @Nullable Class<T> getType() {
+    public @Nullable TypeToken<T> getType() {
         return type;
     }
 
@@ -221,7 +257,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
-            Class<V> type,
+            TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
             Supplier<List<V>> fn
     ) {
@@ -231,7 +267,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
-            Class<V> type,
+            TypeToken<V> type,
             ListRemover<T> remover,
             Supplier<List<V>> fn,
             ListAdder<T, V, S> adder

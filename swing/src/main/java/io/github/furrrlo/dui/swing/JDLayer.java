@@ -4,6 +4,8 @@ import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.DeclarativeComponentSupplier;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.leangen.geantyref.TypeFactory;
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -14,26 +16,31 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDLayer {
-  public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
-    return fn(JLayer::new, body);
+
+  public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(Class<V> type,
+                                                                         IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+    return fn(TypeToken.get(type), body);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public static <V extends Component> DeclarativeComponent<JLayer<V>>  fn(Supplier<JLayer<V>> factory,
-                                                                   IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
-    return fn((Class<JLayer<V>>) (Class) JLayer.class, factory, body);
+  @SuppressWarnings("unchecked")
+  public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(TypeToken<V> type,
+                                                                         IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+    return fn(
+            (TypeToken<JLayer<V>>) TypeToken.get(TypeFactory.parameterizedClass(JList.class, type.getType())),
+            JLayer::new,
+            body);
   }
 
-  public static <V extends Component, T extends JLayer<V>> DeclarativeComponent<T> fn(Class<T> type,
-                                                                               Supplier<T> factory,
-                                                                               IdentifiableConsumer<Decorator<V, T>> body) {
+  public static <V extends Component, T extends JLayer<V>> DeclarativeComponent<T> fn(TypeToken<T> type,
+                                                                                      Supplier<T> factory,
+                                                                                      IdentifiableConsumer<Decorator<V, T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
   public static class Decorator<V extends Component, T extends JLayer<V>> extends JDComponent.Decorator<T> {
     private static final String PREFIX = "__JDLayer__";
 
-    protected Decorator(Class<T> type, Supplier<T> factory) {
+    protected Decorator(TypeToken<T> type, Supplier<T> factory) {
       super(type, factory);
     }
 

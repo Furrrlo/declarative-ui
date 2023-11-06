@@ -3,6 +3,8 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.leangen.geantyref.TypeFactory;
+import io.leangen.geantyref.TypeToken;
 
 import javax.swing.*;
 import javax.swing.plaf.ComboBoxUI;
@@ -13,35 +15,46 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDComboBox {
 
-
-    public static DeclarativeComponent<JComboBox<String>> fn(IdentifiableConsumer<Decorator<JComboBox<String>>> body) {
-        return fn(JComboBox::new, body);
+    public static DeclarativeComponent<JComboBox<String>> fn(IdentifiableConsumer<Decorator<String, JComboBox<String>>> body) {
+        return fn(String.class, body);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static DeclarativeComponent<JComboBox<String>> fn(Supplier<JComboBox<String>> factory,
-                                                             IdentifiableConsumer<Decorator<JComboBox<String>>> body) {
-        return fn((Class<JComboBox<String>>) (Class) JComboBox.class, factory, body);
+    public static <E> DeclarativeComponent<JComboBox<E>> fn(Class<E> type,
+                                                            IdentifiableConsumer<Decorator<E, JComboBox<E>>> body) {
+        return fn(TypeToken.get(type), body);
     }
 
-    public static <T extends JComboBox<String>> DeclarativeComponent<T> fn(Class<T> type,
-                                                                           Supplier<T> factory,
-                                                                           IdentifiableConsumer<Decorator<T>> body) {
+    @SuppressWarnings("unchecked")
+    public static <E> DeclarativeComponent<JComboBox<E>> fn(TypeToken<E> type,
+                                                            IdentifiableConsumer<Decorator<E, JComboBox<E>>> body) {
+        return fn(
+                (TypeToken<JComboBox<E>>) TypeToken.get(TypeFactory.parameterizedClass(JComboBox.class, type.getType())),
+                JComboBox::new,
+                body);
+    }
+
+    public static <E, T extends JComboBox<E>> DeclarativeComponent<T> fn(TypeToken<T> type,
+                                                                         Supplier<T> factory,
+                                                                         IdentifiableConsumer<Decorator<E, T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
-    public static class Decorator<T extends JComboBox<String>> extends JDComponent.Decorator<T> {
+    public static class Decorator<E, T extends JComboBox<E>> extends JDComponent.Decorator<T> {
 
         private static final String PREFIX = "__JDComboBox__";
 
-        protected Decorator(Class<T> type, Supplier<T> factory) {
+        protected Decorator(TypeToken<T> type, Supplier<T> factory) {
             super(type, factory);
         }
 
-        public void items(Supplier<List<String>> items) {
+        protected TypeToken<E> getLiteralTypeArg() {
+            return getLiteralTypeArgumentAt(0);
+        }
+
+        public void items(Supplier<List<E>> items) {
             listAttribute(
                     PREFIX + "items",
-                    String.class,
+                    getLiteralTypeArg(),
                     JComboBox::removeItemAt,
                     items, (comboBox, idx, s, v) -> {
                         if (idx >= comboBox.getItemCount())
@@ -51,7 +64,7 @@ public class JDComboBox {
                     });
         }
 
-        public void selectedItem(Supplier<String> item) {
+        public void selectedItem(Supplier<Object> item) {
             attribute(PREFIX + "selectedItem", JComboBox::setSelectedItem, item);
         }
 
@@ -102,7 +115,7 @@ public class JDComboBox {
             attribute(PREFIX + "maximumRowCount", JComboBox::getMaximumRowCount, JComboBox::setMaximumRowCount, maximumRowCount);
         }
 
-        public void model(Supplier<? extends ComboBoxModel<String>> model) {
+        public void model(Supplier<? extends ComboBoxModel<E>> model) {
             attribute(PREFIX + "model", JComboBox::getModel, JComboBox::setModel, model);
         }
 
@@ -110,12 +123,12 @@ public class JDComboBox {
             attribute(PREFIX + "popupVisible", JComboBox::isPopupVisible, JComboBox::setPopupVisible, popupVisible);
         }
 
-        public void prototypeDisplayValue(Supplier<String> prototypeDisplayValue) {
+        public void prototypeDisplayValue(Supplier<E> prototypeDisplayValue) {
             attribute(PREFIX + "prototypeDisplayValue", JComboBox::getPrototypeDisplayValue, JComboBox::setPrototypeDisplayValue, prototypeDisplayValue);
         }
 
-        public void renderer(Supplier<? extends ListCellRenderer<? super String>> renderer) {
-            this.<ListCellRenderer<? super String>>attribute(PREFIX + "renderer", JComboBox::getRenderer, JComboBox::setRenderer, renderer);
+        public void renderer(Supplier<? extends ListCellRenderer<? super E>> renderer) {
+            this.<ListCellRenderer<? super E>>attribute(PREFIX + "renderer", JComboBox::getRenderer, JComboBox::setRenderer, renderer);
         }
 
         public void selectedIndex(Supplier<Integer> selectedIndex) {

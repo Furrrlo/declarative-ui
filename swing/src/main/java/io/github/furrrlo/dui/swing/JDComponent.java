@@ -1,6 +1,7 @@
 package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.*;
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -23,6 +24,11 @@ public class JDComponent {
         private final ReservedMemo<List<Child<?>>> reservedChildMemo;
 
         protected Decorator(Class<T> type, Supplier<T> factory) {
+            super(type, factory);
+            reservedChildMemo = reserveMemo(Collections::emptyList);
+        }
+
+        protected Decorator(TypeToken<T> type, Supplier<T> factory) {
             super(type, factory);
             reservedChildMemo = reserveMemo(Collections::emptyList);
         }

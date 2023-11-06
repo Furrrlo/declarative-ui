@@ -1,6 +1,7 @@
 package io.github.furrrlo.dui;
 
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -20,7 +21,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     private final @Nullable DeclarativeComponentContextDecorator<T> decorator;
     private final Supplier<@Nullable T> componentFactory;
-    private final @Nullable Class<T> componentType;
+    private final @Nullable TypeToken<T> componentType;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
     private T component;
@@ -39,7 +40,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
 
-    private DeclarativeComponentImpl(Class<T> componentType,
+    private DeclarativeComponentImpl(TypeToken<T> componentType,
                                      Supplier<T> componentFactory,
                                      BooleanSupplier canUpdateInCurrentThread,
                                      UpdateScheduler updateScheduler) {
@@ -78,7 +79,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     public @Nullable String getDeclarativeType() {
         return body != null ?
                 body.getImplClass().getName() :
-                componentType != null ? componentType.getName() : null;
+                componentType != null ? componentType.getType().getTypeName() : null;
     }
 
     @Override
@@ -327,7 +328,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         @SuppressWarnings("unchecked")
         public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
                 String key,
-                Class<V> type,
+                TypeToken<V> type,
                 ListReplacer<T, V, S> replacer,
                 Supplier<List<V>> fn
         ) {
@@ -343,7 +344,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         @SuppressWarnings("unchecked")
         public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
                 String key,
-                Class<V> type,
+                TypeToken<V> type,
                 ListRemover<T> remover,
                 Supplier<List<V>> fn,
                 ListAdder<T, V, S> adder
@@ -464,10 +465,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     private static class SingleItem<T> implements DeclarativeComponentWithIdSupplier<T> {
 
-        private final Class<T> type;
+        private final TypeToken<T> type;
         private final T item;
 
-        public SingleItem(Class<T> type, T item) {
+        public SingleItem(TypeToken<T> type, T item) {
             this.type = type;
             this.item = item;
         }

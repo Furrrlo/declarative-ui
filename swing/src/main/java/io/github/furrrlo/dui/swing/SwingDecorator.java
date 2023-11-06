@@ -2,6 +2,7 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator;
 import io.github.furrrlo.dui.FrameworkScheduler;
+import io.leangen.geantyref.TypeToken;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +16,10 @@ public class SwingDecorator<T> extends DeclarativeComponentContextDecorator<T> {
     private static final AtomicReference<FrameworkScheduler> SWING_UPDATE_SCHEDULER = new AtomicReference<>();
 
     protected SwingDecorator(Class<T> type, Supplier<T> factory) {
+        super(type, factory, SwingUtilities::isEventDispatchThread, getSwingUpdateScheduler());
+    }
+
+    protected SwingDecorator(TypeToken<T> type, Supplier<T> factory) {
         super(type, factory, SwingUtilities::isEventDispatchThread, getSwingUpdateScheduler());
     }
 

@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -33,15 +34,32 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
                                                     Supplier<? extends V> value,
                                                     AttributeEqualityFn<T, V> equalityFn);
 
-    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
+    default <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
-            Supplier<List<V>> fn);
+            Supplier<List<V>> fn) {
+        return listAttribute(key, TypeToken.get(type), replacer, fn);
+    }
 
     <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
+            TypeToken<V> type,
+            ListReplacer<T, V, S> replacer,
+            Supplier<List<V>> fn);
+
+    default <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
+            String key,
             Class<V> type,
+            ListRemover<T> remover,
+            Supplier<List<V>> fn,
+            ListAdder<T, V, S> adder) {
+        return listAttribute(key, TypeToken.get(type), remover, fn, adder);
+    }
+
+    <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
+            String key,
+            TypeToken<V> type,
             ListRemover<T> remover,
             Supplier<List<V>> fn,
             ListAdder<T, V, S> adder);

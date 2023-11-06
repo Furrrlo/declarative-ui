@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
@@ -123,7 +124,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     @Override
     public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
-            Class<V> type,
+            TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
             Supplier<List<V>> fn
     ) {
@@ -136,7 +137,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     @Override
     public <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
-            Class<V> type,
+            TypeToken<V> type,
             ListRemover<T> remover,
             Supplier<List<V>> fn,
             ListAdder<T, V, S> adder

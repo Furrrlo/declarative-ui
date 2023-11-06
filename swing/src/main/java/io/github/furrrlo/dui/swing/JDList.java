@@ -3,6 +3,8 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.leangen.geantyref.TypeFactory;
+import io.leangen.geantyref.TypeToken;
 
 import javax.swing.*;
 import javax.swing.plaf.ListUI;
@@ -12,26 +14,30 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDList {
 
-  // TODO: what generics do we use here?
-
-  public static DeclarativeComponent<JList> fn(IdentifiableConsumer<Decorator<JList>> body) {
-    return fn(JList.class, JList::new, body);
+  public static <E> DeclarativeComponent<JList<E>> fn(Class<E> type,
+                                                      IdentifiableConsumer<Decorator<E, JList<E>>> body) {
+    return fn(TypeToken.get(type), body);
   }
 
-  public static DeclarativeComponent<JList> fn(Supplier<JList> factory,
-      IdentifiableConsumer<Decorator<JList>> body) {
-    return fn(JList.class, factory, body);
+  @SuppressWarnings("unchecked")
+  public static <E> DeclarativeComponent<JList<E>> fn(TypeToken<E> type,
+                                                      IdentifiableConsumer<Decorator<E, JList<E>>> body) {
+    return fn(
+            (TypeToken<JList<E>>) TypeToken.get(TypeFactory.parameterizedClass(JList.class, type.getType())),
+            JList::new,
+            body);
   }
 
-  public static <T extends JList> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+  public static <E, T extends JList<E>> DeclarativeComponent<T> fn(TypeToken<T> type,
+                                                                   Supplier<T> factory,
+                                                                   IdentifiableConsumer<Decorator<E, T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
-  public static class Decorator<T extends JList> extends JDComponent.Decorator<T> {
+  public static class Decorator<E, T extends JList<E>> extends JDComponent.Decorator<T> {
     private static final String PREFIX = "__JDList__";
 
-    protected Decorator(Class<T> type, Supplier<T> factory) {
+    protected Decorator(TypeToken<T> type, Supplier<T> factory) {
       super(type, factory);
     }
 
@@ -39,8 +45,8 @@ public class JDList {
       attribute(PREFIX + "ui", JList::getUI, JList::setUI, ui);
     }
 
-    public void cellRenderer(Supplier<? extends ListCellRenderer> cellRenderer) {
-      attribute(PREFIX + "cellRenderer", JList::getCellRenderer, JList::setCellRenderer, cellRenderer);
+    public void cellRenderer(Supplier<? extends ListCellRenderer<? super E>> cellRenderer) {
+      this.<ListCellRenderer<? super E>>attribute(PREFIX + "cellRenderer", JList::getCellRenderer, JList::setCellRenderer, cellRenderer);
     }
 
     public void dragEnabled(Supplier<Boolean> dragEnabled) {
@@ -67,11 +73,11 @@ public class JDList {
       // TODO: implement "listData"
     }
 
-    public void model(Supplier<? extends ListModel> model) {
+    public void model(Supplier<? extends ListModel<E>> model) {
       attribute(PREFIX + "model", JList::getModel, JList::setModel, model);
     }
 
-    public void prototypeCellValue(Supplier<?> prototypeCellValue) {
+    public void prototypeCellValue(Supplier<E> prototypeCellValue) {
       attribute(PREFIX + "prototypeCellValue", JList::getPrototypeCellValue, JList::setPrototypeCellValue, prototypeCellValue);
     }
 

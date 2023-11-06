@@ -6,3 +6,7 @@ plugins {
     id("declarative-ui.mrjar")
     id("declarative-ui.publishing")
 }
+
+dependencies {
+    api("io.leangen.geantyref:geantyref:1.3.14")
+}
