@@ -39,25 +39,27 @@ public class JDComponent {
         }
 
         public void name(Supplier<String> name) {
-            attribute(PREFIX + "name", Component::setName, name);
+            attribute(PREFIX + "name", Component::getName, Component::setName, name);
         }
 
         public void visible(Supplier<Boolean> visible) {
-            attribute(PREFIX + "visible", JComponent::setVisible, visible);
+            attribute(PREFIX + "visible", JComponent::isVisible, JComponent::setVisible, visible);
         }
 
         public void background(Supplier<? extends Color> color) {
-            attribute(PREFIX + "background", JComponent::setBackground, color);
+            attribute(PREFIX + "background", JComponent::getBackground, JComponent::setBackground, color);
         }
 
         public void maximumWidth(Supplier<Integer> width) {
             attribute(PREFIX + "maximumHeight",
+                    c -> c.getMaximumSize().width,
                     (c, w) -> c.setMaximumSize(new Dimension(w, (int) c.getMaximumSize().getHeight())),
                     width);
         }
 
         public void maximumHeight(Supplier<Integer> height) {
             attribute(PREFIX + "maximumHeight",
+                    c -> c.getMaximumSize().height,
                     (c, h) -> c.setMaximumSize(new Dimension((int) c.getMaximumSize().getWidth(), h)),
                     height);
         }
@@ -84,7 +86,7 @@ public class JDComponent {
         }
 
         public void layout(Supplier<? extends LayoutManager> layoutManager) {
-            attribute(PREFIX + "layout", Container::setLayout, layoutManager);
+            attribute(PREFIX + "layout", Container::getLayout, Container::setLayout, layoutManager);
         }
 
         public void children(IdentifiableConsumer<ChildCollector> childCollector) {
@@ -209,15 +211,15 @@ public class JDComponent {
         }
 
         public void enabled(Supplier<Boolean> enabled) {
-            attribute(PREFIX + "enabled", JComponent::setEnabled, enabled);
+            attribute(PREFIX + "enabled", JComponent::isEnabled, JComponent::setEnabled, enabled);
         }
 
         public void font(Supplier<? extends Font> font) {
-            attribute(PREFIX + "font", JComponent::setFont, font);
+            attribute(PREFIX + "font", JComponent::getFont, JComponent::setFont, font);
         }
 
         public void foreground(Supplier<? extends Color> foreground) {
-            attribute(PREFIX + "foreground", JComponent::setForeground, foreground);
+            attribute(PREFIX + "foreground", JComponent::getForeground, JComponent::setForeground, foreground);
         }
 
         public void inheritsPopupMenu(Supplier<Boolean> inheritsPopupMenu) {
@@ -256,6 +258,10 @@ public class JDComponent {
 
         public void verifyInputWhenFocusTarget(Supplier<Boolean> verifyInputWhenFocusTarget) {
             attribute(PREFIX + "verifyInputWhenFocusTarget", JComponent::getVerifyInputWhenFocusTarget, JComponent::setVerifyInputWhenFocusTarget, verifyInputWhenFocusTarget);
+        }
+
+        public void componentOrientation(Supplier<ComponentOrientation> componentOrientation) {
+            attribute(PREFIX + "componentOrientation", JComponent::getComponentOrientation, JComponent::setComponentOrientation, componentOrientation);
         }
     }
 }

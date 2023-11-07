@@ -34,10 +34,6 @@ public class JDTextComponent {
       attribute(PREFIX + "caretPosition", JTextComponent::getCaretPosition, JTextComponent::setCaretPosition, caretPosition);
     }
 
-    public void componentOrientation(Supplier<ComponentOrientation> componentOrientation) {
-      attribute(PREFIX + "componentOrientation", JTextComponent::setComponentOrientation, componentOrientation);
-    }
-
     public void disabledTextColor(Supplier<? extends Color> disabledTextColor) {
       attribute(PREFIX + "disabledTextColor", JTextComponent::getDisabledTextColor, JTextComponent::setDisabledTextColor, disabledTextColor);
     }

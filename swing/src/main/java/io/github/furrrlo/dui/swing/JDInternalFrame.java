@@ -59,7 +59,7 @@ public class JDInternalFrame {
     }
 
     public void cursor(Supplier<? extends Cursor> cursor) {
-      attribute(PREFIX + "cursor", JInternalFrame::setCursor, cursor);
+      attribute(PREFIX + "cursor", JInternalFrame::getCursor, JInternalFrame::setCursor, cursor);
     }
 
     public void defaultCloseOperation(Supplier<Integer> defaultCloseOperation) {

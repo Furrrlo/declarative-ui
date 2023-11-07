@@ -5,7 +5,6 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -29,10 +28,6 @@ public class JDMenu {
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
-    }
-
-    public void componentOrientation(Supplier<ComponentOrientation> componentOrientation) {
-      attribute(PREFIX + "componentOrientation", JMenu::setComponentOrientation, componentOrientation);
     }
 
     public void delay(Supplier<Integer> delay) {

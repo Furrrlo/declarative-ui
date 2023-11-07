@@ -132,7 +132,7 @@ public class JDTable {
     }
 
     public void selectionMode(Supplier<Integer> selectionMode) {
-      attribute(PREFIX + "selectionMode", JTable::setSelectionMode, selectionMode);
+      attribute(PREFIX + "selectionMode", t -> t.getSelectionModel().getSelectionMode(), JTable::setSelectionMode, selectionMode);
     }
 
     public void selectionModel(Supplier<? extends ListSelectionModel> selectionModel) {

@@ -5,7 +5,6 @@ import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
 
 import javax.swing.*;
-import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import java.util.function.Supplier;
@@ -31,10 +30,6 @@ public class JDTextPane {
 
     protected Decorator(Class<T> type, Supplier<T> factory) {
       super(type, factory);
-    }
-
-    public void document(Supplier<? extends Document> document) {
-      attribute(PREFIX + "document", JTextPane::setDocument, document);
     }
 
     public void logicalStyle(Supplier<? extends Style> logicalStyle) {

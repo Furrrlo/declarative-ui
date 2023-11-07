@@ -50,10 +50,6 @@ public class JDScrollPane {
             fnAttribute(PREFIX + "columnHeaderView", JScrollPane::setColumnHeaderView, columnHeaderView);
         }
 
-        public void componentOrientation(Supplier<ComponentOrientation> componentOrientation) {
-            attribute(PREFIX + "componentOrientation", JScrollPane::setComponentOrientation, componentOrientation);
-        }
-
         public void horizontalScrollBar(@Nullable DeclarativeComponentSupplier<? extends JScrollBar> horizontalScrollBar) {
             fnAttribute(PREFIX + "horizontalScrollBar", JScrollPane::getHorizontalScrollBar, JScrollPane::setHorizontalScrollBar, horizontalScrollBar);
         }

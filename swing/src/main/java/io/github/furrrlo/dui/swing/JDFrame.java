@@ -41,15 +41,15 @@ public class JDFrame {
         }
 
         public void visible(Supplier<Boolean> visible) {
-            attribute(PREFIX + "visible", Frame::setVisible, visible);
+            attribute(PREFIX + "visible", Frame::isVisible, Frame::setVisible, visible);
         }
 
         public void title(Supplier<String> title) {
-            attribute(PREFIX + "title", Frame::setTitle, title);
+            attribute(PREFIX + "title", Frame::getTitle, Frame::setTitle, title);
         }
 
         public void defaultCloseOperation(Supplier<Integer> operation) {
-            attribute(PREFIX + "defaultCloseOperation", JFrame::setDefaultCloseOperation, operation);
+            attribute(PREFIX + "defaultCloseOperation", JFrame::getDefaultCloseOperation, JFrame::setDefaultCloseOperation, operation);
         }
 
         public void contentPane(@Nullable DeclarativeComponentSupplier<? extends Container> contentPane) {
@@ -58,12 +58,12 @@ public class JDFrame {
 
 
         public void minimumSize(Supplier<? extends Dimension> dimension) {
-            attribute(PREFIX + "minimumSize", JFrame::setMinimumSize, dimension);
+            attribute(PREFIX + "minimumSize", JFrame::getMinimumSize, JFrame::setMinimumSize, dimension);
         }
 
 
         public void size(Supplier<? extends Dimension> dimension) {
-            attribute(PREFIX + "size", JFrame::setSize, dimension);
+            attribute(PREFIX + "size", JFrame::getSize, JFrame::setSize, dimension);
         }
 
         public void locationRelativeTo(Supplier<Component> c) {

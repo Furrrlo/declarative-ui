@@ -38,11 +38,11 @@ public class JDLabel {
         }
 
         public void text(Supplier<String> text) {
-            attribute(PREFIX + "text", JLabel::setText, text);
+            attribute(PREFIX + "text", JLabel::getText, JLabel::setText, text);
         }
 
         public void icon(Supplier<? extends Icon> icon) {
-            attribute(PREFIX + "icon", JLabel::setIcon, icon);
+            attribute(PREFIX + "icon", JLabel::getIcon, JLabel::setIcon, icon);
         }
 
         public void ui(Supplier<? extends LabelUI> ui) {

@@ -19,15 +19,15 @@ public class DAbstractButton {
         }
 
         public void icon(Supplier<? extends Icon> icon) {
-            attribute(PREFIX + "icon", AbstractButton::setIcon, icon);
+            attribute(PREFIX + "icon", AbstractButton::getIcon, AbstractButton::setIcon, icon);
         }
 
         public void text(Supplier<String> text) {
-            attribute(PREFIX + "text", AbstractButton::setText, text);
+            attribute(PREFIX + "text", AbstractButton::getText, AbstractButton::setText, text);
         }
 
         public void margin(Supplier<? extends Insets> m) {
-            attribute(PREFIX + "margin", AbstractButton::setMargin, m);
+            attribute(PREFIX + "margin", AbstractButton::getMargin, AbstractButton::setMargin, m);
         }
 
         public void selected(Supplier<Boolean> selected) {

@@ -6,7 +6,6 @@ import io.github.furrrlo.dui.IdentifiableConsumer;
 import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
-import javax.swing.text.Document;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -45,10 +44,6 @@ public class JDTextField {
 
         public void columns(Supplier<Integer> columns) {
             attribute(PREFIX + "columns", JTextField::getColumns, JTextField::setColumns, columns);
-        }
-
-        public void document(Supplier<? extends Document> document) {
-            attribute(PREFIX + "document", JTextField::setDocument, document);
         }
 
         public void horizontalAlignment(

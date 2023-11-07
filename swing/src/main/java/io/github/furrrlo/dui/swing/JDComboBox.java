@@ -65,7 +65,7 @@ public class JDComboBox {
         }
 
         public void selectedItem(Supplier<Object> item) {
-            attribute(PREFIX + "selectedItem", JComboBox::setSelectedItem, item);
+            attribute(PREFIX + "selectedItem", JComboBox::getSelectedItem, JComboBox::setSelectedItem, item);
         }
 
         public void actionListener(ActionListener l) {

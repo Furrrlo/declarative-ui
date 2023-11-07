@@ -46,6 +46,7 @@ public class JDTabbedPane {
         public void tabLayoutPolicy(Supplier<Integer> tabLayoutPolicy) {
             attribute(
                     PREFIX + "tabLayoutPolicy",
+                    JTabbedPane::getTabLayoutPolicy,
                     JTabbedPane::setTabLayoutPolicy,
                     tabLayoutPolicy);
         }
@@ -53,6 +54,7 @@ public class JDTabbedPane {
         public void tabPlacement(Supplier<Integer> tabPlacement) {
             attribute(
                     PREFIX + "tabPlacement",
+                    JTabbedPane::getTabPlacement,
                     JTabbedPane::setTabPlacement,
                     tabPlacement);
         }
@@ -60,6 +62,7 @@ public class JDTabbedPane {
         public void selectedTab(Supplier<Integer> index) {
             attribute(
                     PREFIX + "selectedTab",
+                    JTabbedPane::getSelectedIndex,
                     JTabbedPane::setSelectedIndex,
                     index);
         }
