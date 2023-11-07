@@ -33,6 +33,11 @@ public class JDFrame {
 
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
+
+            setDisposer(window -> {
+                window.setVisible(false);
+                window.dispose();
+            });
         }
 
         public void visible(Supplier<Boolean> visible) {

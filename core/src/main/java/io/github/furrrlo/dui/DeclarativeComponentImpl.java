@@ -4,7 +4,6 @@ import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoPr
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -21,6 +20,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     private final @Nullable DeclarativeComponentContextDecorator<T> decorator;
     private final Supplier<@Nullable T> componentFactory;
+    private final @Nullable Consumer<T> componentDisposer;
     private final @Nullable TypeToken<T> componentType;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
@@ -36,6 +36,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         this.decorator = decorator;
         this.componentType = decorator.getType();
         this.componentFactory = decorator.getFactory();
+        this.componentDisposer = decorator.getDisposer();
         this.updateScheduler = decorator.getUpdateScheduler();
         this.canUpdateInCurrentThread = decorator.getCanUpdateInCurrentThread();
     }
@@ -48,6 +49,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         this.decorator = null;
         this.componentType = componentType;
         this.componentFactory = componentFactory;
+        this.componentDisposer = null;
         this.updateScheduler = updateScheduler;
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
     }
@@ -230,12 +232,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         if(context != null)
             context.attributes.values().forEach(Attr::dispose);
 
-        // TODO: how to make components disposable?
-        if(component instanceof Window) {
-            final Window window = (Window) component;
-            window.setVisible(false);
-            window.dispose();
-        }
+        if(component != null && componentDisposer != null)
+            componentDisposer.accept(component);
 
         component = null;
     }

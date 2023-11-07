@@ -15,6 +15,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     private final @Nullable TypeToken<T> type;
     private final List<Type> typeArguments;
     private final Supplier<@Nullable T> factory;
+    private @Nullable Consumer<T> disposer;
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
 
@@ -37,6 +38,12 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         this.factory = factory;
         this.canUpdateInCurrentThread = canUpdateInCurrentThread;
         this.updateScheduler = frameworkScheduler.updateScheduler;
+    }
+
+    protected void setDisposer(Consumer<T> diposer) {
+        if(toDecorate != null)
+            throw new UnsupportedOperationException("Too late to set disposer");
+        this.disposer = diposer;
     }
 
     private static List<Type> resolveTypeArguments(@Nullable TypeToken<?> type) {
@@ -145,6 +152,10 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
 
     public Supplier<@Nullable T> getFactory() {
         return factory;
+    }
+
+    public @Nullable Consumer<T> getDisposer() {
+        return disposer;
     }
 
     UpdateScheduler getUpdateScheduler() {
