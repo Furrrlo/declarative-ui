@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
 import javax.swing.text.Document;

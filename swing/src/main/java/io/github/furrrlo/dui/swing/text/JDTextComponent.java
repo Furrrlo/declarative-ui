@@ -1,24 +1,13 @@
 package io.github.furrrlo.dui.swing.text;
 
 import io.github.furrrlo.dui.swing.JDComponent;
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Insets;
-import java.lang.Boolean;
-import java.lang.Character;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.DropMode;
+
+import javax.swing.*;
 import javax.swing.plaf.TextUI;
-import javax.swing.text.Caret;
-import javax.swing.text.Document;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Keymap;
-import javax.swing.text.NavigationFilter;
+import javax.swing.text.*;
+import java.awt.*;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTextComponent {
@@ -104,9 +93,11 @@ public class JDTextComponent {
     public void selectionStart(Supplier<Integer> selectionStart) {
       attribute(PREFIX + "selectionStart", JTextComponent::getSelectionStart, JTextComponent::setSelectionStart, selectionStart);
     }
-
     public void text(Supplier<String> text) {
-      attribute(PREFIX + "text", JTextComponent::getText, JTextComponent::setText, text);
+      attribute(PREFIX + "text", JTextComponent::getText, (textField, t) -> {
+        if (!Objects.equals(textField.getText(), t))
+          textField.setText(t);
+      }, text);
     }
   }
 }
