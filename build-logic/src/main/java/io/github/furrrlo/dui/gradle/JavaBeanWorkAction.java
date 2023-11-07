@@ -126,7 +126,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
 
             final String fileContent = Files.readString(outputPath);
 
-            List<MethodSpec> methodSpecs = generateMethods(targetClassName, beanInfo);
+            List<MethodSpec> methodSpecs = generateMethods(candidateClass, targetClassName, beanInfo);
             if(methodSpecs != null)
                 methodSpecs = methodSpecs.stream()
                         .filter(generatedMethod -> !fileContent.contains('"' + generatedMethod.name + '"'))
@@ -260,7 +260,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                         .addStatement("super(type, factory)")
                         .build());
 
-        final List<MethodSpec> methods = generateMethods(targetClassName, beanInfo);
+        final List<MethodSpec> methods = generateMethods(candidateClass, targetClassName, beanInfo);
         if(methods == null) {
             decoratorClass.addStaticBlock(CodeBlock.builder()
                     .addStatement("// TODO: BeanInfo inspection broke down")
@@ -272,7 +272,9 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
         return decoratorClass.build();
     }
 
-    private @Nullable List<MethodSpec> generateMethods(ClassName targetClassName, BeanInfo beanInfo) {
+    private @Nullable List<MethodSpec> generateMethods(Class<?> candidateClass,
+                                                       ClassName targetClassName,
+                                                       BeanInfo beanInfo) {
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         if(propertyDescriptors == null)
             return null;
@@ -285,7 +287,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
             if(setter == null || setter.getAnnotation(Deprecated.class) != null)
                 continue;
             // Ignore overrides
-            if(setter.getAnnotation(Override.class) != null)
+            if(!candidateClass.equals(JComponent.class) && isOverridingMethod(setter))
                 continue;
 
             String name = propertyDescriptor.getName();
@@ -321,6 +323,24 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
         }
 
         return methods;
+    }
+
+    private boolean isOverridingMethod(Method method) {
+        Class<?> parent = method.getDeclaringClass().getSuperclass();
+        while (parent != null && !parent.equals(Object.class)) {
+            try {
+                parent.getDeclaredMethod(method.getName(), method.getParameterTypes());
+                return true;
+            } catch (NoSuchMethodException e) {
+                // Doesn't have it
+            }
+
+            if(parent.equals(JComponent.class))
+                break;
+            parent = parent.getSuperclass();
+        }
+
+        return false;
     }
 
     private MethodSpec generateAttributeMethod(String attrName,
