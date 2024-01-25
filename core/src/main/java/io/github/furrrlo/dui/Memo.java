@@ -5,7 +5,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface Memo<T> extends Supplier<T> {
+public interface Memo<T> extends IdentifiableSupplier<T> {
 
     @Override
     T get();

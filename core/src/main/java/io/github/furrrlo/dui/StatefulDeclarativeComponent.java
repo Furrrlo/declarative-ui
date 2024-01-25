@@ -640,7 +640,9 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    private static class BaseMemo<V> implements Memo<V> {
+    private static class BaseMemo<V> implements Memo<V>, IdentifiableSupplier.Explicit<V> {
+
+        private static Object[] NO_DEPS = new Object[] {};
 
         private final Set<Runnable> signalDeps = new LinkedHashSet<>();
 
@@ -649,6 +651,13 @@ abstract class StatefulDeclarativeComponent<
 
         public BaseMemo(BiPredicate<V, V> equalityFn) {
             this.equalityFn = equalityFn;
+        }
+
+        @Override
+        public Object[] deps() {
+            // It should be fine here to say we have no dependency,
+            // as the changes will be triggered by the signals (see the method right after)
+            return NO_DEPS;
         }
 
         @Override
