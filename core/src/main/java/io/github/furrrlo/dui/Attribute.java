@@ -3,9 +3,7 @@ package io.github.furrrlo.dui;
 import io.github.furrrlo.dui.DeclarativeRefComponentContext.AttributeEqualityFn;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,11 +15,15 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     private final String key;
     private final int updatePriority;
     private final BiConsumer<T, V> setter;
-    private final Supplier<?> valueSupplier;
+    private final Supplier<? extends V> valueSupplier;
     private final AttributeEqualityFn<T, V> equalityFn;
-    private Object value;
+    private V value;
 
-    public Attribute(String key, int updatePriority, BiConsumer<T, V> setter, Supplier<?> valueSupplier, AttributeEqualityFn<T, V> equalityFn) {
+    public Attribute(String key,
+                     int updatePriority,
+                     BiConsumer<T, V> setter,
+                     Supplier<? extends V> valueSupplier,
+                     AttributeEqualityFn<T, V> equalityFn) {
         this.key = key;
         this.updatePriority = updatePriority;
         this.setter = setter;
@@ -48,18 +50,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
                        @Nullable Attribute<T, V> prev,
                        @Nullable Object prevValue) {
         value = valueSupplier.get();
-
-        if (value instanceof DeclarativeComponentSupplier) {
-            updateAttribute(
-                    declarativeComponent,
-                    obj,
-                    wasSet,
-                    (StatefulDeclarativeComponent<V, ?, ?>) value,
-                    (StatefulDeclarativeComponent<V, ?, ?>) prevValue);
-            return;
-        }
-
-        updateAttribute(obj, wasSet, (V) value, (V) prevValue);
+        updateAttribute(obj, wasSet, value, (V) prevValue);
     }
 
     private void updateAttribute(T obj, boolean wasSet, V value, V prevValue) {
@@ -77,53 +68,7 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
         }
     }
 
-    private void updateAttribute(DeclarativeComponentImpl<T, ?> declarativeComponent,
-                                 T obj,
-                                 boolean wasSet,
-                                 StatefulDeclarativeComponent<V, ?, ?> value,
-                                 @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue) {
-        updateDeclarativeComponent(
-                declarativeComponent.getAppConfig(),
-                wasSet,
-                value,
-                prevValue,
-                created -> setter.accept(obj, created),
-                null);
-    }
-
-    static <V> void updateDeclarativeComponent(ApplicationConfig appConfig,
-                                               boolean wasSet,
-                                               StatefulDeclarativeComponent<? extends V, ?, ?> value,
-                                               @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue,
-                                               @Nullable Consumer<V> createdComponent,
-                                               @Nullable Consumer<V> updatedComponent) {
-        value.runOrScheduleOnFrameworkThread(() -> {
-            if(wasSet && Objects.equals(value.getDeclarativeType(), Objects.requireNonNull(prevValue).getDeclarativeType())) {
-                value.substitute(prevValue);
-                value.updateComponent();
-
-                if(updatedComponent != null)
-                    updatedComponent.accept(value.getComponent());
-
-                return;
-            }
-
-            V created = value.updateOrCreateComponent(appConfig);
-            if(createdComponent != null)
-                createdComponent.accept(created);
-
-            if(prevValue != null)
-                prevValue.disposeComponent();
-        });
-    }
-
     @Override
-    @SuppressWarnings("unchecked")
     public void dispose() {
-        if (!(value instanceof DeclarativeComponentSupplier))
-            return;
-
-        StatefulDeclarativeComponent<V, ?, ?> comp = (StatefulDeclarativeComponent<V, ?, ?>) value;
-        comp.runOrScheduleOnFrameworkThread(comp::disposeComponent);
     }
 }

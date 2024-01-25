@@ -64,7 +64,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
         for (idx = 0; idx < value.size(); idx++) {
             final int idx0 = idx;
             final boolean wasSet = idx < prevValues.size();
-            Attribute.updateDeclarativeComponent(
+            FnAttribute.updateDeclarativeComponent(
                     declarativeComponent.getAppConfig(),
                     wasSet,
                     this.value.get(idx),

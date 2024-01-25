@@ -362,9 +362,9 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                                                                   @Nullable DeclarativeComponentSupplier<? extends C1> fn0) {
             ensureInsideBody();
             final DeclarativeComponentSupplier<? extends C1> fn = fn0 != null ? fn0 : DNull.nullFn();
-            attributes.put(key, new Attribute<>(
+            attributes.put(key, new FnAttribute<>(
                     key, SUBCOMPONENT_ATTRIBUTE_UPDATE_PRIORITY,
-                    setter, fn::doApplyInternal, AttributeEqualityFn.never()));
+                    setter, fn));
             return this;
         }
 

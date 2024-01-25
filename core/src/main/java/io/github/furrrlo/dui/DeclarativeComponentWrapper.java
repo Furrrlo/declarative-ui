@@ -129,7 +129,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
                 "updateAttributes(...) called without having invoked the wrapper body");
 
         this.isDeepUpdated = true;
-        Attribute.updateDeclarativeComponent(
+        FnAttribute.updateDeclarativeComponent(
                 getAppConfig(),
                 wasDeepUpdated,
                 curr,

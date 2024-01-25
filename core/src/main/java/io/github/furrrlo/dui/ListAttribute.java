@@ -65,7 +65,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
         int idx;
         for (idx = 0; idx < value.size(); idx++) {
             final boolean wasSet = idx < prevValues.size();
-            Attribute.updateDeclarativeComponent(
+            FnAttribute.updateDeclarativeComponent(
                     declarativeComponent.getAppConfig(),
                     wasSet,
                     this.value.get(idx),
