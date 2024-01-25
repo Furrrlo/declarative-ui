@@ -18,7 +18,7 @@ class Main {
             frame.title(() -> "Counter " + counter.get());
             frame.defaultCloseOperation(() -> WindowConstants.EXIT_ON_CLOSE);
             frame.contentPane(JDPanel.fn(panel -> {
-                panel.layout(panel.useMemo(FlowLayout::new));
+                panel.layout(FlowLayout::new);
                 panel.children(children -> {
                     children.add(JDLabel.fn(label -> label.text(() -> "Current value is " + counter.get())));
                     children.add(JDButton.fn(btn -> {

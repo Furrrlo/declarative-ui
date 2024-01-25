@@ -40,6 +40,7 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
     @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
+                       boolean checkDeps,
                        boolean wasSet,
                        @Nullable FnAttribute<T, V> prev,
                        @Nullable Object prevValue) {

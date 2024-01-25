@@ -253,14 +253,16 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<? extends V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                           BiConsumer<T, V> setter,
+                                                           IdentifiableSupplier<? extends V> value) {
         return toDecorate().attribute(key, setter, value);
     }
 
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           Supplier<? extends V> value,
+                                                           IdentifiableSupplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         return toDecorate().attribute(key, setter, value, equalityFn);
     }
@@ -270,7 +272,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
-            Supplier<List<V>> fn
+            IdentifiableSupplier<List<V>> fn
     ) {
         return toDecorate().listAttribute(key, type, replacer, fn);
     }
@@ -280,7 +282,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             TypeToken<V> type,
             ListRemover<T> remover,
-            Supplier<List<V>> fn,
+            IdentifiableSupplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         return toDecorate().listAttribute(key, type, remover, fn, adder);

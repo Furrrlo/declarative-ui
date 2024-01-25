@@ -50,6 +50,7 @@ class ReplacingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<
     @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
+                       boolean checkDeps,
                        boolean wereSet,
                        @Nullable ReplacingListAttribute<T, C, S> prev,
                        @Nullable Object prevValues0) {

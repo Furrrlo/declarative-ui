@@ -51,6 +51,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
+                       boolean checkDeps,
                        boolean wereSet,
                        @Nullable ListAttribute<T, C, S> prev,
                        @Nullable Object prevValues0) {

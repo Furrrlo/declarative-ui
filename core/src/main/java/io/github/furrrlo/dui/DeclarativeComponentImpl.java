@@ -156,7 +156,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                     context.attributes.get(key) :
                     null;
             final Object prevValue = prevProp != null ? prevProp.value() : null;
-            this.<Attr>updateAttribute(key, prop, component, prevProp != null, prevProp, prevValue);
+            this.<Attr>updateAttribute(key, prop, component, true,prevProp != null, prevProp, prevValue);
         });
         // TODO: what happens when an attribute was there, but is no longer present?
         // for now copy over old attributes (might be not ideal, but at least we don't lose stuff around)
@@ -167,11 +167,12 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     private <A extends Attr<T, A>>  void updateAttribute(String attrKey,
                                                          A attr,
                                                          T obj,
+                                                         boolean checkDeps,
                                                          boolean wasSet,
                                                          @Nullable A prev,
                                                          @Nullable Object prevValue) {
         this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, attr.updatePriority(), () -> {
-            attr.update(this, obj, wasSet, prev, prevValue);
+            attr.update(this, obj, checkDeps, wasSet, prev, prevValue);
             return null;
         });
     }
@@ -217,7 +218,8 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                     if(c == null || (c.context != null && c.context.attributes.get(attrKey) != attr))
                         return;
 
-                    c.runAsComponentUpdate(() -> c.updateAttribute(attrKey, attr, c.component, true, attr, attr.value()));
+                    c.runAsComponentUpdate(() -> c.updateAttribute(
+                            attrKey, attr, c.component, false, true, attr, attr.value()));
                 }),
                 (c, attr) -> new Object[] { attr });
         return withStateDependency(stateDependency, factory);
@@ -313,9 +315,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         @Override
         public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                                BiConsumer<T, V> setter,
-                                                               Supplier<? extends V> value,
+                                                               IdentifiableSupplier<? extends V> value0,
                                                                AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
+            IdentifiableSupplier<? extends V> value = IdentifiableSupplier.explicit(value0);
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
                     () -> new Attribute<>(key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY, setter, value, equalityFn)));
@@ -328,7 +331,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                 String key,
                 TypeToken<V> type,
                 ListReplacer<T, V, S> replacer,
-                Supplier<List<V>> fn
+                IdentifiableSupplier<List<V>> fn
         ) {
             return doListFnAttribute(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
@@ -344,7 +347,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                 String key,
                 TypeToken<V> type,
                 ListRemover<T> remover,
-                Supplier<List<V>> fn,
+                IdentifiableSupplier<List<V>> fn,
                 ListAdder<T, V, S> adder
         ) {
             return doListFnAttribute(
@@ -491,10 +494,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
         int updatePriority();
 
-        Object value();
+        @Nullable Object value();
 
         void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                     T obj,
+                    boolean checkDeps,
                     boolean wasSet,
                     @Nullable SELF prev,
                     @Nullable Object prevValue);

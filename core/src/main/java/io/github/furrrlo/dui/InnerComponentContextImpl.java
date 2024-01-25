@@ -103,7 +103,9 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V> DeclarativeRefComponentContext<T> attribute(String key, BiConsumer<T, V> setter, Supplier<? extends V> value) {
+    public <V> DeclarativeRefComponentContext<T> attribute(String key,
+                                                           BiConsumer<T, V> setter,
+                                                           IdentifiableSupplier<? extends V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
         return this;
     }
@@ -111,7 +113,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           Supplier<? extends V> value,
+                                                           IdentifiableSupplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         parent.attribute(
                 key,
@@ -126,7 +128,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
             String key,
             TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
-            Supplier<List<V>> fn
+            IdentifiableSupplier<List<V>> fn
     ) {
         parent.<V, S>listAttribute(key, type,
                 (parent, idx, supplier, child) -> replacer.replace(childGetter.apply(parent), idx, supplier, child),
@@ -139,7 +141,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
             String key,
             TypeToken<V> type,
             ListRemover<T> remover,
-            Supplier<List<V>> fn,
+            IdentifiableSupplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         parent.<V, S>listAttribute(key, type,

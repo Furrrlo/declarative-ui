@@ -352,7 +352,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                 .returns(TypeName.VOID)
                 .addParameter(
                         ParameterizedTypeName.get(
-                                ClassName.get(Supplier.class),
+                                ClassName.get(DUI_CORE_PKG, "IdentifiableSupplier"),
                                 type.isPrimitive() ?
                                         TypeName.get(type).box() :
                                         (type.getModifiers() & java.lang.reflect.Modifier.FINAL) != 0
