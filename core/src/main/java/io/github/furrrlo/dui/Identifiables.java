@@ -85,7 +85,7 @@ class Identifiables {
         if(o1 != o2 && (o1 == null || o2 == null))
             return false;
         if(!(o1 instanceof Identifiable) || !(o2 instanceof Identifiable))
-            return Objects.equals(o1, o2);
+            return o1 instanceof Identifiable ? Objects.equals(o2, o1) : Objects.equals(o1, o2);
 
         final Identifiable obj = (Identifiable) o1;
         final Identifiable that = (Identifiable) o2;
