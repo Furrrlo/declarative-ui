@@ -1,12 +1,10 @@
 package io.github.furrrlo.dui.swing.colorchooser;
 
+import io.github.furrrlo.dui.IdentifiableSupplier;
 import io.github.furrrlo.dui.swing.JDPanel;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
+
 import javax.swing.colorchooser.AbstractColorChooserPanel;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class DAbstractColorChooserPanel {
@@ -17,8 +15,7 @@ public class DAbstractColorChooserPanel {
       super(type, factory);
     }
 
-    public void colorTransparencySelectionEnabled(
-        Supplier<Boolean> colorTransparencySelectionEnabled) {
+    public void colorTransparencySelectionEnabled(IdentifiableSupplier<Boolean> colorTransparencySelectionEnabled) {
       attribute(PREFIX + "colorTransparencySelectionEnabled", AbstractColorChooserPanel::isColorTransparencySelectionEnabled, AbstractColorChooserPanel::setColorTransparencySelectionEnabled, colorTransparencySelectionEnabled);
     }
   }

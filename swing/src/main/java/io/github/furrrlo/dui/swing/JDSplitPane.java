@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -35,7 +32,7 @@ public class JDSplitPane {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends SplitPaneUI> ui) {
+    public void ui(IdentifiableSupplier<? extends SplitPaneUI> ui) {
       attribute(PREFIX + "ui", JSplitPane::getUI, JSplitPane::setUI, ui);
     }
 
@@ -44,19 +41,19 @@ public class JDSplitPane {
       fnAttribute(PREFIX + "bottomComponent", JSplitPane::getBottomComponent, JSplitPane::setBottomComponent, bottomComponent);
     }
 
-    public void continuousLayout(Supplier<Boolean> continuousLayout) {
+    public void continuousLayout(IdentifiableSupplier<Boolean> continuousLayout) {
       attribute(PREFIX + "continuousLayout", JSplitPane::isContinuousLayout, JSplitPane::setContinuousLayout, continuousLayout);
     }
 
-    public void dividerLocation(Supplier<Integer> dividerLocation) {
+    public void dividerLocation(IdentifiableSupplier<Integer> dividerLocation) {
       attribute(PREFIX + "dividerLocation", JSplitPane::getDividerLocation, JSplitPane::setDividerLocation, dividerLocation);
     }
 
-    public void dividerSize(Supplier<Integer> dividerSize) {
+    public void dividerSize(IdentifiableSupplier<Integer> dividerSize) {
       attribute(PREFIX + "dividerSize", JSplitPane::getDividerSize, JSplitPane::setDividerSize, dividerSize);
     }
 
-    public void lastDividerLocation(Supplier<Integer> lastDividerLocation) {
+    public void lastDividerLocation(IdentifiableSupplier<Integer> lastDividerLocation) {
       attribute(PREFIX + "lastDividerLocation", JSplitPane::getLastDividerLocation, JSplitPane::setLastDividerLocation, lastDividerLocation);
     }
 
@@ -65,15 +62,15 @@ public class JDSplitPane {
       fnAttribute(PREFIX + "leftComponent", JSplitPane::getLeftComponent, JSplitPane::setLeftComponent, leftComponent);
     }
 
-    public void oneTouchExpandable(Supplier<Boolean> oneTouchExpandable) {
+    public void oneTouchExpandable(IdentifiableSupplier<Boolean> oneTouchExpandable) {
       attribute(PREFIX + "oneTouchExpandable", JSplitPane::isOneTouchExpandable, JSplitPane::setOneTouchExpandable, oneTouchExpandable);
     }
 
-    public void orientation(Supplier<Integer> orientation) {
+    public void orientation(IdentifiableSupplier<Integer> orientation) {
       attribute(PREFIX + "orientation", JSplitPane::getOrientation, JSplitPane::setOrientation, orientation);
     }
 
-    public void resizeWeight(Supplier<Double> resizeWeight) {
+    public void resizeWeight(IdentifiableSupplier<Double> resizeWeight) {
       attribute(PREFIX + "resizeWeight", JSplitPane::getResizeWeight, JSplitPane::setResizeWeight, resizeWeight);
     }
 

@@ -1,19 +1,11 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.DesktopManager;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
-import javax.swing.plaf.DesktopPaneUI;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.DesktopPaneUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDDesktopPane {
@@ -38,15 +30,15 @@ public class JDDesktopPane {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends DesktopPaneUI> ui) {
+    public void ui(IdentifiableSupplier<? extends DesktopPaneUI> ui) {
       attribute(PREFIX + "ui", JDesktopPane::getUI, JDesktopPane::setUI, ui);
     }
 
-    public void desktopManager(Supplier<? extends DesktopManager> desktopManager) {
+    public void desktopManager(IdentifiableSupplier<? extends DesktopManager> desktopManager) {
       attribute(PREFIX + "desktopManager", JDesktopPane::getDesktopManager, JDesktopPane::setDesktopManager, desktopManager);
     }
 
-    public void dragMode(Supplier<Integer> dragMode) {
+    public void dragMode(IdentifiableSupplier<Integer> dragMode) {
       attribute(PREFIX + "dragMode", JDesktopPane::getDragMode, JDesktopPane::setDragMode, dragMode);
     }
 

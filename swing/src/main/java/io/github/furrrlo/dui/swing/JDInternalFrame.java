@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -39,11 +36,11 @@ public class JDInternalFrame {
       fnAttribute(PREFIX + "JMenuBar", JInternalFrame::getJMenuBar, JInternalFrame::setJMenuBar, JMenuBar);
     }
 
-    public void ui(Supplier<? extends InternalFrameUI> ui) {
+    public void ui(IdentifiableSupplier<? extends InternalFrameUI> ui) {
       attribute(PREFIX + "ui", JInternalFrame::getUI, JInternalFrame::setUI, ui);
     }
 
-    public void closable(Supplier<Boolean> closable) {
+    public void closable(IdentifiableSupplier<Boolean> closable) {
       attribute(PREFIX + "closable", JInternalFrame::isClosable, JInternalFrame::setClosable, closable);
     }
 
@@ -58,11 +55,11 @@ public class JDInternalFrame {
       fnAttribute(PREFIX + "contentPane", JInternalFrame::getContentPane, JInternalFrame::setContentPane, contentPane);
     }
 
-    public void cursor(Supplier<? extends Cursor> cursor) {
+    public void cursor(IdentifiableSupplier<? extends Cursor> cursor) {
       attribute(PREFIX + "cursor", JInternalFrame::getCursor, JInternalFrame::setCursor, cursor);
     }
 
-    public void defaultCloseOperation(Supplier<Integer> defaultCloseOperation) {
+    public void defaultCloseOperation(IdentifiableSupplier<Integer> defaultCloseOperation) {
       attribute(PREFIX + "defaultCloseOperation", JInternalFrame::getDefaultCloseOperation, JInternalFrame::setDefaultCloseOperation, defaultCloseOperation);
     }
 
@@ -71,11 +68,11 @@ public class JDInternalFrame {
       fnAttribute(PREFIX + "desktopIcon", JInternalFrame::getDesktopIcon, JInternalFrame::setDesktopIcon, desktopIcon);
     }
 
-    public void focusCycleRoot(Supplier<Boolean> focusCycleRoot) {
+    public void focusCycleRoot(IdentifiableSupplier<Boolean> focusCycleRoot) {
       attribute(PREFIX + "focusCycleRoot", JInternalFrame::isFocusCycleRoot, JInternalFrame::setFocusCycleRoot, focusCycleRoot);
     }
 
-    public void frameIcon(Supplier<? extends Icon> frameIcon) {
+    public void frameIcon(IdentifiableSupplier<? extends Icon> frameIcon) {
       attribute(PREFIX + "frameIcon", JInternalFrame::getFrameIcon, JInternalFrame::setFrameIcon, frameIcon);
     }
 
@@ -89,11 +86,11 @@ public class JDInternalFrame {
 //      attribute(PREFIX + "icon", JInternalFrame::isIcon, JInternalFrame::setIcon, icon);
     }
 
-    public void iconifiable(Supplier<Boolean> iconifiable) {
+    public void iconifiable(IdentifiableSupplier<Boolean> iconifiable) {
       attribute(PREFIX + "iconifiable", JInternalFrame::isIconifiable, JInternalFrame::setIconifiable, iconifiable);
     }
 
-    public void layer(Supplier<Integer> layer) {
+    public void layer(IdentifiableSupplier<Integer> layer) {
       attribute(PREFIX + "layer", JInternalFrame::getLayer, JInternalFrame::setLayer, layer);
     }
 
@@ -102,7 +99,7 @@ public class JDInternalFrame {
       fnAttribute(PREFIX + "layeredPane", JInternalFrame::getLayeredPane, JInternalFrame::setLayeredPane, layeredPane);
     }
 
-    public void maximizable(Supplier<Boolean> maximizable) {
+    public void maximizable(IdentifiableSupplier<Boolean> maximizable) {
       attribute(PREFIX + "maximizable", JInternalFrame::isMaximizable, JInternalFrame::setMaximizable, maximizable);
     }
 
@@ -112,11 +109,11 @@ public class JDInternalFrame {
 //      attribute(PREFIX + "maximum", JInternalFrame::isMaximum, JInternalFrame::setMaximum, maximum);
     }
 
-    public void normalBounds(Supplier<? extends Rectangle> normalBounds) {
+    public void normalBounds(IdentifiableSupplier<? extends Rectangle> normalBounds) {
       attribute(PREFIX + "normalBounds", JInternalFrame::getNormalBounds, JInternalFrame::setNormalBounds, normalBounds);
     }
 
-    public void resizable(Supplier<Boolean> resizable) {
+    public void resizable(IdentifiableSupplier<Boolean> resizable) {
       attribute(PREFIX + "resizable", JInternalFrame::isResizable, JInternalFrame::setResizable, resizable);
     }
 
@@ -126,7 +123,7 @@ public class JDInternalFrame {
 //      attribute(PREFIX + "selected", JInternalFrame::isSelected, JInternalFrame::setSelected, selected);
     }
 
-    public void title(Supplier<String> title) {
+    public void title(IdentifiableSupplier<String> title) {
       attribute(PREFIX + "title", JInternalFrame::getTitle, JInternalFrame::setTitle, title);
     }
   }

@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -30,11 +31,11 @@ public class JDMenu {
       super(type, factory);
     }
 
-    public void delay(Supplier<Integer> delay) {
+    public void delay(IdentifiableSupplier<Integer> delay) {
       attribute(PREFIX + "delay", JMenu::getDelay, JMenu::setDelay, delay);
     }
 
-    public void popupMenuVisible(Supplier<Boolean> popupMenuVisible) {
+    public void popupMenuVisible(IdentifiableSupplier<Boolean> popupMenuVisible) {
       attribute(PREFIX + "popupMenuVisible", JMenu::isPopupMenuVisible, JMenu::setPopupMenuVisible, popupMenuVisible);
     }
   }

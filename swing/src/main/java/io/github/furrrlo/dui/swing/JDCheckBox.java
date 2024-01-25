@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -33,7 +34,7 @@ public class JDCheckBox {
             super(type, factory);
         }
 
-        public void borderPaintedFlat(Supplier<Boolean> borderPaintedFlat) {
+        public void borderPaintedFlat(IdentifiableSupplier<Boolean> borderPaintedFlat) {
             attribute(PREFIX + "borderPaintedFlat", JCheckBox::isBorderPaintedFlat, JCheckBox::setBorderPaintedFlat, borderPaintedFlat);
         }
     }

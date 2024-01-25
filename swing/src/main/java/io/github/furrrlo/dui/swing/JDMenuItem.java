@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -30,11 +31,11 @@ public class JDMenuItem {
       super(type, factory);
     }
 
-    public void accelerator(Supplier<? extends KeyStroke> accelerator) {
+    public void accelerator(IdentifiableSupplier<? extends KeyStroke> accelerator) {
       attribute(PREFIX + "accelerator", JMenuItem::getAccelerator, JMenuItem::setAccelerator, accelerator);
     }
 
-    public void armed(Supplier<Boolean> armed) {
+    public void armed(IdentifiableSupplier<Boolean> armed) {
       attribute(PREFIX + "armed", JMenuItem::isArmed, JMenuItem::setArmed, armed);
     }
   }

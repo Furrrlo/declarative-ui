@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -38,7 +35,7 @@ public class JDRootPane {
       fnAttribute(PREFIX + "JMenuBar", JRootPane::getJMenuBar, JRootPane::setJMenuBar, JMenuBar);
     }
 
-    public void ui(Supplier<? extends RootPaneUI> ui) {
+    public void ui(IdentifiableSupplier<? extends RootPaneUI> ui) {
       attribute(PREFIX + "ui", JRootPane::getUI, JRootPane::setUI, ui);
     }
 
@@ -61,7 +58,7 @@ public class JDRootPane {
       fnAttribute(PREFIX + "layeredPane", JRootPane::getLayeredPane, JRootPane::setLayeredPane, layeredPane);
     }
 
-    public void windowDecorationStyle(Supplier<Integer> windowDecorationStyle) {
+    public void windowDecorationStyle(IdentifiableSupplier<Integer> windowDecorationStyle) {
       attribute(PREFIX + "windowDecorationStyle", JRootPane::getWindowDecorationStyle, JRootPane::setWindowDecorationStyle, windowDecorationStyle);
     }
   }

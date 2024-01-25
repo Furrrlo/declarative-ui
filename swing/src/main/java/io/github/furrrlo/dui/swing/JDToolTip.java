@@ -1,16 +1,10 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JComponent;
-import javax.swing.JToolTip;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDToolTip {
@@ -39,7 +33,7 @@ public class JDToolTip {
       fnAttribute(PREFIX + "component", JToolTip::getComponent, JToolTip::setComponent, component);
     }
 
-    public void tipText(Supplier<String> tipText) {
+    public void tipText(IdentifiableSupplier<String> tipText) {
       attribute(PREFIX + "tipText", JToolTip::getTipText, JToolTip::setTipText, tipText);
     }
   }

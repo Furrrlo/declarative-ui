@@ -43,7 +43,7 @@ public class JDTabbedPane {
             reservedTabsMemo = reserveMemo(Collections::emptyList);
         }
 
-        public void tabLayoutPolicy(Supplier<Integer> tabLayoutPolicy) {
+        public void tabLayoutPolicy(IdentifiableSupplier<Integer> tabLayoutPolicy) {
             attribute(
                     PREFIX + "tabLayoutPolicy",
                     JTabbedPane::getTabLayoutPolicy,
@@ -51,7 +51,7 @@ public class JDTabbedPane {
                     tabLayoutPolicy);
         }
 
-        public void tabPlacement(Supplier<Integer> tabPlacement) {
+        public void tabPlacement(IdentifiableSupplier<Integer> tabPlacement) {
             attribute(
                     PREFIX + "tabPlacement",
                     JTabbedPane::getTabPlacement,
@@ -59,7 +59,7 @@ public class JDTabbedPane {
                     tabPlacement);
         }
 
-        public void selectedTab(Supplier<Integer> index) {
+        public void selectedTab(IdentifiableSupplier<Integer> index) {
             attribute(
                     PREFIX + "selectedTab",
                     JTabbedPane::getSelectedIndex,
@@ -251,11 +251,11 @@ public class JDTabbedPane {
                     l);
         }
 
-        public void ui(Supplier<? extends TabbedPaneUI> ui) {
+        public void ui(IdentifiableSupplier<? extends TabbedPaneUI> ui) {
             attribute(PREFIX + "ui", JTabbedPane::getUI, JTabbedPane::setUI, ui);
         }
 
-        public void model(Supplier<? extends SingleSelectionModel> model) {
+        public void model(IdentifiableSupplier<? extends SingleSelectionModel> model) {
             attribute(PREFIX + "model", JTabbedPane::getModel, JTabbedPane::setModel, model);
         }
 
@@ -264,7 +264,7 @@ public class JDTabbedPane {
             fnAttribute(PREFIX + "selectedComponent", JTabbedPane::getSelectedComponent, JTabbedPane::setSelectedComponent, selectedComponent);
         }
 
-        public void selectedIndex(Supplier<Integer> selectedIndex) {
+        public void selectedIndex(IdentifiableSupplier<Integer> selectedIndex) {
             attribute(PREFIX + "selectedIndex", JTabbedPane::getSelectedIndex, JTabbedPane::setSelectedIndex, selectedIndex);
         }
     }

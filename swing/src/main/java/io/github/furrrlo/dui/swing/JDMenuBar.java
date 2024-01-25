@@ -1,20 +1,12 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.awt.Insets;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.SingleSelectionModel;
-import javax.swing.plaf.MenuBarUI;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.MenuBarUI;
+import java.awt.*;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDMenuBar {
@@ -39,11 +31,11 @@ public class JDMenuBar {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends MenuBarUI> ui) {
+    public void ui(IdentifiableSupplier<? extends MenuBarUI> ui) {
       attribute(PREFIX + "ui", JMenuBar::getUI, JMenuBar::setUI, ui);
     }
 
-    public void borderPainted(Supplier<Boolean> borderPainted) {
+    public void borderPainted(IdentifiableSupplier<Boolean> borderPainted) {
       attribute(PREFIX + "borderPainted", JMenuBar::isBorderPainted, JMenuBar::setBorderPainted, borderPainted);
     }
 
@@ -51,11 +43,11 @@ public class JDMenuBar {
       fnAttribute(PREFIX + "helpMenu", JMenuBar::getHelpMenu, JMenuBar::setHelpMenu, helpMenu);
     }
 
-    public void margin(Supplier<? extends Insets> margin) {
+    public void margin(IdentifiableSupplier<? extends Insets> margin) {
       attribute(PREFIX + "margin", JMenuBar::getMargin, JMenuBar::setMargin, margin);
     }
 
-    public void selectionModel(Supplier<? extends SingleSelectionModel> selectionModel) {
+    public void selectionModel(IdentifiableSupplier<? extends SingleSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JMenuBar::getSelectionModel, JMenuBar::setSelectionModel, selectionModel);
     }
   }

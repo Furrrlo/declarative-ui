@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
@@ -34,23 +35,23 @@ public class JDTextArea {
             super(type, factory);
         }
 
-        public void columns(Supplier<Integer> columns) {
+        public void columns(IdentifiableSupplier<Integer> columns) {
             attribute(PREFIX + "columns", JTextArea::getColumns, JTextArea::setColumns, columns);
         }
 
-        public void lineWrap(Supplier<Boolean> lineWrap) {
+        public void lineWrap(IdentifiableSupplier<Boolean> lineWrap) {
             attribute(PREFIX + "lineWrap", JTextArea::getLineWrap, JTextArea::setLineWrap, lineWrap);
         }
 
-        public void rows(Supplier<Integer> rows) {
+        public void rows(IdentifiableSupplier<Integer> rows) {
             attribute(PREFIX + "rows", JTextArea::getRows, JTextArea::setRows, rows);
         }
 
-        public void tabSize(Supplier<Integer> tabSize) {
+        public void tabSize(IdentifiableSupplier<Integer> tabSize) {
             attribute(PREFIX + "tabSize", JTextArea::getTabSize, JTextArea::setTabSize, tabSize);
         }
 
-        public void wrapStyleWord(Supplier<Boolean> wrapStyleWord) {
+        public void wrapStyleWord(IdentifiableSupplier<Boolean> wrapStyleWord) {
             attribute(PREFIX + "wrapStyleWord", JTextArea::getWrapStyleWord, JTextArea::setWrapStyleWord, wrapStyleWord);
         }
     }

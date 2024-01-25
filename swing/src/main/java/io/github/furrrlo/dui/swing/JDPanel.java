@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 
 import javax.swing.*;
 import javax.swing.plaf.PanelUI;
@@ -34,7 +35,7 @@ public class JDPanel {
             super(type, factory);
         }
 
-        public void ui(Supplier<? extends PanelUI> ui) {
+        public void ui(IdentifiableSupplier<? extends PanelUI> ui) {
             attribute(PREFIX + "ui", JPanel::getUI, JPanel::setUI, ui);
         }
     }

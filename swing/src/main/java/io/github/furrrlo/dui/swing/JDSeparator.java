@@ -3,13 +3,11 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JSeparator;
+import io.github.furrrlo.dui.IdentifiableSupplier;
+
+import javax.swing.*;
 import javax.swing.plaf.SeparatorUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSeparator {
@@ -34,11 +32,11 @@ public class JDSeparator {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends SeparatorUI> ui) {
+    public void ui(IdentifiableSupplier<? extends SeparatorUI> ui) {
       attribute(PREFIX + "ui", JSeparator::getUI, JSeparator::setUI, ui);
     }
 
-    public void orientation(Supplier<Integer> orientation) {
+    public void orientation(IdentifiableSupplier<Integer> orientation) {
       attribute(PREFIX + "orientation", JSeparator::getOrientation, JSeparator::setOrientation, orientation);
     }
   }

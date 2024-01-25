@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -34,11 +31,11 @@ public class JDPopupMenu {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends PopupMenuUI> ui) {
+    public void ui(IdentifiableSupplier<? extends PopupMenuUI> ui) {
       attribute(PREFIX + "ui", JPopupMenu::getUI, JPopupMenu::setUI, ui);
     }
 
-    public void borderPainted(Supplier<Boolean> borderPainted) {
+    public void borderPainted(IdentifiableSupplier<Boolean> borderPainted) {
       attribute(PREFIX + "borderPainted", JPopupMenu::isBorderPainted, JPopupMenu::setBorderPainted, borderPainted);
     }
 
@@ -46,15 +43,15 @@ public class JDPopupMenu {
       fnAttribute(PREFIX + "invoker", JPopupMenu::getInvoker, JPopupMenu::setInvoker, invoker);
     }
 
-    public void label(Supplier<String> label) {
+    public void label(IdentifiableSupplier<String> label) {
       attribute(PREFIX + "label", JPopupMenu::getLabel, JPopupMenu::setLabel, label);
     }
 
-    public void lightWeightPopupEnabled(Supplier<Boolean> lightWeightPopupEnabled) {
+    public void lightWeightPopupEnabled(IdentifiableSupplier<Boolean> lightWeightPopupEnabled) {
       attribute(PREFIX + "lightWeightPopupEnabled", JPopupMenu::isLightWeightPopupEnabled, JPopupMenu::setLightWeightPopupEnabled, lightWeightPopupEnabled);
     }
 
-    public void popupSize(Supplier<? extends Dimension> popupSize) {
+    public void popupSize(IdentifiableSupplier<? extends Dimension> popupSize) {
       attribute(PREFIX + "popupSize", JPopupMenu::setPopupSize, popupSize);
     }
 
@@ -62,7 +59,7 @@ public class JDPopupMenu {
       fnAttribute(PREFIX + "selected", JPopupMenu::setSelected, selected);
     }
 
-    public void selectionModel(Supplier<? extends SingleSelectionModel> selectionModel) {
+    public void selectionModel(IdentifiableSupplier<? extends SingleSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JPopupMenu::getSelectionModel, JPopupMenu::setSelectionModel, selectionModel);
     }
   }

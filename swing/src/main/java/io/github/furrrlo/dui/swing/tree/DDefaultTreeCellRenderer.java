@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing.tree;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 import io.github.furrrlo.dui.swing.JDLabel;
 
 import javax.swing.*;
@@ -34,35 +35,35 @@ public class DDefaultTreeCellRenderer {
       super(type, factory);
     }
 
-    public void backgroundNonSelectionColor(Supplier<? extends Color> backgroundNonSelectionColor) {
+    public void backgroundNonSelectionColor(IdentifiableSupplier<? extends Color> backgroundNonSelectionColor) {
       attribute(PREFIX + "backgroundNonSelectionColor", DefaultTreeCellRenderer::getBackgroundNonSelectionColor, DefaultTreeCellRenderer::setBackgroundNonSelectionColor, backgroundNonSelectionColor);
     }
 
-    public void backgroundSelectionColor(Supplier<? extends Color> backgroundSelectionColor) {
+    public void backgroundSelectionColor(IdentifiableSupplier<? extends Color> backgroundSelectionColor) {
       attribute(PREFIX + "backgroundSelectionColor", DefaultTreeCellRenderer::getBackgroundSelectionColor, DefaultTreeCellRenderer::setBackgroundSelectionColor, backgroundSelectionColor);
     }
 
-    public void borderSelectionColor(Supplier<? extends Color> borderSelectionColor) {
+    public void borderSelectionColor(IdentifiableSupplier<? extends Color> borderSelectionColor) {
       attribute(PREFIX + "borderSelectionColor", DefaultTreeCellRenderer::getBorderSelectionColor, DefaultTreeCellRenderer::setBorderSelectionColor, borderSelectionColor);
     }
 
-    public void closedIcon(Supplier<? extends Icon> closedIcon) {
+    public void closedIcon(IdentifiableSupplier<? extends Icon> closedIcon) {
       attribute(PREFIX + "closedIcon", DefaultTreeCellRenderer::getClosedIcon, DefaultTreeCellRenderer::setClosedIcon, closedIcon);
     }
 
-    public void leafIcon(Supplier<? extends Icon> leafIcon) {
+    public void leafIcon(IdentifiableSupplier<? extends Icon> leafIcon) {
       attribute(PREFIX + "leafIcon", DefaultTreeCellRenderer::getLeafIcon, DefaultTreeCellRenderer::setLeafIcon, leafIcon);
     }
 
-    public void openIcon(Supplier<? extends Icon> openIcon) {
+    public void openIcon(IdentifiableSupplier<? extends Icon> openIcon) {
       attribute(PREFIX + "openIcon", DefaultTreeCellRenderer::getOpenIcon, DefaultTreeCellRenderer::setOpenIcon, openIcon);
     }
 
-    public void textNonSelectionColor(Supplier<? extends Color> textNonSelectionColor) {
+    public void textNonSelectionColor(IdentifiableSupplier<? extends Color> textNonSelectionColor) {
       attribute(PREFIX + "textNonSelectionColor", DefaultTreeCellRenderer::getTextNonSelectionColor, DefaultTreeCellRenderer::setTextNonSelectionColor, textNonSelectionColor);
     }
 
-    public void textSelectionColor(Supplier<? extends Color> textSelectionColor) {
+    public void textSelectionColor(IdentifiableSupplier<? extends Color> textSelectionColor) {
       attribute(PREFIX + "textSelectionColor", DefaultTreeCellRenderer::getTextSelectionColor, DefaultTreeCellRenderer::setTextSelectionColor, textSelectionColor);
     }
   }

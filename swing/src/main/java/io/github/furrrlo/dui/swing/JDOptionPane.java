@@ -3,15 +3,11 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.Icon;
-import javax.swing.JOptionPane;
+import io.github.furrrlo.dui.IdentifiableSupplier;
+
+import javax.swing.*;
 import javax.swing.plaf.OptionPaneUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDOptionPane {
@@ -36,35 +32,35 @@ public class JDOptionPane {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends OptionPaneUI> ui) {
+    public void ui(IdentifiableSupplier<? extends OptionPaneUI> ui) {
       attribute(PREFIX + "ui", JOptionPane::getUI, JOptionPane::setUI, ui);
     }
 
-    public void icon(Supplier<? extends Icon> icon) {
+    public void icon(IdentifiableSupplier<? extends Icon> icon) {
       attribute(PREFIX + "icon", JOptionPane::getIcon, JOptionPane::setIcon, icon);
     }
 
-    public void initialSelectionValue(Supplier<?> initialSelectionValue) {
+    public void initialSelectionValue(IdentifiableSupplier<?> initialSelectionValue) {
       attribute(PREFIX + "initialSelectionValue", JOptionPane::getInitialSelectionValue, JOptionPane::setInitialSelectionValue, initialSelectionValue);
     }
 
-    public void initialValue(Supplier<?> initialValue) {
+    public void initialValue(IdentifiableSupplier<?> initialValue) {
       attribute(PREFIX + "initialValue", JOptionPane::getInitialValue, JOptionPane::setInitialValue, initialValue);
     }
 
-    public void inputValue(Supplier<?> inputValue) {
+    public void inputValue(IdentifiableSupplier<?> inputValue) {
       attribute(PREFIX + "inputValue", JOptionPane::getInputValue, JOptionPane::setInputValue, inputValue);
     }
 
-    public void message(Supplier<?> message) {
+    public void message(IdentifiableSupplier<?> message) {
       attribute(PREFIX + "message", JOptionPane::getMessage, JOptionPane::setMessage, message);
     }
 
-    public void messageType(Supplier<Integer> messageType) {
+    public void messageType(IdentifiableSupplier<Integer> messageType) {
       attribute(PREFIX + "messageType", JOptionPane::getMessageType, JOptionPane::setMessageType, messageType);
     }
 
-    public void optionType(Supplier<Integer> optionType) {
+    public void optionType(IdentifiableSupplier<Integer> optionType) {
       attribute(PREFIX + "optionType", JOptionPane::getOptionType, JOptionPane::setOptionType, optionType);
     }
 
@@ -76,11 +72,11 @@ public class JDOptionPane {
       // TODO: implement "selectionValues"
     }
 
-    public void value(Supplier<?> value) {
+    public void value(IdentifiableSupplier<?> value) {
       attribute(PREFIX + "value", JOptionPane::getValue, JOptionPane::setValue, value);
     }
 
-    public void wantsInput(Supplier<Boolean> wantsInput) {
+    public void wantsInput(IdentifiableSupplier<Boolean> wantsInput) {
       attribute(PREFIX + "wantsInput", JOptionPane::getWantsInput, JOptionPane::setWantsInput, wantsInput);
     }
   }

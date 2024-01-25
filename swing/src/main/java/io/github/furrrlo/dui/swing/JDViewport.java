@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -34,15 +31,15 @@ public class JDViewport {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends ViewportUI> ui) {
+    public void ui(IdentifiableSupplier<? extends ViewportUI> ui) {
       attribute(PREFIX + "ui", JViewport::getUI, JViewport::setUI, ui);
     }
 
-    public void extentSize(Supplier<? extends Dimension> extentSize) {
+    public void extentSize(IdentifiableSupplier<? extends Dimension> extentSize) {
       attribute(PREFIX + "extentSize", JViewport::getExtentSize, JViewport::setExtentSize, extentSize);
     }
 
-    public void scrollMode(Supplier<Integer> scrollMode) {
+    public void scrollMode(IdentifiableSupplier<Integer> scrollMode) {
       attribute(PREFIX + "scrollMode", JViewport::getScrollMode, JViewport::setScrollMode, scrollMode);
     }
 
@@ -50,11 +47,11 @@ public class JDViewport {
       fnAttribute(PREFIX + "view", JViewport::getView, JViewport::setView, view);
     }
 
-    public void viewPosition(Supplier<? extends Point> viewPosition) {
+    public void viewPosition(IdentifiableSupplier<? extends Point> viewPosition) {
       attribute(PREFIX + "viewPosition", JViewport::getViewPosition, JViewport::setViewPosition, viewPosition);
     }
 
-    public void viewSize(Supplier<? extends Dimension> viewSize) {
+    public void viewSize(IdentifiableSupplier<? extends Dimension> viewSize) {
       attribute(PREFIX + "viewSize", JViewport::getViewSize, JViewport::setViewSize, viewSize);
     }
   }

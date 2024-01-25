@@ -3,15 +3,11 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JProgressBar;
+import io.github.furrrlo.dui.IdentifiableSupplier;
+
+import javax.swing.*;
 import javax.swing.plaf.ProgressBarUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDProgressBar {
@@ -36,43 +32,43 @@ public class JDProgressBar {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends ProgressBarUI> ui) {
+    public void ui(IdentifiableSupplier<? extends ProgressBarUI> ui) {
       attribute(PREFIX + "ui", JProgressBar::getUI, JProgressBar::setUI, ui);
     }
 
-    public void borderPainted(Supplier<Boolean> borderPainted) {
+    public void borderPainted(IdentifiableSupplier<Boolean> borderPainted) {
       attribute(PREFIX + "borderPainted", JProgressBar::isBorderPainted, JProgressBar::setBorderPainted, borderPainted);
     }
 
-    public void indeterminate(Supplier<Boolean> indeterminate) {
+    public void indeterminate(IdentifiableSupplier<Boolean> indeterminate) {
       attribute(PREFIX + "indeterminate", JProgressBar::isIndeterminate, JProgressBar::setIndeterminate, indeterminate);
     }
 
-    public void maximum(Supplier<Integer> maximum) {
+    public void maximum(IdentifiableSupplier<Integer> maximum) {
       attribute(PREFIX + "maximum", JProgressBar::getMaximum, JProgressBar::setMaximum, maximum);
     }
 
-    public void minimum(Supplier<Integer> minimum) {
+    public void minimum(IdentifiableSupplier<Integer> minimum) {
       attribute(PREFIX + "minimum", JProgressBar::getMinimum, JProgressBar::setMinimum, minimum);
     }
 
-    public void model(Supplier<? extends BoundedRangeModel> model) {
+    public void model(IdentifiableSupplier<? extends BoundedRangeModel> model) {
       attribute(PREFIX + "model", JProgressBar::getModel, JProgressBar::setModel, model);
     }
 
-    public void orientation(Supplier<Integer> orientation) {
+    public void orientation(IdentifiableSupplier<Integer> orientation) {
       attribute(PREFIX + "orientation", JProgressBar::getOrientation, JProgressBar::setOrientation, orientation);
     }
 
-    public void string(Supplier<String> string) {
+    public void string(IdentifiableSupplier<String> string) {
       attribute(PREFIX + "string", JProgressBar::getString, JProgressBar::setString, string);
     }
 
-    public void stringPainted(Supplier<Boolean> stringPainted) {
+    public void stringPainted(IdentifiableSupplier<Boolean> stringPainted) {
       attribute(PREFIX + "stringPainted", JProgressBar::isStringPainted, JProgressBar::setStringPainted, stringPainted);
     }
 
-    public void value(Supplier<Integer> value) {
+    public void value(IdentifiableSupplier<Integer> value) {
       attribute(PREFIX + "value", JProgressBar::getValue, JProgressBar::setValue, value);
     }
   }

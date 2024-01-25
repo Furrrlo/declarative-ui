@@ -1,18 +1,11 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JComponent;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.plaf.SpinnerUI;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.plaf.SpinnerUI;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSpinner {
@@ -37,7 +30,7 @@ public class JDSpinner {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends SpinnerUI> ui) {
+    public void ui(IdentifiableSupplier<? extends SpinnerUI> ui) {
       attribute(PREFIX + "ui", JSpinner::getUI, JSpinner::setUI, ui);
     }
 
@@ -45,11 +38,11 @@ public class JDSpinner {
       fnAttribute(PREFIX + "editor", JSpinner::getEditor, JSpinner::setEditor, editor);
     }
 
-    public void model(Supplier<? extends SpinnerModel> model) {
+    public void model(IdentifiableSupplier<? extends SpinnerModel> model) {
       attribute(PREFIX + "model", JSpinner::getModel, JSpinner::setModel, model);
     }
 
-    public void value(Supplier<?> value) {
+    public void value(IdentifiableSupplier<?> value) {
       attribute(PREFIX + "value", JSpinner::getValue, JSpinner::setValue, value);
     }
   }

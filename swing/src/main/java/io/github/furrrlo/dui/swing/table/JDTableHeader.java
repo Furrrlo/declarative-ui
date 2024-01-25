@@ -1,23 +1,16 @@
 package io.github.furrrlo.dui.swing.table;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import io.github.furrrlo.dui.swing.JDComponent;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.Integer;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-import java.util.function.Supplier;
-import javax.swing.JTable;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import javax.swing.plaf.TableHeaderUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.jetbrains.annotations.Nullable;
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTableHeader {
@@ -42,35 +35,35 @@ public class JDTableHeader {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends TableHeaderUI> ui) {
+    public void ui(IdentifiableSupplier<? extends TableHeaderUI> ui) {
       attribute(PREFIX + "ui", JTableHeader::getUI, JTableHeader::setUI, ui);
     }
 
-    public void columnModel(Supplier<? extends TableColumnModel> columnModel) {
+    public void columnModel(IdentifiableSupplier<? extends TableColumnModel> columnModel) {
       attribute(PREFIX + "columnModel", JTableHeader::getColumnModel, JTableHeader::setColumnModel, columnModel);
     }
 
-    public void defaultRenderer(Supplier<? extends TableCellRenderer> defaultRenderer) {
+    public void defaultRenderer(IdentifiableSupplier<? extends TableCellRenderer> defaultRenderer) {
       attribute(PREFIX + "defaultRenderer", JTableHeader::getDefaultRenderer, JTableHeader::setDefaultRenderer, defaultRenderer);
     }
 
-    public void draggedColumn(Supplier<? extends TableColumn> draggedColumn) {
+    public void draggedColumn(IdentifiableSupplier<? extends TableColumn> draggedColumn) {
       attribute(PREFIX + "draggedColumn", JTableHeader::getDraggedColumn, JTableHeader::setDraggedColumn, draggedColumn);
     }
 
-    public void draggedDistance(Supplier<Integer> draggedDistance) {
+    public void draggedDistance(IdentifiableSupplier<Integer> draggedDistance) {
       attribute(PREFIX + "draggedDistance", JTableHeader::getDraggedDistance, JTableHeader::setDraggedDistance, draggedDistance);
     }
 
-    public void reorderingAllowed(Supplier<Boolean> reorderingAllowed) {
+    public void reorderingAllowed(IdentifiableSupplier<Boolean> reorderingAllowed) {
       attribute(PREFIX + "reorderingAllowed", JTableHeader::getReorderingAllowed, JTableHeader::setReorderingAllowed, reorderingAllowed);
     }
 
-    public void resizingAllowed(Supplier<Boolean> resizingAllowed) {
+    public void resizingAllowed(IdentifiableSupplier<Boolean> resizingAllowed) {
       attribute(PREFIX + "resizingAllowed", JTableHeader::getResizingAllowed, JTableHeader::setResizingAllowed, resizingAllowed);
     }
 
-    public void resizingColumn(Supplier<? extends TableColumn> resizingColumn) {
+    public void resizingColumn(IdentifiableSupplier<? extends TableColumn> resizingColumn) {
       attribute(PREFIX + "resizingColumn", JTableHeader::getResizingColumn, JTableHeader::setResizingColumn, resizingColumn);
     }
 
@@ -78,7 +71,7 @@ public class JDTableHeader {
       fnAttribute(PREFIX + "table", JTableHeader::getTable, JTableHeader::setTable, table);
     }
 
-    public void updateTableInRealTime(Supplier<Boolean> updateTableInRealTime) {
+    public void updateTableInRealTime(IdentifiableSupplier<Boolean> updateTableInRealTime) {
       attribute(PREFIX + "updateTableInRealTime", JTableHeader::getUpdateTableInRealTime, JTableHeader::setUpdateTableInRealTime, updateTableInRealTime);
     }
   }

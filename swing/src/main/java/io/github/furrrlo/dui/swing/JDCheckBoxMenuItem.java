@@ -3,12 +3,10 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
-import java.lang.Boolean;
-import java.lang.Class;
-import java.lang.String;
-import java.lang.SuppressWarnings;
+import io.github.furrrlo.dui.IdentifiableSupplier;
+
+import javax.swing.*;
 import java.util.function.Supplier;
-import javax.swing.JCheckBoxMenuItem;
 
 @SuppressWarnings("unused")
 public class JDCheckBoxMenuItem {
@@ -34,7 +32,7 @@ public class JDCheckBoxMenuItem {
       super(type, factory);
     }
 
-    public void state(Supplier<Boolean> state) {
+    public void state(IdentifiableSupplier<Boolean> state) {
       attribute(PREFIX + "state", JCheckBoxMenuItem::getState, JCheckBoxMenuItem::setState, state);
     }
   }

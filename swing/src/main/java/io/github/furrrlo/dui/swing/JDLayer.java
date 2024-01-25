@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import io.leangen.geantyref.TypeFactory;
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +40,7 @@ public class JDLayer {
       super(type, factory);
     }
 
-    public void ui(Supplier<? extends LayerUI<? super V>> ui) {
+    public void ui(IdentifiableSupplier<? extends LayerUI<? super V>> ui) {
       this.<LayerUI<? super V>>attribute(PREFIX + "ui", JLayer::getUI, JLayer::setUI, ui);
     }
 
@@ -51,7 +48,7 @@ public class JDLayer {
       fnAttribute(PREFIX + "glassPane", JLayer::getGlassPane, JLayer::setGlassPane, glassPane);
     }
 
-    public void layerEventMask(Supplier<Long> layerEventMask) {
+    public void layerEventMask(IdentifiableSupplier<Long> layerEventMask) {
       attribute(PREFIX + "layerEventMask", JLayer::getLayerEventMask, JLayer::setLayerEventMask, layerEventMask);
     }
 

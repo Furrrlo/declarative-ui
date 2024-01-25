@@ -1,14 +1,11 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.plaf.LabelUI;
-import java.awt.Component;
+import java.awt.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -37,39 +34,39 @@ public class JDLabel {
             super(type, factory);
         }
 
-        public void text(Supplier<String> text) {
+        public void text(IdentifiableSupplier<String> text) {
             attribute(PREFIX + "text", JLabel::getText, JLabel::setText, text);
         }
 
-        public void icon(Supplier<? extends Icon> icon) {
+        public void icon(IdentifiableSupplier<? extends Icon> icon) {
             attribute(PREFIX + "icon", JLabel::getIcon, JLabel::setIcon, icon);
         }
 
-        public void ui(Supplier<? extends LabelUI> ui) {
+        public void ui(IdentifiableSupplier<? extends LabelUI> ui) {
             attribute(PREFIX + "ui", JLabel::getUI, JLabel::setUI, ui);
         }
 
-        public void disabledIcon(Supplier<? extends Icon> disabledIcon) {
+        public void disabledIcon(IdentifiableSupplier<? extends Icon> disabledIcon) {
             attribute(PREFIX + "disabledIcon", JLabel::getDisabledIcon, JLabel::setDisabledIcon, disabledIcon);
         }
 
-        public void displayedMnemonic(Supplier<Integer> displayedMnemonic) {
+        public void displayedMnemonic(IdentifiableSupplier<Integer> displayedMnemonic) {
             attribute(PREFIX + "displayedMnemonic", JLabel::getDisplayedMnemonic, JLabel::setDisplayedMnemonic, displayedMnemonic);
         }
 
-        public void displayedMnemonicIndex(Supplier<Integer> displayedMnemonicIndex) {
+        public void displayedMnemonicIndex(IdentifiableSupplier<Integer> displayedMnemonicIndex) {
             attribute(PREFIX + "displayedMnemonicIndex", JLabel::getDisplayedMnemonicIndex, JLabel::setDisplayedMnemonicIndex, displayedMnemonicIndex);
         }
 
-        public void horizontalAlignment(Supplier<Integer> horizontalAlignment) {
+        public void horizontalAlignment(IdentifiableSupplier<Integer> horizontalAlignment) {
             attribute(PREFIX + "horizontalAlignment", JLabel::getHorizontalAlignment, JLabel::setHorizontalAlignment, horizontalAlignment);
         }
 
-        public void horizontalTextPosition(Supplier<Integer> horizontalTextPosition) {
+        public void horizontalTextPosition(IdentifiableSupplier<Integer> horizontalTextPosition) {
             attribute(PREFIX + "horizontalTextPosition", JLabel::getHorizontalTextPosition, JLabel::setHorizontalTextPosition, horizontalTextPosition);
         }
 
-        public void iconTextGap(Supplier<Integer> iconTextGap) {
+        public void iconTextGap(IdentifiableSupplier<Integer> iconTextGap) {
             attribute(PREFIX + "iconTextGap", JLabel::getIconTextGap, JLabel::setIconTextGap, iconTextGap);
         }
 
@@ -77,11 +74,11 @@ public class JDLabel {
             fnAttribute(PREFIX + "labelFor", JLabel::getLabelFor, JLabel::setLabelFor, labelFor);
         }
 
-        public void verticalAlignment(Supplier<Integer> verticalAlignment) {
+        public void verticalAlignment(IdentifiableSupplier<Integer> verticalAlignment) {
             attribute(PREFIX + "verticalAlignment", JLabel::getVerticalAlignment, JLabel::setVerticalAlignment, verticalAlignment);
         }
 
-        public void verticalTextPosition(Supplier<Integer> verticalTextPosition) {
+        public void verticalTextPosition(IdentifiableSupplier<Integer> verticalTextPosition) {
             attribute(PREFIX + "verticalTextPosition", JLabel::getVerticalTextPosition, JLabel::setVerticalTextPosition, verticalTextPosition);
         }
     }

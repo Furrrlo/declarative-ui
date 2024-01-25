@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
@@ -33,11 +34,11 @@ public class JDEditorPane {
       super(type, factory);
     }
 
-    public void contentType(Supplier<String> contentType) {
+    public void contentType(IdentifiableSupplier<String> contentType) {
       attribute(PREFIX + "contentType", JEditorPane::getContentType, JEditorPane::setContentType, contentType);
     }
 
-    public void editorKit(Supplier<? extends EditorKit> editorKit) {
+    public void editorKit(IdentifiableSupplier<? extends EditorKit> editorKit) {
       attribute(PREFIX + "editorKit", JEditorPane::getEditorKit, JEditorPane::setEditorKit, editorKit);
     }
 

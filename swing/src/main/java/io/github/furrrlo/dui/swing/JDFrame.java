@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.swing;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.DeclarativeComponentSupplier;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -40,15 +37,15 @@ public class JDFrame {
             });
         }
 
-        public void visible(Supplier<Boolean> visible) {
+        public void visible(IdentifiableSupplier<Boolean> visible) {
             attribute(PREFIX + "visible", Frame::isVisible, Frame::setVisible, visible);
         }
 
-        public void title(Supplier<String> title) {
+        public void title(IdentifiableSupplier<String> title) {
             attribute(PREFIX + "title", Frame::getTitle, Frame::setTitle, title);
         }
 
-        public void defaultCloseOperation(Supplier<Integer> operation) {
+        public void defaultCloseOperation(IdentifiableSupplier<Integer> operation) {
             attribute(PREFIX + "defaultCloseOperation", JFrame::getDefaultCloseOperation, JFrame::setDefaultCloseOperation, operation);
         }
 
@@ -57,16 +54,16 @@ public class JDFrame {
         }
 
 
-        public void minimumSize(Supplier<? extends Dimension> dimension) {
+        public void minimumSize(IdentifiableSupplier<? extends Dimension> dimension) {
             attribute(PREFIX + "minimumSize", JFrame::getMinimumSize, JFrame::setMinimumSize, dimension);
         }
 
 
-        public void size(Supplier<? extends Dimension> dimension) {
+        public void size(IdentifiableSupplier<? extends Dimension> dimension) {
             attribute(PREFIX + "size", JFrame::getSize, JFrame::setSize, dimension);
         }
 
-        public void locationRelativeTo(Supplier<Component> c) {
+        public void locationRelativeTo(IdentifiableSupplier<Component> c) {
             attribute(PREFIX + "locationRelativeTo", JFrame::setLocationRelativeTo, c);
         }
     }

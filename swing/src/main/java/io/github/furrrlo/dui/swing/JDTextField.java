@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
@@ -34,24 +35,23 @@ public class JDTextField {
             super(type, factory);
         }
 
-        public void action(Supplier<? extends Action> action) {
+        public void action(IdentifiableSupplier<? extends Action> action) {
             attribute(PREFIX + "action", JTextField::getAction, JTextField::setAction, action);
         }
 
-        public void actionCommand(Supplier<String> actionCommand) {
+        public void actionCommand(IdentifiableSupplier<String> actionCommand) {
             attribute(PREFIX + "actionCommand", JTextField::setActionCommand, actionCommand);
         }
 
-        public void columns(Supplier<Integer> columns) {
+        public void columns(IdentifiableSupplier<Integer> columns) {
             attribute(PREFIX + "columns", JTextField::getColumns, JTextField::setColumns, columns);
         }
 
-        public void horizontalAlignment(
-                Supplier<Integer> horizontalAlignment) {
+        public void horizontalAlignment(IdentifiableSupplier<Integer> horizontalAlignment) {
             attribute(PREFIX + "horizontalAlignment", JTextField::getHorizontalAlignment, JTextField::setHorizontalAlignment, horizontalAlignment);
         }
 
-        public void scrollOffset(Supplier<Integer> scrollOffset) {
+        public void scrollOffset(IdentifiableSupplier<Integer> scrollOffset) {
             attribute(PREFIX + "scrollOffset", JTextField::getScrollOffset, JTextField::setScrollOffset, scrollOffset);
         }
     }

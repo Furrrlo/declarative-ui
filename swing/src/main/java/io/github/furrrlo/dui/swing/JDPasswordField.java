@@ -3,6 +3,7 @@ package io.github.furrrlo.dui.swing;
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
 import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentifiableSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -31,7 +32,7 @@ public class JDPasswordField {
       super(type, factory);
     }
 
-    public void echoChar(Supplier<Character> echoChar) {
+    public void echoChar(IdentifiableSupplier<Character> echoChar) {
       attribute(PREFIX + "echoChar", JPasswordField::getEchoChar, JPasswordField::setEchoChar, echoChar);
     }
   }
