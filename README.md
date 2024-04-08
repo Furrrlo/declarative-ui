@@ -43,8 +43,8 @@ class Main {
 ```java
 <V> State<V> useState(V value);
 <V> State<V> useState(V value, BiPredicate<V, V> equalityFn);
-<V> State<V> useState(Supplier<V value);
-<V> State<V> useState(Supplier<V value, BiPredicate<V, V> equalityFn);
+<V> State<V> useState(Supplier<V> value);
+<V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn);
 ```
 Adds a state variable to your component, similar to 
 <a href="https://react.dev/reference/react/useState">React useState</a>. 
@@ -103,8 +103,8 @@ There is no Solidjs counterpart, as it does not re-render components (see [useSt
 
 ```java
 static <V> void Memo#indexCollection(
-    IdentifiableSupplier<Collection<V> collection,
-    BiConsumer<DeclareMemoFn<V, Integer> fn
+    IdentifiableSupplier<Collection<V>> collection,
+    BiConsumer<DeclareMemoFn<V, Integer>> fn
 );
 ```
 Allows to iterate a collection (possibly coming from a tracked variable like a State or a Memo)
@@ -140,7 +140,7 @@ panel.children(panelChildren -> {
 
 ```java
 static <V> void Memo#mapCollection(
-    IdentifiableSupplier<Collection<V> collection,
+    IdentifiableSupplier<Collection<V>> collection,
     BiConsumer<V, DeclareMemoFn<Integer>> fn
 );
 ```
@@ -276,7 +276,7 @@ Similar to Jetpack Compose [produceState](https://developer.android.com/jetpack/
 ```java
 <V> DeclarativeComponentContext<T> inner(
     Function<T, V> getter,
-    DeclarativeComponent<V component
+    DeclarativeComponent<V> component
 );
 ```
 Lets you extract a field out of a Swing component and decorate it. 
