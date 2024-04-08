@@ -30,8 +30,7 @@ abstract class StatefulDeclarativeComponent<
 
     protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.explicit(() -> {});
 
-    private static final ThreadLocal<StatefulDeclarativeComponent<?, ?, ?>> CURR_UPDATING_COMPONENT =
-            ThreadLocal.withInitial(() -> null);
+    private static final DScopedValue<StatefulDeclarativeComponent<?, ?, ?>> CURR_UPDATING_COMPONENT = DScopedValue.create();
 
     private @Nullable ApplicationConfig appConfig;
 
@@ -108,16 +107,7 @@ abstract class StatefulDeclarativeComponent<
         if(substituteComponentRef.get() != this)
             throw new UnsupportedOperationException("Trying to update substituted component");
 
-        final StatefulDeclarativeComponent<?, ?, ?> prevUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-        CURR_UPDATING_COMPONENT.set(this);
-        try {
-            runnable.run();
-        } finally {
-            if(prevUpdatingComponent == null)
-                CURR_UPDATING_COMPONENT.remove();
-            else
-                CURR_UPDATING_COMPONENT.set(prevUpdatingComponent);
-        }
+        CURR_UPDATING_COMPONENT.where(this, runnable);
     }
 
     static class UpdateFlags {
@@ -365,11 +355,9 @@ abstract class StatefulDeclarativeComponent<
     }
 
     public static DeclarativeComponentInternalContext useInternalCtx() {
-        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-        if(currUpdatingComponent == null) {
-            CURR_UPDATING_COMPONENT.remove();
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+        if(currUpdatingComponent == null)
             throw new UnsupportedOperationException("Invalid hook invocation, can only be done inside body");
-        }
 
         DeclarativeComponentInternalContext ctx = currUpdatingComponent.currentBodyInvocationCtx;
         if(ctx == null)
@@ -379,11 +367,9 @@ abstract class StatefulDeclarativeComponent<
     }
 
     public static <V> V untrack(Supplier<V> value) {
-        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-        if(currUpdatingComponent == null) {
-            CURR_UPDATING_COMPONENT.remove();
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+        if(currUpdatingComponent == null)
             return value.get();
-        }
 
         return currUpdatingComponent.withStateDependency(NO_STATE_DEPENDENCY, value);
     }
@@ -391,11 +377,9 @@ abstract class StatefulDeclarativeComponent<
     public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection0,
                                            BiConsumer<Memo.DeclareMemoFn<V>, Integer> fn) {
 
-        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-        if(currUpdatingComponent == null) {
-            CURR_UPDATING_COMPONENT.remove();
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+        if(currUpdatingComponent == null)
             throw new UnsupportedOperationException("Currently not in a component update");
-        }
 
         final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
         final AtomicReference<Integer> previousSize = new AtomicReference<>();
@@ -683,10 +667,8 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public V get() {
-            final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-            if(currUpdatingComponent == null) {
-                CURR_UPDATING_COMPONENT.remove();
-            } else {
+            final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+            if(currUpdatingComponent != null) {
                 Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
                 if (currDependency != null)
                     signalDeps.add(currDependency);
