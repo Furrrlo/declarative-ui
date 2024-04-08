@@ -341,3 +341,4 @@ That means that:
 
 ## Missing stuff
 - Context/ComposableLocals
+- Make useCallback either mandatory or somehow not needed
