@@ -1,16 +1,16 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Serializable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.*;
 
-public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentContext<T> {
+public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentInternalContext<T> {
 
     private final @Nullable TypeToken<T> type;
     private final List<Type> typeArguments;
@@ -19,7 +19,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     private final BooleanSupplier canUpdateInCurrentThread;
     private final UpdateScheduler updateScheduler;
 
-    private @Nullable DeclarativeRefComponentContext<T> toDecorate;
+    private @Nullable DeclarativeRefComponentInternalContext<T> toDecorate;
     private final List<ReservedMemoProxy<?>> reservedMemos = new ArrayList<>();
 
     protected DeclarativeComponentContextDecorator(@Nullable Class<T> type,
@@ -71,7 +71,8 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         throw new UnsupportedOperationException("Type argument at index " + index + " is not a concrete type: " + type);
     }
 
-    void setToDecorate(@Nullable DeclarativeRefComponentContext<T> toDecorate, Consumer<ReservedMemoProxy<?>> reserveMemo) {
+    void setToDecorate(@Nullable DeclarativeRefComponentInternalContext<T> toDecorate,
+                       Consumer<ReservedMemoProxy<?>> reserveMemo) {
         this.toDecorate = toDecorate;
         this.reservedMemos.forEach(reserveMemo);
     }
@@ -81,7 +82,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         this.reservedMemos.forEach(ReservedMemoProxy::endDecoration);
     }
 
-    private DeclarativeRefComponentContext<T> toDecorate() {
+    private DeclarativeRefComponentInternalContext<T> toDecorate() {
         return Objects.requireNonNull(
                 toDecorate,
                 "Missing object to decorate");
@@ -183,18 +184,8 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> State<V> useState(V value) {
-        return toDecorate().useState(value);
-    }
-
-    @Override
     public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
         return toDecorate().useState(value, equalityFn);
-    }
-
-    @Override
-    public <V> State<V> useState(Supplier<V> value) {
-        return toDecorate().useState(value);
     }
 
     @Override
@@ -203,28 +194,8 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
-        return toDecorate().useMemo(value);
-    }
-
-    @Override
     public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
         return toDecorate().useMemo(value, equalityFn);
-    }
-
-    @Override
-    public <V extends Serializable> V useCallback(V fun) {
-        return toDecorate().useCallback(fun);
-    }
-
-    @Override
-    public <V> V useCallbackExplicit(V fun, Object dependency) {
-        return toDecorate().useCallbackExplicit(fun, dependency);
-    }
-
-    @Override
-    public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
-        return toDecorate().useCallbackExplicit(fun, dependencies);
     }
 
     @Override

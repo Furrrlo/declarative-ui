@@ -124,14 +124,14 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     @Override
     @SuppressWarnings("unchecked")
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
-                              DeclarativeComponentContext newCtx,
+                              DeclarativeComponentInternalContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         try {
             if(decorator != null) {
-                if(!(newCtx instanceof DeclarativeRefComponentContext))
+                if(!(newCtx instanceof DeclarativeRefComponentInternalContext))
                     throw new UnsupportedOperationException("Trying to decorate a component which has no ref");
 
-                final DeclarativeRefComponentContext<T> newRefCtx = (DeclarativeRefComponentContext<T>) newCtx;
+                final DeclarativeRefComponentInternalContext<T> newRefCtx = (DeclarativeRefComponentInternalContext<T>) newCtx;
                 decorator.setToDecorate(newRefCtx, reserveMemo);
                 try {
                     // This cast to C has to be guaranteed by the DeclarativeComponentFactory
@@ -252,7 +252,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     static class ContextImpl<T>
             extends StatefulDeclarativeComponent.StatefulContext
-            implements DeclarativeRefComponentContext<T> {
+            implements DeclarativeRefComponentInternalContext<T> {
 
         private final DeclarativeComponentImpl<T, ?> outer;
         private final LinkedHashMap<String, Attr<T, ?>> attributes; // Important: this needs to maintain order
@@ -302,12 +302,11 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
             StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?> internalComponent =
                     (StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?>) component.doApplyInternal();
             if (internalComponent.body != null) {
-                internalComponent.isInvokingBody = true;
-                internalComponent.invokeBody(
-                        internalComponent.body,
-                        new InnerComponentContextImpl<>(this, ref -> ref(getter, ref), getter),
-                        this::reserveMemo);
-                internalComponent.isInvokingBody = false;
+                InnerComponentContextImpl<T, V> ctx =
+                        new InnerComponentContextImpl<>(this, ref -> ref(getter, ref), getter);
+                internalComponent.currentBodyInvocationCtx = ctx;
+                internalComponent.invokeBody(internalComponent.body, ctx, this::reserveMemo);
+                internalComponent.currentBodyInvocationCtx = null;
             }
             return this;
         }

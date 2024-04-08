@@ -1,7 +1,7 @@
 package io.github.furrrlo.dui;
 
-import io.github.furrrlo.dui.DeclarativeComponentContext.DisposableEffectScope;
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
+import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -11,6 +11,8 @@ import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
+
+import static io.github.furrrlo.dui.Hooks.useMemo;
 
 abstract class StatefulDeclarativeComponent<
         R,
@@ -40,9 +42,9 @@ abstract class StatefulDeclarativeComponent<
             new AtomicReference<>(this);
     protected List<Memoized<?>> memoizedVars = new ArrayList<>();
     protected List<Effect> effects = new ArrayList<>();
-    protected I_CTX context;
+    protected @Nullable I_CTX context;
 
-    protected boolean isInvokingBody;
+    protected @Nullable DeclarativeComponentInternalContext currentBodyInvocationCtx;
     protected @Nullable IdentifiableRunnable currentStateDependency;
 
     protected StatefulDeclarativeComponent(@Nullable IdentifiableConsumer<O_CTX> body) {
@@ -138,9 +140,12 @@ abstract class StatefulDeclarativeComponent<
             } else {
                 newCtx = newContext();
                 if (body != null) {
-                    isInvokingBody = true;
-                    invokeBody(body, newCtx, newCtx::reserveMemo);
-                    isInvokingBody = false;
+                    currentBodyInvocationCtx = newCtx;
+                    try {
+                        invokeBody(body, newCtx, newCtx::reserveMemo);
+                    } finally {
+                        currentBodyInvocationCtx = null;
+                    }
                 }
             }
 
@@ -180,6 +185,20 @@ abstract class StatefulDeclarativeComponent<
         });
     }
 
+    protected boolean isInvokingBody() {
+        return currentBodyInvocationCtx != null;
+    }
+
+    protected <T> T invokeOutsideBody(Supplier<T> fn) {
+        final @Nullable DeclarativeComponentInternalContext prevCurrentBodyInvocationCtx = currentBodyInvocationCtx;
+        currentBodyInvocationCtx = null;
+        try {
+            return fn.get();
+        } finally {
+            currentBodyInvocationCtx = prevCurrentBodyInvocationCtx;
+        }
+    }
+
     private void updateEffects() {
         int idx = 0;
         for(Effect e : effects) {
@@ -193,7 +212,7 @@ abstract class StatefulDeclarativeComponent<
 
     @SuppressWarnings("unchecked")
     protected void invokeBody(IdentifiableConsumer<O_CTX> body,
-                              DeclarativeComponentContext newCtx,
+                              DeclarativeComponentInternalContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
         body.accept((O_CTX) newCtx);
@@ -345,10 +364,26 @@ abstract class StatefulDeclarativeComponent<
                 factory);
     }
 
+    public static DeclarativeComponentInternalContext useInternalCtx() {
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
+        if(currUpdatingComponent == null) {
+            CURR_UPDATING_COMPONENT.remove();
+            throw new UnsupportedOperationException("Invalid hook invocation, can only be done inside body");
+        }
+
+        DeclarativeComponentInternalContext ctx = currUpdatingComponent.currentBodyInvocationCtx;
+        if(ctx == null)
+            throw new UnsupportedOperationException("Invalid hook invocation, can only be done inside body");
+
+        return ctx;
+    }
+
     public static <V> V untrack(Supplier<V> value) {
         final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.get();
-        if(currUpdatingComponent == null)
+        if(currUpdatingComponent == null) {
+            CURR_UPDATING_COMPONENT.remove();
             return value.get();
+        }
 
         return currUpdatingComponent.withStateDependency(NO_STATE_DEPENDENCY, value);
     }
@@ -378,7 +413,7 @@ abstract class StatefulDeclarativeComponent<
             previousSize.set(size);
             IntStream.range(0, size).forEach(i -> fn.accept(
                     // Declare memo on whatever context we are asked to
-                    ctx -> ctx.useMemo(IdentifiableSupplier.explicit(
+                    () -> useMemo(IdentifiableSupplier.explicit(
                             () -> {
                                 // If the collection changes this will be re-evaluated
                                 Collection<V> coll = collection.get();
@@ -410,7 +445,7 @@ abstract class StatefulDeclarativeComponent<
         final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
         collection.get().forEach(val -> {
             // Declare memo on whatever context we are asked to
-            fn.accept(val, ctx -> ctx.useMemo(IdentifiableSupplier.explicit(() -> {
+            fn.accept(val, () -> useMemo(IdentifiableSupplier.explicit(() -> {
                 // If the collection changes this will be re-evaluated
                 Collection<V> coll = collection.get();
                 if (coll instanceof List<?>)
@@ -447,11 +482,11 @@ abstract class StatefulDeclarativeComponent<
                 ", memoizedVars=" + memoizedVars +
                 ", effects=" + effects +
                 ", context=" + context +
-                ", isInvokingBody=" + isInvokingBody +
+                ", currentBodyInvocationCtx=" + currentBodyInvocationCtx +
                 '}';
     }
 
-    protected static class StatefulContext implements DeclarativeComponentContext {
+    protected static class StatefulContext implements DeclarativeComponentContext, DeclarativeComponentInternalContext {
 
         private static final Throwable STACKTRACE_SENTINEL = new Exception("StatefulContext sentinel");
         private static final String DUI_PACKAGE;
@@ -491,7 +526,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         protected void ensureInsideBody() {
-            if(!outer.isInvokingBody)
+            if(!outer.isInvokingBody())
                 throw new UnsupportedOperationException("Invalid state/attribute invocation, can only be done inside body");
 
             if(capturedBodyStacktrace == null) {
@@ -539,7 +574,7 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
-            return useMemo(IdentifiableSupplier.neverChange(() -> new RefImpl<>(fallbackValue))).get();
+            return Hooks.useMemo(IdentifiableSupplier.neverChange(() -> new RefImpl<>(fallbackValue))).get();
         }
 
         @Override
@@ -602,26 +637,12 @@ abstract class StatefulDeclarativeComponent<
         protected <V> Memoized<V> doUseMemo(int index, IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
             if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
                 final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
-                return outer.updateMemoWithStateDependency(index, () -> {
-                    final boolean wasInvokingBody = outer.isInvokingBody;
-                    outer.isInvokingBody = false;
-                    try {
-                        return memo.updateIfNecessary(value);
-                    } finally {
-                        outer.isInvokingBody = wasInvokingBody;
-                    }
-                });
+                return outer.updateMemoWithStateDependency(
+                        index, () -> outer.invokeOutsideBody(() -> memo.updateIfNecessary(value)));
             }
 
-            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(index, () -> {
-                final boolean wasInvokingBody = outer.isInvokingBody;
-                outer.isInvokingBody = false;
-                try {
-                    return new Memoized<>(value, equalityFn);
-                } finally {
-                    outer.isInvokingBody = wasInvokingBody;
-                }
-            });
+            final Memoized<V> newMemo = outer.updateMemoWithStateDependency(
+                    index, () -> outer.invokeOutsideBody(() -> new Memoized<>(value, equalityFn)));
 
             if(LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
@@ -642,7 +663,7 @@ abstract class StatefulDeclarativeComponent<
 
     private static class BaseMemo<V> implements Memo<V>, IdentifiableSupplier.Explicit<V> {
 
-        private static Object[] NO_DEPS = new Object[] {};
+        private static final Object[] NO_DEPS = new Object[] {};
 
         private final Set<Runnable> signalDeps = new LinkedHashSet<>();
 

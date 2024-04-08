@@ -1,19 +1,19 @@
 package io.github.furrrlo.dui;
 
+import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.function.*;
 
-class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<T> {
+class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternalContext<T> {
 
-    private final DeclarativeRefComponentContext<P> parent;
+    private final DeclarativeRefComponentInternalContext<P> parent;
     private final Function<P, T> childGetter;
     private final Consumer<Ref<? super T>> registerRefs;
 
-    public InnerComponentContextImpl(DeclarativeRefComponentContext<P> parent,
+    public InnerComponentContextImpl(DeclarativeRefComponentInternalContext<P> parent,
                                      Consumer<Ref<? super T>> registerRefs,
                                      Function<P, T> childGetter) {
         this.parent = parent;
@@ -32,18 +32,8 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V> State<V> useState(V value) {
-        return parent.useState(value);
-    }
-
-    @Override
     public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
         return parent.useState(value, equalityFn);
-    }
-
-    @Override
-    public <V> State<V> useState(Supplier<V> value) {
-        return parent.useState(value);
     }
 
     @Override
@@ -52,28 +42,8 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentContext<
     }
 
     @Override
-    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
-        return parent.useMemo(value);
-    }
-
-    @Override
     public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
         return parent.useMemo(value, equalityFn);
-    }
-
-    @Override
-    public <V extends Serializable> V useCallback(V fun) {
-        return parent.useCallback(fun);
-    }
-
-    @Override
-    public <V> V useCallbackExplicit(V fun, Object dependency) {
-        return parent.useCallbackExplicit(fun, dependency);
-    }
-
-    @Override
-    public <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
-        return parent.useCallbackExplicit(fun, dependencies);
     }
 
     @Override

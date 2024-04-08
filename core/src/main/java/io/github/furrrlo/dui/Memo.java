@@ -2,7 +2,6 @@ package io.github.furrrlo.dui;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface Memo<T> extends IdentifiableSupplier<T> {
@@ -24,8 +23,8 @@ public interface Memo<T> extends IdentifiableSupplier<T> {
         StatefulDeclarativeComponent.mapCollection(collection, fn);
     }
 
-    interface DeclareMemoFn<V> extends Function<DeclarativeComponentContext, Memo<V>> {
+    interface DeclareMemoFn<V> extends Supplier<Memo<V>> {
         @Override
-        Memo<V> apply(DeclarativeComponentContext ctx);
+        Memo<V> get();
     }
 }

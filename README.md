@@ -14,7 +14,7 @@ Everything might be broken btw
 class Main {
     public static void main(String[] args) {
         Application.create(app -> app.roots(roots -> roots.add(JDFrame.fn(frame -> {
-            var counter = frame.useState(0);
+            var counter = useState(0);
             frame.title(() -> "Counter " + counter.get());
             frame.defaultCloseOperation(() -> WindowConstants.EXIT_ON_CLOSE);
             frame.contentPane(JDPanel.fn(panel -> {
@@ -23,7 +23,7 @@ class Main {
                     children.add(JDLabel.fn(label -> label.text(() -> "Current value is " + counter.get())));
                     children.add(JDButton.fn(btn -> {
                         btn.text(() -> "Click me");
-                        btn.actionListener(btn.useCallback(evt -> counter.update(i -> i + 1)));
+                        btn.actionListener(useCallback(evt -> counter.update(i -> i + 1)));
                     }));
                 });
             }));
@@ -124,11 +124,11 @@ does.
 The suggested approach is to declare a wrapper component, add it as a child specifying the index as key
 and declare the value memo inside said wrapper component:
 ```java
-val elements = panel.useState(List.of());
+val elements = useState(List.of());
 panel.children(panelChildren -> {
     Memo.indexCollection(elements::get, (declareElementMemo, index) -> {
         panelChildren.add(index, DWrapper.fn(wrapper -> {
-            var element = declareElementMemo.apply(wrapper);
+            var element = declareElementMemo.get();
             return SomeComponent.fn( /* additional stuff using the declared memo */ );
         }));
     });
@@ -163,13 +163,13 @@ declare a memo of the value itself in the wrapper, as it will prevent the wrappe
 fully re-rendered on each change of the value. Instead, only the wrapper body will be re-run and only tracked attributes
 and memos of the wrapped components will be re-run:
 ```java
-val elements = panel.useState(List.of());
+val elements = useState(List.of());
 panel.children(panelChildren -> {
     Memo.mapCollection(elements::get, (element0, declareIndexMemo) -> {
         panelChildren.add(element0.someKey(), DWrapper.fn(wrapper -> {
-            var hookIndex = declareIndexMemo.apply(wrapper);
+            var hookIndex = declareIndexMemo.get();
             // Turn the hook itself into a signal to propagate reactivity
-            var element = wrapper.useMemo(() -> element0);
+            var element = useMemo(() -> element0);
             
             return SomeComponent.fn( /* additional stuff using the declared memos */ );
         }));
