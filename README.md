@@ -13,7 +13,10 @@ Everything might be broken btw
 ```java
 class Main {
     public static void main(String[] args) {
-        Application.create(app -> app.roots(roots -> roots.add(JDFrame.fn(frame -> {
+        var cfg = ApplicationConfig.builder()
+                .grantAccess(MethodHandles.lookup())
+                .build();
+        Application.create(cfg, app -> app.roots(roots -> roots.add(JDFrame.fn(frame -> {
             var counter = useState(0);
             frame.title(() -> "Counter " + counter.get());
             frame.defaultCloseOperation(() -> WindowConstants.EXIT_ON_CLOSE);

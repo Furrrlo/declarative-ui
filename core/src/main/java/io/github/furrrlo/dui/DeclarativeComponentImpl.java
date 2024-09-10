@@ -28,11 +28,19 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
                                     @Nullable IdentifiableConsumer<O_CTX> body) {
-        this(decoratorFactory.get(), body);
+        this(null, decoratorFactory.get(), body);
     }
 
-    private DeclarativeComponentImpl(DeclarativeComponentContextDecorator<T> decorator, @Nullable IdentifiableConsumer<O_CTX> body) {
-        super(body);
+    public DeclarativeComponentImpl(ApplicationConfig config,
+                                    Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
+                                    @Nullable IdentifiableConsumer<O_CTX> body) {
+        this(config, decoratorFactory.get(), body);
+    }
+
+    private DeclarativeComponentImpl(@Nullable ApplicationConfig config,
+                                     DeclarativeComponentContextDecorator<T> decorator,
+                                     @Nullable IdentifiableConsumer<O_CTX> body) {
+        super(config, body);
         this.decorator = decorator;
         this.componentType = decorator.getType();
         this.componentFactory = decorator.getFactory();
@@ -317,7 +325,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                                                                IdentifiableSupplier<? extends V> value0,
                                                                AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
-            IdentifiableSupplier<? extends V> value = IdentifiableSupplier.explicit(value0);
+            IdentifiableSupplier<? extends V> value = IdentifiableSupplier.explicit(outer.lookups(), value0);
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
                     () -> new Attribute<>(key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY, setter, value, equalityFn)));

@@ -1,24 +1,26 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 
 public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Identifiable, Serializable {
 
     @Override
-    default Object[] deps() {
-        return Identifiables.computeDependencies(this);
+    default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+        return Identifiables.computeDependencies(lookups, this);
     }
 
     interface Explicit<T> extends IdentifiableThrowingConsumer<T>, Identifiable.Explicit {
 
         @Override
-        Object[] deps();
+        Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T> Explicit<T> explicit(IdentifiableThrowingConsumer<T> consumer) {
+    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableThrowingConsumer<T> consumer) {
         return consumer instanceof Explicit
                 ? (Explicit<T>) consumer
-                : new Impl.ExplicitArray<>(consumer, consumer.deps());
+                : new Impl.ExplicitArray<>(lookups, consumer, consumer.deps(lookups));
     }
 
     static <T> Explicit<T> explicit(ThrowingConsumer<T> consumer, Object... deps) {
@@ -38,11 +40,16 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
         private static class ExplicitArray<T> implements Explicit<T> {
 
             private final transient ThrowingConsumer<T> consumer;
-            private final Object[] deps;
+            private final IdentifiableDeps deps;
 
             public ExplicitArray(ThrowingConsumer<T> consumer, Object[] deps) {
                 this.consumer = consumer;
-                this.deps = Identifiables.makeDependenciesExplicit(deps);
+                this.deps = IdentifiableDeps.of(deps);
+            }
+
+            public ExplicitArray(Collection<MethodHandles.Lookup> lookups, ThrowingConsumer<T> consumer, Object[] deps) {
+                this.consumer = consumer;
+                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -51,8 +58,8 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
             }
 
             @Override
-            public Object[] deps() {
-                return deps;
+            public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+                return deps.get(lookups);
             }
 
             @Override

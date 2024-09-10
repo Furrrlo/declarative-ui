@@ -17,7 +17,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
     private @Nullable StatefulDeclarativeComponent<R, ?, ?> prevWrapped;
 
     public DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body) {
-        this(IdentifiableFunction.explicit(body), new AtomicReference<>());
+        this(IdentifiableFunction.explicit(currentLookups(), body), new AtomicReference<>());
     }
 
     private DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body,

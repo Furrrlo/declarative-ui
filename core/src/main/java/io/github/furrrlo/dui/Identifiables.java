@@ -6,30 +6,67 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.IntStream;
 
 class Identifiables {
 
+    private static final @Nullable MethodHandle LOOKUP_PRIVATE_LOOKUP_IN;
+    static {
+        MethodHandle lookupPrivateLookupIn = null;
+
+        try {
+            MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+            lookupPrivateLookupIn = lookup.unreflect(MethodHandles.class.getMethod(
+                    "privateLookupIn", Class.class, MethodHandles.Lookup.class));
+        } catch (IllegalAccessException | NoSuchMethodException e) {
+            // Couldn't access stuff
+        }
+
+        LOOKUP_PRIVATE_LOOKUP_IN = lookupPrivateLookupIn;
+    }
+
     private Identifiables() {
     }
 
-    public static Object[] computeDependencies(Serializable identifiable) {
-        if(identifiable instanceof Identifiable.Explicit)
-            return ((Identifiable) identifiable).deps();
+    public static Object[] computeDependencies(Collection<MethodHandles.Lookup> lookupsIn, Serializable identifiable) {
+        if (identifiable instanceof Identifiable.Explicit)
+            return ((Identifiable) identifiable).deps(lookupsIn);
+
+        final Collection<MethodHandles.Lookup> lookups;
+        if(lookupsIn.isEmpty()) {
+            lookups = Collections.singleton(MethodHandles.lookup());
+        } else {
+            Set<MethodHandles.Lookup> newLookups = new LinkedHashSet<>(lookupsIn);
+            newLookups.add(MethodHandles.lookup());
+            lookups = Collections.unmodifiableSet(newLookups);
+        }
 
         final List<Throwable> exs = new ArrayList<>();
 
+        final Class<?> claz = identifiable.getClass();
+        MethodHandles.@Nullable Lookup clazLookup;
+        try {
+            clazLookup = selectLookupFor(lookups, claz);
+        } catch (IllegalAccessException e) {
+            exs.add(new Exception(
+                    "Failed to find Lookup which can access lambda. Did you grant access with a valid Lookup?", e));
+            return null;
+        }
+
         Object maybeSerializedLambda;
         try {
-            final Method method = identifiable.getClass().getDeclaredMethod("writeReplace");
-            method.setAccessible(true);
-            maybeSerializedLambda = method.invoke(identifiable);
+            final Method method = claz.getDeclaredMethod("writeReplace");
+            if(clazLookup != null) {
+                maybeSerializedLambda = clazLookup.unreflect(method).invoke(identifiable);
+            } else {
+                method.setAccessible(true);
+                maybeSerializedLambda = method.invoke(identifiable);
+            }
         } catch (Throwable e) {
             exs.add(new Exception("Failed to extract SerializedLambda from " + identifiable, e));
             maybeSerializedLambda = null;
@@ -58,23 +95,52 @@ class Identifiables {
         throw ex;
     }
 
-    public static Object[] makeDependenciesExplicit(Object[] deps) {
+    private static MethodHandles.@Nullable Lookup selectLookupFor(
+            Collection<MethodHandles.Lookup> lookups, Class<?> targetClaz) throws IllegalAccessException {
+
+        if(LOOKUP_PRIVATE_LOOKUP_IN == null)
+            return null;
+
+        List<IllegalAccessException> exs = new ArrayList<>();
+        for (MethodHandles.Lookup lookup : lookups) {
+            try {
+                return (MethodHandles.Lookup) LOOKUP_PRIVATE_LOOKUP_IN.invokeExact(targetClaz, lookup);
+            } catch (RuntimeException | Error ex) {
+                throw ex;
+            } catch (IllegalAccessException ex) {
+                exs.add(ex);
+                // continue;
+            }  catch (Throwable t) {
+                throw new AssertionError(
+                        "MethodHandles.privateLookupIn(...) unexpectedly failed with checked exception", t);
+            }
+        }
+
+        if(exs.size() == 1)
+            throw exs.get(0);
+
+        IllegalAccessException ex = new IllegalAccessException();
+        exs.forEach(ex::addSuppressed);
+        throw ex;
+    }
+
+    public static Object[] makeDependenciesExplicit(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
         return Arrays.stream(deps)
                 .map(dep -> {
                     if(dep instanceof IdentifiableRunnable)
-                        return IdentifiableRunnable.explicit((IdentifiableRunnable) dep);
+                        return IdentifiableRunnable.explicit(lookups, (IdentifiableRunnable) dep);
                     if(dep instanceof IdentifiableThrowingRunnable)
-                        return IdentifiableThrowingRunnable.explicit((IdentifiableThrowingRunnable) dep);
+                        return IdentifiableThrowingRunnable.explicit(lookups, (IdentifiableThrowingRunnable) dep);
                     if(dep instanceof IdentifiableSupplier)
-                        return IdentifiableSupplier.explicit((IdentifiableSupplier<?>) dep);
+                        return IdentifiableSupplier.explicit(lookups, (IdentifiableSupplier<?>) dep);
                     if(dep instanceof IdentifiableConsumer)
-                        return IdentifiableConsumer.explicit((IdentifiableConsumer<?>) dep);
+                        return IdentifiableConsumer.explicit(lookups, (IdentifiableConsumer<?>) dep);
                     if(dep instanceof IdentifiableThrowingConsumer)
-                        return IdentifiableThrowingConsumer.explicit((IdentifiableThrowingConsumer<?>) dep);
+                        return IdentifiableThrowingConsumer.explicit(lookups, (IdentifiableThrowingConsumer<?>) dep);
                     if(dep instanceof IdentifiableFunction)
-                        return IdentifiableFunction.explicit((IdentifiableFunction<?, ?>) dep);
+                        return IdentifiableFunction.explicit(lookups, (IdentifiableFunction<?, ?>) dep);
                     if(dep instanceof IdentifiableBiFunction)
-                        return IdentifiableBiFunction.explicit((IdentifiableBiFunction<?, ?, ?>) dep);
+                        return IdentifiableBiFunction.explicit(lookups, (IdentifiableBiFunction<?, ?, ?>) dep);
                     return dep;
                 })
                 .toArray();

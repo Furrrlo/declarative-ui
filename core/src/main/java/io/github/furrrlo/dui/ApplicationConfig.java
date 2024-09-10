@@ -2,7 +2,11 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -34,10 +38,12 @@ public class ApplicationConfig {
         DEFAULT_EXECUTOR_SERVICE = defaultExecutorService;
     }
 
+    private final Collection<MethodHandles.Lookup> lookups;
     private final ExecutorService launchedEffectsExecutor;
 
     private ApplicationConfig(Builder builder) {
         this.launchedEffectsExecutor = builder.launchedEffectsExecutor;
+        this.lookups = Collections.unmodifiableSet(new LinkedHashSet<>(builder.lookups));
     }
 
     public static Builder builder() {
@@ -48,20 +54,36 @@ public class ApplicationConfig {
         return launchedEffectsExecutor;
     }
 
+    public Collection<MethodHandles.Lookup> lookups() {
+        return lookups;
+    }
+
     public ApplicationConfig.Builder asBuilder() {
         return new Builder()
-                .withLaunchedEffectsExecutor(launchedEffectsExecutor);
+                .withLaunchedEffectsExecutor(launchedEffectsExecutor)
+                .grantAccess(lookups);
     }
 
     public static class Builder {
 
         private ExecutorService launchedEffectsExecutor = DEFAULT_EXECUTOR_SERVICE;
+        private Collection<MethodHandles.Lookup> lookups = new LinkedHashSet<>();
 
         private Builder() {
         }
 
         public Builder withLaunchedEffectsExecutor(ExecutorService launchedEffectsExecutor) {
             this.launchedEffectsExecutor = launchedEffectsExecutor;
+            return this;
+        }
+
+        public Builder grantAccess(MethodHandles.Lookup lookup) {
+            this.lookups.add(lookup);
+            return this;
+        }
+
+        public Builder grantAccess(Collection<MethodHandles.Lookup> lookups) {
+            this.lookups.addAll(lookups);
             return this;
         }
 

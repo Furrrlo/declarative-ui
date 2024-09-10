@@ -4,6 +4,8 @@ import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
 
@@ -29,6 +31,16 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     @Override
     public void ref(Consumer<? super T> ref) {
         parent.ref(p -> ref.accept(childGetter.apply(p)));
+    }
+
+    @Override
+    public void grantAccess(MethodHandles.Lookup lookup) {
+        parent.grantAccess(lookup);
+    }
+
+    @Override
+    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
+        parent.grantAccess(lookups);
     }
 
     @Override

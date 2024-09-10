@@ -1,25 +1,27 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 public interface IdentifiableRunnable extends Runnable, Identifiable, Serializable {
 
     @Override
-    default Object[] deps() {
-        return Identifiables.computeDependencies(this);
+    default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+        return Identifiables.computeDependencies(lookups, this);
     }
 
     interface Explicit extends IdentifiableRunnable, Identifiable.Explicit {
 
         @Override
-        Object[] deps();
+        Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static Explicit explicit(IdentifiableRunnable runnable) {
+    static Explicit explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableRunnable runnable) {
         return runnable instanceof Explicit
                 ? (Explicit) runnable
-                : new Impl.ExplicitArray(runnable, runnable.deps());
+                : new Impl.ExplicitArray(lookups, runnable, runnable.deps(lookups));
     }
 
     static Explicit explicit(Runnable runnable, Object... deps) {
@@ -39,11 +41,16 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
         private static class ExplicitArray implements Explicit {
 
             private final transient Runnable runnable;
-            private final Object[] deps;
+            private final IdentifiableDeps deps;
 
             public ExplicitArray(Runnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = Identifiables.makeDependenciesExplicit(deps);
+                this.deps = IdentifiableDeps.of(deps);
+            }
+
+            public ExplicitArray(Collection<MethodHandles.Lookup> lookups, Runnable runnable, Object[] deps) {
+                this.runnable = runnable;
+                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -52,8 +59,8 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             }
 
             @Override
-            public Object[] deps() {
-                return deps;
+            public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+                return deps.get(lookups);
             }
 
             @Override
@@ -93,8 +100,8 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             }
 
             @Override
-            public Object[] deps() {
-                return Identifiables.makeDependenciesExplicit(deps.get());
+            public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+                return Identifiables.makeDependenciesExplicit(lookups, deps.get());
             }
 
             @Override

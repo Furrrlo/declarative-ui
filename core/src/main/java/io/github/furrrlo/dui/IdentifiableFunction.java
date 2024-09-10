@@ -1,25 +1,27 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.function.Function;
 
 public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable, Serializable {
 
     @Override
-    default Object[] deps() {
-        return Identifiables.computeDependencies(this);
+    default Object[] deps(Collection<MethodHandles.Lookup> lookup) {
+        return Identifiables.computeDependencies(lookup, this);
     }
 
     interface Explicit<T, R> extends IdentifiableFunction<T, R>, Identifiable.Explicit {
 
         @Override
-        Object[] deps();
+        Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T, R> Explicit<T, R> explicit(IdentifiableFunction<T, R> fn) {
+    static <T, R> Explicit<T, R> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableFunction<T, R> fn) {
         return fn instanceof Explicit
                 ? (Explicit<T, R>) fn
-                : new Impl.ExplicitArray<>(fn, fn.deps());
+                : new Impl.ExplicitArray<>(lookups, fn, fn.deps(lookups));
     }
 
     static <T, R> Explicit<T, R> explicit(Function<T, R> fn, Object... deps) {
@@ -39,11 +41,16 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
         private static class ExplicitArray<T, R> implements Explicit<T, R> {
 
             private final transient Function<T, R> fn;
-            private final Object[] deps;
+            private final IdentifiableDeps deps;
 
             public ExplicitArray(Function<T, R> fn, Object[] deps) {
                 this.fn = fn;
-                this.deps = Identifiables.makeDependenciesExplicit(deps);
+                this.deps = IdentifiableDeps.of(deps);
+            }
+
+            public ExplicitArray(Collection<MethodHandles.Lookup> lookups, Function<T, R> fn, Object[] deps) {
+                this.fn = fn;
+                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -52,8 +59,8 @@ public interface IdentifiableFunction<T, R> extends Function<T, R>, Identifiable
             }
 
             @Override
-            public Object[] deps() {
-                return deps;
+            public Object[] deps(Collection<MethodHandles.Lookup> lookup) {
+                return deps.get(lookup);
             }
 
             @Override

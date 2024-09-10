@@ -4,6 +4,7 @@ import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import io.leangen.geantyref.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -181,6 +182,16 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public void ref(Consumer<? super T> ref) {
         toDecorate().ref(ref);
+    }
+
+    @Override
+    public void grantAccess(MethodHandles.Lookup lookup) {
+        toDecorate().grantAccess(lookup);
+    }
+
+    @Override
+    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
+        toDecorate().grantAccess(lookups);
     }
 
     @Override

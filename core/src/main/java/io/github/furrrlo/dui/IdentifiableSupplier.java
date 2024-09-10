@@ -1,25 +1,27 @@
 package io.github.furrrlo.dui;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Serializable {
 
     @Override
-    default Object[] deps() {
-        return Identifiables.computeDependencies(this);
+    default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+        return Identifiables.computeDependencies(lookups, this);
     }
 
     interface Explicit<T> extends IdentifiableSupplier<T>, Identifiable.Explicit {
 
         @Override
-        Object[] deps();
+        Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T> Explicit<T> explicit(IdentifiableSupplier<T> supplier) {
+    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableSupplier<T> supplier) {
         return supplier instanceof Explicit
                 ? (Explicit<T>) supplier
-                : new Impl.ExplicitArray<>(supplier, supplier.deps());
+                : new Impl.ExplicitArray<>(lookups, supplier, supplier.deps(lookups));
     }
 
     static <T> Explicit<T> explicit(Supplier<T> supplier, Object... deps) {
@@ -39,11 +41,16 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
         private static class ExplicitArray<T> implements Explicit<T> {
 
             private final transient Supplier<T> supplier;
-            private final Object[] deps;
+            private final IdentifiableDeps deps;
 
             public ExplicitArray(Supplier<T> supplier, Object[] deps) {
                 this.supplier = supplier;
-                this.deps = Identifiables.makeDependenciesExplicit(deps);
+                this.deps = IdentifiableDeps.of(deps);
+            }
+
+            public ExplicitArray(Collection<MethodHandles.Lookup> lookups, Supplier<T> supplier, Object[] deps) {
+                this.supplier = supplier;
+                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -52,8 +59,8 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
             }
 
             @Override
-            public Object[] deps() {
-                return deps;
+            public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+                return deps.get(lookups);
             }
 
             @Override

@@ -4,6 +4,7 @@ import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoPr
 import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,7 +48,15 @@ abstract class StatefulDeclarativeComponent<
     protected @Nullable IdentifiableRunnable currentStateDependency;
 
     protected StatefulDeclarativeComponent(@Nullable IdentifiableConsumer<O_CTX> body) {
-        this.body = body != null ? IdentifiableConsumer.explicit(body) : null;
+        this(null, body);
+    }
+
+    protected StatefulDeclarativeComponent(@Nullable ApplicationConfig appConfig,
+                                           @Nullable IdentifiableConsumer<O_CTX> body) {
+        this.body = body != null
+                ? IdentifiableConsumer.explicit(appConfig != null ? appConfig.lookups() : currentLookups(), body)
+                : null;
+        this.appConfig = appConfig;
     }
 
     @SuppressWarnings("unchecked")
@@ -344,14 +353,27 @@ abstract class StatefulDeclarativeComponent<
         if(wrappedStateDependency == null)
             return factory.get();
 
+        Collection<MethodHandles.Lookup> lookups = lookups();
         return withStateDependency(
                 makeStateDependency(
                         c -> {
                             if(wrappingCond.test(c))
                                 wrappedStateDependency.run();
                         },
-                        c -> wrappedStateDependency.deps()),
+                        c -> wrappedStateDependency.deps(lookups)),
                 factory);
+    }
+
+    protected Collection<MethodHandles.Lookup> lookups() {
+        return getAppConfig().lookups();
+    }
+
+    public static Collection<MethodHandles.Lookup> currentLookups() {
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+        if(currUpdatingComponent == null)
+            return Collections.emptySet();
+
+        return currUpdatingComponent.lookups();
     }
 
     public static DeclarativeComponentInternalContext useInternalCtx() {
@@ -381,7 +403,9 @@ abstract class StatefulDeclarativeComponent<
         if(currUpdatingComponent == null)
             throw new UnsupportedOperationException("Currently not in a component update");
 
-        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
+        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(
+                currUpdatingComponent.lookups(),
+                collection0);
         final AtomicReference<Integer> previousSize = new AtomicReference<>();
         currUpdatingComponent.updateWithWrappedStateDependency(c -> {
             // If the size changed from the last time we ran, we want to re-run the
@@ -426,7 +450,13 @@ abstract class StatefulDeclarativeComponent<
     public static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection0,
                                          BiConsumer<V, Memo.DeclareMemoFn<Integer>> fn) {
 
-        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(collection0);
+        final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+        if(currUpdatingComponent == null)
+            throw new UnsupportedOperationException("Currently not in a component update");
+
+        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(
+                currUpdatingComponent.lookups(),
+                collection0);
         collection.get().forEach(val -> {
             // Declare memo on whatever context we are asked to
             fn.accept(val, () -> useMemo(IdentifiableSupplier.explicit(() -> {
@@ -527,6 +557,18 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
+        public void grantAccess(MethodHandles.Lookup lookup) {
+            ensureInsideBody();
+            // TODO:
+        }
+
+        @Override
+        public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
+            ensureInsideBody();
+            // TODO:
+        }
+
+        @Override
         public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
             return this.<V>useState(() -> value, equalityFn);
@@ -535,7 +577,7 @@ abstract class StatefulDeclarativeComponent<
         @Override
         public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
             Memoized<State<V>> memo = useMemo(
-                    IdentifiableSupplier.explicit(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
+                    IdentifiableSupplier.neverChange(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
                     (prev, next) -> false);
             return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }
@@ -553,7 +595,7 @@ abstract class StatefulDeclarativeComponent<
                         "now" + outer.context.getCurrMemoizedIdx());
 
             final int idx = currMemoizedIdx++;
-            return doUseMemo(idx, IdentifiableSupplier.explicit(value), equalityFn);
+            return doUseMemo(idx, IdentifiableSupplier.explicit(outer.lookups(), value), equalityFn);
         }
 
         @Override
@@ -562,9 +604,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public void useLaunchedEffect(IdentifiableThrowingRunnable effect0) {
-            final IdentifiableThrowingRunnable effect = IdentifiableThrowingRunnable.explicit(effect0);
-
+        public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
             useDisposableEffect(IdentifiableConsumer.explicit(scope -> {
                 Future<?> future = outer.getAppConfig().launchedEffectsExecutor().submit(() -> {
                     try {
@@ -591,7 +631,9 @@ abstract class StatefulDeclarativeComponent<
                         " before " + getCurrEffectsIdx() + ", " +
                         "now" + outer.context.getCurrEffectsIdx());
 
-            final IdentifiableConsumer<DisposableEffectScope> effect = IdentifiableConsumer.explicit(effect0);
+            final IdentifiableConsumer<DisposableEffectScope> effect = IdentifiableConsumer.explicit(
+                    outer.lookups(),
+                    effect0);
             final int index = currEffectsIdx++;
             if(index < outer.effects.size()) {
                 final Effect effectImpl = outer.effects.get(index);
@@ -614,7 +656,9 @@ abstract class StatefulDeclarativeComponent<
         protected <V> void reserveMemo(ReservedMemoProxy<V> reservedMemoProxy) {
             final int idx = currMemoizedIdx++;
             final BiPredicate<V, V> equalityFn = reservedMemoProxy.getEqualityFn();
-            reservedMemoProxy.setReservedMemo(fn -> doUseMemo(idx, IdentifiableSupplier.explicit(fn), equalityFn));
+            final Collection<MethodHandles.Lookup> lookups = outer.lookups();
+            reservedMemoProxy.setReservedMemo(fn ->
+                    doUseMemo(idx, IdentifiableSupplier.explicit(lookups, fn), equalityFn));
         }
 
         @SuppressWarnings("unchecked")
@@ -628,9 +672,11 @@ abstract class StatefulDeclarativeComponent<
             final Memoized<V> newMemo = outer.updateMemoWithStateDependency(
                     index, () -> outer.invokeOutsideBody(() -> new Memoized<>(value, equalityFn)));
 
-            if(LOGGER.isLoggable(Level.FINE))
+            if(LOGGER.isLoggable(Level.FINE)) {
+                Object[] deps = newMemo.supplier.deps(outer.lookups());
                 LOGGER.log(Level.FINE, "Created memoized value ({0}) {1} for {2}",
-                        new Object[] { index, newMemo.value, newMemo.supplier.deps() });
+                        new Object[] { index, newMemo.value, Arrays.toString(deps) });
+            }
 
             if(index < outer.memoizedVars.size()) {
                 outer.memoizedVars.set(index, newMemo);
@@ -659,7 +705,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public Object[] deps() {
+        public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
             // It should be fine here to say we have no dependency,
             // as the changes will be triggered by the signals (see the method right after)
             return NO_DEPS;
@@ -714,7 +760,7 @@ abstract class StatefulDeclarativeComponent<
 
             if(wasSet && LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Updated memoized value {0} (deps: {1})",
-                        new Object[] { value, supplier.deps() });
+                        new Object[] { value, Arrays.toString(supplier.deps()) });
 
             markedForUpdate = false;
         }

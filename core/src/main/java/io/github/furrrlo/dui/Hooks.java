@@ -3,10 +3,8 @@ package io.github.furrrlo.dui;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
@@ -22,6 +20,14 @@ public final class Hooks {
 
     public static DeclarativeComponentContext useContext() {
         return useInternalCtx();
+    }
+
+    public void grantAccess(MethodHandles.Lookup lookup) {
+        useInternalCtx().grantAccess(lookup);
+    }
+
+    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
+        useInternalCtx().grantAccess(lookups);
     }
 
     public static <V> State<V> useState(V value) {
@@ -49,6 +55,20 @@ public final class Hooks {
     }
 
     public static <V extends Serializable> V useCallback(V fun) {
+        return useCallback(null, fun);
+    }
+
+    public static <V extends Serializable> V useCallback(MethodHandles.@Nullable Lookup lookup, V fun) {
+        final Collection<MethodHandles.Lookup> lookups;
+        if(lookup == null) {
+            lookups = StatefulDeclarativeComponent.currentLookups();
+        } else {
+            final Set<MethodHandles.Lookup> newLookups = new LinkedHashSet<>();
+            newLookups.add(lookup);
+            newLookups.addAll(StatefulDeclarativeComponent.currentLookups());
+            lookups = Collections.unmodifiableSet(newLookups);
+        }
+
         // By getting directly here, we are registering the whole component
         // as a dependency of the memo, therefore if any of the value captured
         // by the callback lambda are changed, it will trigger a re-render of the
@@ -57,7 +77,7 @@ public final class Hooks {
         // 2. Another value which could only change if the component was re-rendered anyway
         return useMemo(IdentifiableSupplier.explicit(
                 () -> fun,
-                Identifiables.computeDependencies(fun)
+                Identifiables.computeDependencies(lookups, fun)
         )).get();
     }
 
@@ -95,9 +115,8 @@ public final class Hooks {
         useInternalCtx().useSideEffect(effect);
     }
 
-    public static <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer0) {
+    public static <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer) {
         final State<V> state = useState(initialValue);
-        final IdentifiableThrowingConsumer<ProduceScope<V>> producer = IdentifiableThrowingConsumer.explicit(producer0);
         useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> {
             class ProduceScopeImpl implements ProduceScope<V> {
                 @Nullable ThrowingRunnable onDispose;

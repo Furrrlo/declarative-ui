@@ -20,6 +20,12 @@ public class DeclarativeComponentFactory {
         return new DeclarativeComponentImpl<>(decoratorFactory, body);
     }
 
+    <T, C extends DeclarativeComponentContextDecorator<T>> DeclarativeComponent<T> ofApplication(ApplicationConfig appConfig,
+                                                                                                 Supplier<C> decoratorFactory,
+                                                                                                 @Nullable IdentifiableConsumer<C> body) {
+        return new DeclarativeComponentImpl<>(appConfig, decoratorFactory, body);
+    }
+
     public <T> DeclarativeComponent<T> wrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<T>> body) {
         return new DeclarativeComponentWrapper<>(body);
     }
