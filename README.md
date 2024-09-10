@@ -71,12 +71,12 @@ other tracked variables without causing the parent component to possibly re-rend
 #### useMemo
 
 ```java
-<V> Memo<V> useMemo(IdentifiableSupplier<V> value);
-<V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn);
+<V> Memo<V> useMemo(IdentityFreeSupplier<V> value);
+<V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn);
 ```
 Lets you cache the result of a calculation between re-renders, same as 
 <a href="https://react.dev/reference/react/useMemo">React useMemo</a> but with (optionally) 
-automatic dependency tracking (see <a href="identifiables">Identifiables section</a>).
+automatic dependency tracking (see <a href="IdentityFrees">IdentityFrees section</a>).
 
 The value function is a tracking function, which means that calling the getter of a tracking variable
 inside it will cause the function to depend on that variable, so it will re-run when it gets updated.
@@ -98,7 +98,7 @@ Alternatively, you can use the overload with `BiPredicate<V, V> equalityFn` for 
 ```
 Lets you cache a function definition between re-renders, same as 
 <a href="https://react.dev/reference/react/useCallback">React useCallback</a> but with (optionally) 
-automatic dependency tracking (see <a href="identifiables">Identifiables section</a>).
+automatic dependency tracking (see <a href="IdentityFrees">IdentityFrees section</a>).
 
 There is no Solidjs counterpart, as it does not re-render components (see [useState](#useState) for more info)
 
@@ -106,7 +106,7 @@ There is no Solidjs counterpart, as it does not re-render components (see [useSt
 
 ```java
 static <V> void Memo#indexCollection(
-    IdentifiableSupplier<Collection<V>> collection,
+    IdentityFreeSupplier<Collection<V>> collection,
     BiConsumer<DeclareMemoFn<V, Integer>> fn
 );
 ```
@@ -143,7 +143,7 @@ panel.children(panelChildren -> {
 
 ```java
 static <V> void Memo#mapCollection(
-    IdentifiableSupplier<Collection<V>> collection,
+    IdentityFreeSupplier<Collection<V>> collection,
     BiConsumer<V, DeclareMemoFn<Integer>> fn
 );
 ```
@@ -217,12 +217,12 @@ Ignores tracking any of the dependencies in the executing code block and returns
 
 #### useLaunchedEffect
 ```java
-void useLaunchedEffect(IdentifiableThrowingRunnable effect);
+void useLaunchedEffect(IdentityFreeThrowingRunnable effect);
 ```
 Runs a side effect on a different thread. When the component is first rendered, it executes the effect on a different
 thread. When the component is disposed, the task is cancelled and the thread is interrupted (see
 `Future#cancel(boolean mayInterruptIfRunning)`). If any of the dependency of the effect change, the existing task will
-be cancelled and a new one will be started (see [Identifiables](#identifiables) for explicitly declaring dependencies).
+be cancelled and a new one will be started (see [IdentityFree](#identityfree) for explicitly declaring dependencies).
 
 The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
 the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
@@ -231,12 +231,12 @@ Similar to [Jetpack Compose LaunchedEffect](https://developer.android.com/jetpac
 
 #### useDisposableEffect
 ```java
-void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect);
+void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect);
 ```
 Runs a side effect that needs to be cleaned up. When the component is first rendered, it executes the effect which, 
 optionally, can register a cleanup function. When the component is disposed, the cleanup function is invoked.
 If any of the dependency of the effect change, the current cleanup function is invoked and the effect is re-executed
-(see [Identifiables](#identifiables) for explicitly declaring dependencies).
+(see [IdentityFree](#identityfree) for explicitly declaring dependencies).
 
 The effect function is a tracking function, so calling the getter of a tracked variable inside it will also cause
 the effect to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
@@ -257,14 +257,14 @@ Similar to [Jetpack Compose SideEffect](https://developer.android.com/jetpack/co
 
 #### produce
 ```java
-<V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer);
+<V> Supplier<V> produce(Supplier<V> initialValue, IdentityFreeThrowingConsumer<ProduceScope<V>> producer);
 ```
 Runs a producer in a different thread that can push values into a returned State. Use it to convert unmanaged variables 
 into State, for example bringing external subscription-driven state in the library.
 The producer is launched when the component is first rendered, and will be cancelled and the thread interrupted (see
 `Future#cancel(boolean mayInterruptIfRunning)`) when the component is disposed.
 If any of the dependency of the producer change, the existing task will be cancelled and the effect is re-executed
-(see [Identifiables](#identifiables) for explicitly declaring dependencies).
+(see [IdentityFrees](#identityfree) for explicitly declaring dependencies).
 
 The producer function is a tracking function, so calling the getter of a tracked variable inside it will also cause
 the producer to be re-executed. To avoid this, tracked variables can be unwrapped using [untrack](#untrack).
@@ -298,7 +298,7 @@ p.inner(o -> o.getTextArea(), JDTextArea.fn(textArea -> { ... })
 ```
 in order to decorate the underlying text area.
 
-## Identifiables
+## IdentityFree
 
 In order to automatically track dependencies of a lambda, the library makes heavy use of serializable
 lambdas in order to be able to request to Java which local variables are captured by the lambda and use
@@ -310,35 +310,39 @@ by default are the same as [React memo components](https://react.dev/reference/r
 
 You can usually tell when a requested function will only be conditionally re-run when its dependencies change
 when it's one of the following interfaces:
-- `IdentifiableRunnable`
-- `IdentifiableThrowingRunnable`
-- `IdentifiableSupplier`
-- `IdentifiableConsumer`
-- `IdentifiableThrowingConsumer`
-- `IdentifiableFunction`
-- `IdentifiableBiFunction`
+- `IdentityFreeRunnable`
+- `IdentityFreeThrowingRunnable`
+- `IdentityFreeSupplier`
+- `IdentityFreeConsumer`
+- `IdentityFreeThrowingConsumer`
+- `IdentityFreeFunction`
+- `IdentityFreeBiFunction`
 - `<T extends Serializable>` and wants a lambda
+
+Additionally, when in any of the dependencies of one of those functions a non-serializable lambda is found,
+the library will attempt to detect it (rn only works on Hotspot JDK most likely) and use reflections to 
+extract its captured variables.  
 
 You can always manually declare the dependencies by:
 - calling the static method `explicit` on one of the interfaces above
 - call the overload of the method (usually suffixed with -explicit) which takes a non-serializable lambda
   and a list of dependencies
 
-An identifiable function is not necessarily a tracked function: 
+An identity-free function is not necessarily a tracked function: 
 - a tracking function will always be re-run when a tracked value that it uses changes, 
-  (even if it's an identifiable function and its dependencies haven't changed).  
-- an identifiable function will additionally only re-run if its dependencies changed when
+  (even if it's an identity-free function and its dependencies haven't changed).  
+- an identity-free function will additionally only re-run if its dependencies changed when
   invoked during a component re-render
 
 That means that:
-- An identifiable tracked function will
+- An identity-free tracked function will
     - re-run on tracked variable changes
     - conditionally re-run on component re-render
-- An identifiable non-tracked function will
+- An identity-free non-tracked function will
     - not be tracked by tracking variables, if you call them inside it, you will cause its 
       parent tracking scope to re-run (which might be a component re-render)
     - conditionally re-run on component re-render
-- A non-identifiable tracked function will
+- A non-identity-free tracked function will
     - re-run on tracked variable changes
     - re-run on component re-render
 

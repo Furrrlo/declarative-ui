@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.IntStream;
 
-class Identifiables {
+class IdentityFrees {
 
     private static final @Nullable MethodHandle LOOKUP_PRIVATE_LOOKUP_IN;
     static {
@@ -31,12 +31,12 @@ class Identifiables {
         LOOKUP_PRIVATE_LOOKUP_IN = lookupPrivateLookupIn;
     }
 
-    private Identifiables() {
+    private IdentityFrees() {
     }
 
     public static Object[] computeDependencies(Collection<MethodHandles.Lookup> lookupsIn, Object identifiable) {
-        if (identifiable instanceof Identifiable.Explicit)
-            return ((Identifiable) identifiable).deps(lookupsIn);
+        if (identifiable instanceof IdentityFree.Explicit)
+            return ((IdentityFree) identifiable).deps(lookupsIn);
 
         final Collection<MethodHandles.Lookup> lookups;
         if(lookupsIn.isEmpty()) {
@@ -184,35 +184,35 @@ class Identifiables {
     public static Object[] makeDependenciesExplicit(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
         return Arrays.stream(deps)
                 .map(dep -> {
-                    if(dep instanceof IdentifiableRunnable)
-                        return IdentifiableRunnable.explicit(lookups, (IdentifiableRunnable) dep);
-                    if(dep instanceof IdentifiableThrowingRunnable)
-                        return IdentifiableThrowingRunnable.explicit(lookups, (IdentifiableThrowingRunnable) dep);
-                    if(dep instanceof IdentifiableSupplier)
-                        return IdentifiableSupplier.explicit(lookups, (IdentifiableSupplier<?>) dep);
-                    if(dep instanceof IdentifiableConsumer)
-                        return IdentifiableConsumer.explicit(lookups, (IdentifiableConsumer<?>) dep);
-                    if(dep instanceof IdentifiableThrowingConsumer)
-                        return IdentifiableThrowingConsumer.explicit(lookups, (IdentifiableThrowingConsumer<?>) dep);
-                    if(dep instanceof IdentifiableFunction)
-                        return IdentifiableFunction.explicit(lookups, (IdentifiableFunction<?, ?>) dep);
-                    if(dep instanceof IdentifiableBiFunction)
-                        return IdentifiableBiFunction.explicit(lookups, (IdentifiableBiFunction<?, ?, ?>) dep);
+                    if(dep instanceof IdentityFreeRunnable)
+                        return IdentityFreeRunnable.explicit(lookups, (IdentityFreeRunnable) dep);
+                    if(dep instanceof IdentityFreeThrowingRunnable)
+                        return IdentityFreeThrowingRunnable.explicit(lookups, (IdentityFreeThrowingRunnable) dep);
+                    if(dep instanceof IdentityFreeSupplier)
+                        return IdentityFreeSupplier.explicit(lookups, (IdentityFreeSupplier<?>) dep);
+                    if(dep instanceof IdentityFreeConsumer)
+                        return IdentityFreeConsumer.explicit(lookups, (IdentityFreeConsumer<?>) dep);
+                    if(dep instanceof IdentityFreeThrowingConsumer)
+                        return IdentityFreeThrowingConsumer.explicit(lookups, (IdentityFreeThrowingConsumer<?>) dep);
+                    if(dep instanceof IdentityFreeFunction)
+                        return IdentityFreeFunction.explicit(lookups, (IdentityFreeFunction<?, ?>) dep);
+                    if(dep instanceof IdentityFreeBiFunction)
+                        return IdentityFreeBiFunction.explicit(lookups, (IdentityFreeBiFunction<?, ?, ?>) dep);
                     if(isLambda(dep))
-                        return new ExplicitIdentifiableLambda(lookups, dep, computeDependencies(lookups, dep));
+                        return new ExplicitIdentityFreeLambda(lookups, dep, computeDependencies(lookups, dep));
                     return dep;
                 })
                 .toArray();
     }
 
-    private static class ExplicitIdentifiableLambda implements Identifiable, Identifiable.Explicit {
+    private static class ExplicitIdentityFreeLambda implements IdentityFree, IdentityFree.Explicit {
 
         private final Object lambda;
-        private final IdentifiableDeps deps;
+        private final IdentityFreeDeps deps;
 
-        ExplicitIdentifiableLambda(Collection<MethodHandles.Lookup> lookups, Object lambda, Object[] deps) {
+        ExplicitIdentityFreeLambda(Collection<MethodHandles.Lookup> lookups, Object lambda, Object[] deps) {
             this.lambda = lambda;
-            this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+            this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
         }
 
         @Override
@@ -228,12 +228,12 @@ class Identifiables {
         @Override
         @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         public boolean equals(Object o) {
-            return Identifiables.equals(this, o);
+            return IdentityFrees.equals(this, o);
         }
 
         @Override
         public int hashCode() {
-            return Identifiables.hashCode(this);
+            return IdentityFrees.hashCode(this);
         }
     }
 
@@ -241,11 +241,11 @@ class Identifiables {
         // This is to avoid potential infinite cycles with Objects.equals
         if(o1 != o2 && (o1 == null || o2 == null))
             return false;
-        if(!(o1 instanceof Identifiable) || !(o2 instanceof Identifiable))
-            return o1 instanceof Identifiable ? Objects.equals(o2, o1) : Objects.equals(o1, o2);
+        if(!(o1 instanceof IdentityFree) || !(o2 instanceof IdentityFree))
+            return o1 instanceof IdentityFree ? Objects.equals(o2, o1) : Objects.equals(o1, o2);
 
-        final Identifiable obj = (Identifiable) o1;
-        final Identifiable that = (Identifiable) o2;
+        final IdentityFree obj = (IdentityFree) o1;
+        final IdentityFree that = (IdentityFree) o2;
         if (obj == that)
             return true;
         if (obj.getImplClass() != that.getImplClass())
@@ -253,7 +253,7 @@ class Identifiables {
         return Arrays.deepEquals(obj.deps(), that.deps());
     }
 
-    public static int hashCode(@Nullable Identifiable o) {
+    public static int hashCode(@Nullable IdentityFree o) {
         if(o == null)
             return 0;
 

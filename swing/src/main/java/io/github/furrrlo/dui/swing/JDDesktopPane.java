@@ -9,17 +9,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDDesktopPane {
-  public static DeclarativeComponent<JDesktopPane> fn(IdentifiableConsumer<Decorator<JDesktopPane>> body) {
+  public static DeclarativeComponent<JDesktopPane> fn(IdentityFreeConsumer<Decorator<JDesktopPane>> body) {
     return fn(JDesktopPane.class, JDesktopPane::new, body);
   }
 
   public static DeclarativeComponent<JDesktopPane> fn(Supplier<JDesktopPane> factory,
-      IdentifiableConsumer<Decorator<JDesktopPane>> body) {
+      IdentityFreeConsumer<Decorator<JDesktopPane>> body) {
     return fn(JDesktopPane.class, factory, body);
   }
 
   public static <T extends JDesktopPane> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -30,15 +30,15 @@ public class JDDesktopPane {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends DesktopPaneUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends DesktopPaneUI> ui) {
       attribute(PREFIX + "ui", JDesktopPane::getUI, JDesktopPane::setUI, ui);
     }
 
-    public void desktopManager(IdentifiableSupplier<? extends DesktopManager> desktopManager) {
+    public void desktopManager(IdentityFreeSupplier<? extends DesktopManager> desktopManager) {
       attribute(PREFIX + "desktopManager", JDesktopPane::getDesktopManager, JDesktopPane::setDesktopManager, desktopManager);
     }
 
-    public void dragMode(IdentifiableSupplier<Integer> dragMode) {
+    public void dragMode(IdentityFreeSupplier<Integer> dragMode) {
       attribute(PREFIX + "dragMode", JDesktopPane::getDragMode, JDesktopPane::setDragMode, dragMode);
     }
 

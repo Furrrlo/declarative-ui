@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 
 import javax.swing.*;
 import javax.swing.plaf.SliderUI;
@@ -12,17 +12,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSlider {
-  public static DeclarativeComponent<JSlider> fn(IdentifiableConsumer<Decorator<JSlider>> body) {
+  public static DeclarativeComponent<JSlider> fn(IdentityFreeConsumer<Decorator<JSlider>> body) {
     return fn(JSlider.class, JSlider::new, body);
   }
 
   public static DeclarativeComponent<JSlider> fn(Supplier<JSlider> factory,
-      IdentifiableConsumer<Decorator<JSlider>> body) {
+      IdentityFreeConsumer<Decorator<JSlider>> body) {
     return fn(JSlider.class, factory, body);
   }
 
   public static <T extends JSlider> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -33,67 +33,67 @@ public class JDSlider {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends SliderUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends SliderUI> ui) {
       attribute(PREFIX + "ui", JSlider::getUI, JSlider::setUI, ui);
     }
 
-    public void extent(IdentifiableSupplier<Integer> extent) {
+    public void extent(IdentityFreeSupplier<Integer> extent) {
       attribute(PREFIX + "extent", JSlider::getExtent, JSlider::setExtent, extent);
     }
 
-    public void inverted(IdentifiableSupplier<Boolean> inverted) {
+    public void inverted(IdentityFreeSupplier<Boolean> inverted) {
       attribute(PREFIX + "inverted", JSlider::getInverted, JSlider::setInverted, inverted);
     }
 
-    public void labelTable(IdentifiableSupplier<? extends Dictionary<Integer, JComponent>> labelTable) {
+    public void labelTable(IdentityFreeSupplier<? extends Dictionary<Integer, JComponent>> labelTable) {
       attribute(PREFIX + "labelTable", JSlider::getLabelTable, JSlider::setLabelTable, labelTable);
     }
 
-    public void majorTickSpacing(IdentifiableSupplier<Integer> majorTickSpacing) {
+    public void majorTickSpacing(IdentityFreeSupplier<Integer> majorTickSpacing) {
       attribute(PREFIX + "majorTickSpacing", JSlider::getMajorTickSpacing, JSlider::setMajorTickSpacing, majorTickSpacing);
     }
 
-    public void maximum(IdentifiableSupplier<Integer> maximum) {
+    public void maximum(IdentityFreeSupplier<Integer> maximum) {
       attribute(PREFIX + "maximum", JSlider::getMaximum, JSlider::setMaximum, maximum);
     }
 
-    public void minimum(IdentifiableSupplier<Integer> minimum) {
+    public void minimum(IdentityFreeSupplier<Integer> minimum) {
       attribute(PREFIX + "minimum", JSlider::getMinimum, JSlider::setMinimum, minimum);
     }
 
-    public void minorTickSpacing(IdentifiableSupplier<Integer> minorTickSpacing) {
+    public void minorTickSpacing(IdentityFreeSupplier<Integer> minorTickSpacing) {
       attribute(PREFIX + "minorTickSpacing", JSlider::getMinorTickSpacing, JSlider::setMinorTickSpacing, minorTickSpacing);
     }
 
-    public void model(IdentifiableSupplier<? extends BoundedRangeModel> model) {
+    public void model(IdentityFreeSupplier<? extends BoundedRangeModel> model) {
       attribute(PREFIX + "model", JSlider::getModel, JSlider::setModel, model);
     }
 
-    public void orientation(IdentifiableSupplier<Integer> orientation) {
+    public void orientation(IdentityFreeSupplier<Integer> orientation) {
       attribute(PREFIX + "orientation", JSlider::getOrientation, JSlider::setOrientation, orientation);
     }
 
-    public void paintLabels(IdentifiableSupplier<Boolean> paintLabels) {
+    public void paintLabels(IdentityFreeSupplier<Boolean> paintLabels) {
       attribute(PREFIX + "paintLabels", JSlider::getPaintLabels, JSlider::setPaintLabels, paintLabels);
     }
 
-    public void paintTicks(IdentifiableSupplier<Boolean> paintTicks) {
+    public void paintTicks(IdentityFreeSupplier<Boolean> paintTicks) {
       attribute(PREFIX + "paintTicks", JSlider::getPaintTicks, JSlider::setPaintTicks, paintTicks);
     }
 
-    public void paintTrack(IdentifiableSupplier<Boolean> paintTrack) {
+    public void paintTrack(IdentityFreeSupplier<Boolean> paintTrack) {
       attribute(PREFIX + "paintTrack", JSlider::getPaintTrack, JSlider::setPaintTrack, paintTrack);
     }
 
-    public void snapToTicks(IdentifiableSupplier<Boolean> snapToTicks) {
+    public void snapToTicks(IdentityFreeSupplier<Boolean> snapToTicks) {
       attribute(PREFIX + "snapToTicks", JSlider::getSnapToTicks, JSlider::setSnapToTicks, snapToTicks);
     }
 
-    public void value(IdentifiableSupplier<Integer> value) {
+    public void value(IdentityFreeSupplier<Integer> value) {
       attribute(PREFIX + "value", JSlider::getValue, JSlider::setValue, value);
     }
 
-    public void valueIsAdjusting(IdentifiableSupplier<Boolean> valueIsAdjusting) {
+    public void valueIsAdjusting(IdentityFreeSupplier<Boolean> valueIsAdjusting) {
       attribute(PREFIX + "valueIsAdjusting", JSlider::getValueIsAdjusting, JSlider::setValueIsAdjusting, valueIsAdjusting);
     }
   }

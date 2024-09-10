@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import java.lang.Class;
 import java.lang.String;
 import java.lang.SuppressWarnings;
@@ -12,17 +12,17 @@ import javax.swing.JRadioButtonMenuItem;
 @SuppressWarnings("unused")
 public class JDRadioButtonMenuItem {
   public static DeclarativeComponent<JRadioButtonMenuItem> fn(
-      IdentifiableConsumer<Decorator<JRadioButtonMenuItem>> body) {
+      IdentityFreeConsumer<Decorator<JRadioButtonMenuItem>> body) {
     return fn(JRadioButtonMenuItem.class, JRadioButtonMenuItem::new, body);
   }
 
   public static DeclarativeComponent<JRadioButtonMenuItem> fn(Supplier<JRadioButtonMenuItem> factory,
-      IdentifiableConsumer<Decorator<JRadioButtonMenuItem>> body) {
+      IdentityFreeConsumer<Decorator<JRadioButtonMenuItem>> body) {
     return fn(JRadioButtonMenuItem.class, factory, body);
   }
 
   public static <T extends JRadioButtonMenuItem> DeclarativeComponent<T> fn(Class<T> type,
-      Supplier<T> factory, IdentifiableConsumer<Decorator<T>> body) {
+      Supplier<T> factory, IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 

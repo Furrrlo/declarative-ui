@@ -5,20 +5,20 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
-public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Identifiable, Serializable {
+public interface IdentityFreeBiFunction<T, U, R> extends BiFunction<T, U, R>, IdentityFree, Serializable {
 
     @Override
     default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-        return Identifiables.computeDependencies(lookups, this);
+        return IdentityFrees.computeDependencies(lookups, this);
     }
 
-    interface Explicit<T, U, R> extends IdentifiableBiFunction<T, U, R>, Identifiable.Explicit {
+    interface Explicit<T, U, R> extends IdentityFreeBiFunction<T, U, R>, IdentityFree.Explicit {
 
         @Override
         Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T, U, R> Explicit<T, U, R> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableBiFunction<T, U, R> fn) {
+    static <T, U, R> Explicit<T, U, R> explicit(Collection<MethodHandles.Lookup> lookups, IdentityFreeBiFunction<T, U, R> fn) {
         return fn instanceof Explicit
                 ? (Explicit<T, U, R>) fn
                 : new Impl.ExplicitArray<>(lookups, fn, fn.deps(lookups));
@@ -41,16 +41,16 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
         private static class ExplicitArray<T, U, R> implements Explicit<T, U, R> {
 
             private final transient BiFunction<T, U, R> fn;
-            private final IdentifiableDeps deps;
+            private final IdentityFreeDeps deps;
 
             public ExplicitArray(BiFunction<T, U, R> fn, Object[] deps) {
                 this.fn = fn;
-                this.deps = IdentifiableDeps.of(deps);
+                this.deps = IdentityFreeDeps.of(deps);
             }
 
             public ExplicitArray(Collection<MethodHandles.Lookup> lookups, BiFunction<T, U, R> fn, Object[] deps) {
                 this.fn = fn;
-                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+                this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -71,12 +71,12 @@ public interface IdentifiableBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
     }

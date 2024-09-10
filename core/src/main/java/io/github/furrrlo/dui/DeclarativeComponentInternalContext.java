@@ -17,13 +17,13 @@ public interface DeclarativeComponentInternalContext extends DeclarativeComponen
 
     <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn);
 
-    <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn);
+    <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn);
 
     <V> Ref<V> useRef(Supplier<V> initialValue);
 
-    void useLaunchedEffect(IdentifiableThrowingRunnable effect);
+    void useLaunchedEffect(IdentityFreeThrowingRunnable effect);
 
-    void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect);
+    void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect);
 
     void useSideEffect(Runnable effect);
 }

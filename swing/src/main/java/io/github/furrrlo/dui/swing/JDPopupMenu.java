@@ -10,17 +10,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDPopupMenu {
-  public static DeclarativeComponent<JPopupMenu> fn(IdentifiableConsumer<Decorator<JPopupMenu>> body) {
+  public static DeclarativeComponent<JPopupMenu> fn(IdentityFreeConsumer<Decorator<JPopupMenu>> body) {
     return fn(JPopupMenu.class, JPopupMenu::new, body);
   }
 
   public static DeclarativeComponent<JPopupMenu> fn(Supplier<JPopupMenu> factory,
-      IdentifiableConsumer<Decorator<JPopupMenu>> body) {
+      IdentityFreeConsumer<Decorator<JPopupMenu>> body) {
     return fn(JPopupMenu.class, factory, body);
   }
 
   public static <T extends JPopupMenu> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -31,11 +31,11 @@ public class JDPopupMenu {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends PopupMenuUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends PopupMenuUI> ui) {
       attribute(PREFIX + "ui", JPopupMenu::getUI, JPopupMenu::setUI, ui);
     }
 
-    public void borderPainted(IdentifiableSupplier<Boolean> borderPainted) {
+    public void borderPainted(IdentityFreeSupplier<Boolean> borderPainted) {
       attribute(PREFIX + "borderPainted", JPopupMenu::isBorderPainted, JPopupMenu::setBorderPainted, borderPainted);
     }
 
@@ -43,15 +43,15 @@ public class JDPopupMenu {
       fnAttribute(PREFIX + "invoker", JPopupMenu::getInvoker, JPopupMenu::setInvoker, invoker);
     }
 
-    public void label(IdentifiableSupplier<String> label) {
+    public void label(IdentityFreeSupplier<String> label) {
       attribute(PREFIX + "label", JPopupMenu::getLabel, JPopupMenu::setLabel, label);
     }
 
-    public void lightWeightPopupEnabled(IdentifiableSupplier<Boolean> lightWeightPopupEnabled) {
+    public void lightWeightPopupEnabled(IdentityFreeSupplier<Boolean> lightWeightPopupEnabled) {
       attribute(PREFIX + "lightWeightPopupEnabled", JPopupMenu::isLightWeightPopupEnabled, JPopupMenu::setLightWeightPopupEnabled, lightWeightPopupEnabled);
     }
 
-    public void popupSize(IdentifiableSupplier<? extends Dimension> popupSize) {
+    public void popupSize(IdentityFreeSupplier<? extends Dimension> popupSize) {
       attribute(PREFIX + "popupSize", JPopupMenu::setPopupSize, popupSize);
     }
 
@@ -59,7 +59,7 @@ public class JDPopupMenu {
       fnAttribute(PREFIX + "selected", JPopupMenu::setSelected, selected);
     }
 
-    public void selectionModel(IdentifiableSupplier<? extends SingleSelectionModel> selectionModel) {
+    public void selectionModel(IdentityFreeSupplier<? extends SingleSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JPopupMenu::getSelectionModel, JPopupMenu::setSelectionModel, selectionModel);
     }
   }

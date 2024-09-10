@@ -14,13 +14,13 @@ import java.util.function.Supplier;
 public class JDLayer {
 
   public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(Class<V> type,
-                                                                         IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+                                                                         IdentityFreeConsumer<Decorator<V, JLayer<V>>> body) {
     return fn(TypeToken.get(type), body);
   }
 
   @SuppressWarnings("unchecked")
   public static <V extends Component> DeclarativeComponent<JLayer<V>> fn(TypeToken<V> type,
-                                                                         IdentifiableConsumer<Decorator<V, JLayer<V>>> body) {
+                                                                         IdentityFreeConsumer<Decorator<V, JLayer<V>>> body) {
     return fn(
             (TypeToken<JLayer<V>>) TypeToken.get(TypeFactory.parameterizedClass(JList.class, type.getType())),
             JLayer::new,
@@ -29,7 +29,7 @@ public class JDLayer {
 
   public static <V extends Component, T extends JLayer<V>> DeclarativeComponent<T> fn(TypeToken<T> type,
                                                                                       Supplier<T> factory,
-                                                                                      IdentifiableConsumer<Decorator<V, T>> body) {
+                                                                                      IdentityFreeConsumer<Decorator<V, T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -40,7 +40,7 @@ public class JDLayer {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends LayerUI<? super V>> ui) {
+    public void ui(IdentityFreeSupplier<? extends LayerUI<? super V>> ui) {
       this.<LayerUI<? super V>>attribute(PREFIX + "ui", JLayer::getUI, JLayer::setUI, ui);
     }
 
@@ -48,7 +48,7 @@ public class JDLayer {
       fnAttribute(PREFIX + "glassPane", JLayer::getGlassPane, JLayer::setGlassPane, glassPane);
     }
 
-    public void layerEventMask(IdentifiableSupplier<Long> layerEventMask) {
+    public void layerEventMask(IdentityFreeSupplier<Long> layerEventMask) {
       attribute(PREFIX + "layerEventMask", JLayer::getLayerEventMask, JLayer::setLayerEventMask, layerEventMask);
     }
 

@@ -27,19 +27,19 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     private T component;
 
     public DeclarativeComponentImpl(Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
-                                    @Nullable IdentifiableConsumer<O_CTX> body) {
+                                    @Nullable IdentityFreeConsumer<O_CTX> body) {
         this(null, decoratorFactory.get(), body);
     }
 
     public DeclarativeComponentImpl(ApplicationConfig config,
                                     Supplier<? extends DeclarativeComponentContextDecorator<T>> decoratorFactory,
-                                    @Nullable IdentifiableConsumer<O_CTX> body) {
+                                    @Nullable IdentityFreeConsumer<O_CTX> body) {
         this(config, decoratorFactory.get(), body);
     }
 
     private DeclarativeComponentImpl(@Nullable ApplicationConfig config,
                                      DeclarativeComponentContextDecorator<T> decorator,
-                                     @Nullable IdentifiableConsumer<O_CTX> body) {
+                                     @Nullable IdentityFreeConsumer<O_CTX> body) {
         super(config, body);
         this.decorator = decorator;
         this.componentType = decorator.getType();
@@ -131,7 +131,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void invokeBody(IdentifiableConsumer<O_CTX> body,
+    protected void invokeBody(IdentityFreeConsumer<O_CTX> body,
                               DeclarativeComponentInternalContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         try {
@@ -186,7 +186,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     }
 
     @SuppressWarnings("unchecked")
-    public <A extends Attr<?, A>> IdentifiableRunnable makeAttrStateDependency(
+    public <A extends Attr<?, A>> IdentityFreeRunnable makeAttrStateDependency(
             String attrKey,
             BiConsumer<DeclarativeComponentImpl<T, O_CTX>, A> runnable,
             BiFunction<DeclarativeComponentImpl<T, O_CTX>, A, Object[]> deps) {
@@ -209,7 +209,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
-        IdentifiableRunnable stateDependency = this.<A>makeAttrStateDependency(
+        IdentityFreeRunnable stateDependency = this.<A>makeAttrStateDependency(
                 attrKey,
                 (c0, attr) -> c0.scheduleOnFrameworkThread(updatePriority, () -> {
                     // - If for any reason its parent component is scheduled before this, and its body is re-run
@@ -322,10 +322,10 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         @Override
         public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                                BiConsumer<T, V> setter,
-                                                               IdentifiableSupplier<? extends V> value0,
+                                                               IdentityFreeSupplier<? extends V> value0,
                                                                AttributeEqualityFn<T, V> equalityFn) {
             ensureInsideBody();
-            IdentifiableSupplier<? extends V> value = IdentifiableSupplier.explicit(outer.lookups(), value0);
+            IdentityFreeSupplier<? extends V> value = IdentityFreeSupplier.explicit(outer.lookups(), value0);
             attributes.put(key, outer.buildOrChangeAttrWithStateDependency(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
                     () -> new Attribute<>(key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY, setter, value, equalityFn)));
@@ -338,7 +338,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                 String key,
                 TypeToken<V> type,
                 ListReplacer<T, V, S> replacer,
-                IdentifiableSupplier<List<V>> fn
+                IdentityFreeSupplier<List<V>> fn
         ) {
             return doListFnAttribute(
                     key, NORMAL_ATTRIBUTE_UPDATE_PRIORITY,
@@ -354,7 +354,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                 String key,
                 TypeToken<V> type,
                 ListRemover<T> remover,
-                IdentifiableSupplier<List<V>> fn,
+                IdentityFreeSupplier<List<V>> fn,
                 ListAdder<T, V, S> adder
         ) {
             return doListFnAttribute(

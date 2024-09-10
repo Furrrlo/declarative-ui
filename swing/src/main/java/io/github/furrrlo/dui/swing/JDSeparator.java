@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 
 import javax.swing.*;
 import javax.swing.plaf.SeparatorUI;
@@ -11,17 +11,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSeparator {
-  public static DeclarativeComponent<JSeparator> fn(IdentifiableConsumer<Decorator<JSeparator>> body) {
+  public static DeclarativeComponent<JSeparator> fn(IdentityFreeConsumer<Decorator<JSeparator>> body) {
     return fn(JSeparator.class, JSeparator::new, body);
   }
 
   public static DeclarativeComponent<JSeparator> fn(Supplier<JSeparator> factory,
-      IdentifiableConsumer<Decorator<JSeparator>> body) {
+      IdentityFreeConsumer<Decorator<JSeparator>> body) {
     return fn(JSeparator.class, factory, body);
   }
 
   public static <T extends JSeparator> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -32,11 +32,11 @@ public class JDSeparator {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends SeparatorUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends SeparatorUI> ui) {
       attribute(PREFIX + "ui", JSeparator::getUI, JSeparator::setUI, ui);
     }
 
-    public void orientation(IdentifiableSupplier<Integer> orientation) {
+    public void orientation(IdentityFreeSupplier<Integer> orientation) {
       attribute(PREFIX + "orientation", JSeparator::getOrientation, JSeparator::setOrientation, orientation);
     }
   }

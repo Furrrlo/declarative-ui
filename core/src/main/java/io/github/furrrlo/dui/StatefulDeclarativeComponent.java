@@ -29,14 +29,14 @@ abstract class StatefulDeclarativeComponent<
     protected static final int EFFECT_UPDATE_PRIORITY = 4;
     protected static final int HIGHEST_PRIORITY = COMPONENT_UPDATE_PRIORITY;
 
-    protected static final IdentifiableRunnable NO_STATE_DEPENDENCY = IdentifiableRunnable.explicit(() -> {});
+    protected static final IdentityFreeRunnable NO_STATE_DEPENDENCY = IdentityFreeRunnable.explicit(() -> {});
 
     private static final DScopedValue<StatefulDeclarativeComponent<?, ?, ?>> CURR_UPDATING_COMPONENT = DScopedValue.create();
 
     private @Nullable ApplicationConfig appConfig;
 
-    protected final @Nullable IdentifiableConsumer<O_CTX> body;
-    protected @Nullable IdentifiableConsumer<O_CTX> prevBody;
+    protected final @Nullable IdentityFreeConsumer<O_CTX> body;
+    protected @Nullable IdentityFreeConsumer<O_CTX> prevBody;
 
     protected AtomicReference<@Nullable StatefulDeclarativeComponent<R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
@@ -45,16 +45,16 @@ abstract class StatefulDeclarativeComponent<
     protected @Nullable I_CTX context;
 
     protected @Nullable DeclarativeComponentInternalContext currentBodyInvocationCtx;
-    protected @Nullable IdentifiableRunnable currentStateDependency;
+    protected @Nullable IdentityFreeRunnable currentStateDependency;
 
-    protected StatefulDeclarativeComponent(@Nullable IdentifiableConsumer<O_CTX> body) {
+    protected StatefulDeclarativeComponent(@Nullable IdentityFreeConsumer<O_CTX> body) {
         this(null, body);
     }
 
     protected StatefulDeclarativeComponent(@Nullable ApplicationConfig appConfig,
-                                           @Nullable IdentifiableConsumer<O_CTX> body) {
+                                           @Nullable IdentityFreeConsumer<O_CTX> body) {
         this.body = body != null
-                ? IdentifiableConsumer.explicit(appConfig != null ? appConfig.lookups() : currentLookups(), body)
+                ? IdentityFreeConsumer.explicit(appConfig != null ? appConfig.lookups() : currentLookups(), body)
                 : null;
         this.appConfig = appConfig;
     }
@@ -210,7 +210,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    protected void invokeBody(IdentifiableConsumer<O_CTX> body,
+    protected void invokeBody(IdentityFreeConsumer<O_CTX> body,
                               DeclarativeComponentInternalContext newCtx,
                               Consumer<ReservedMemoProxy<?>> reserveMemo) {
         // This cast to O_CTX has to be guaranteed by the DeclarativeComponentFactory
@@ -220,14 +220,14 @@ abstract class StatefulDeclarativeComponent<
     protected void updateAttributes(I_CTX newCtx) {
     }
 
-    protected @Nullable IdentifiableRunnable getCurrentStateDependency() {
+    protected @Nullable IdentityFreeRunnable getCurrentStateDependency() {
         return currentStateDependency == NO_STATE_DEPENDENCY ? null : currentStateDependency != null
                 ? currentStateDependency
                 : makeStateDependency(StatefulDeclarativeComponent::triggerStateUpdate, c -> new Object[] { c });
     }
 
-    protected <RET> RET withStateDependency(@Nullable IdentifiableRunnable stateDependency, Supplier<RET> supp) {
-        IdentifiableRunnable prevStateDependency = currentStateDependency;
+    protected <RET> RET withStateDependency(@Nullable IdentityFreeRunnable stateDependency, Supplier<RET> supp) {
+        IdentityFreeRunnable prevStateDependency = currentStateDependency;
         this.currentStateDependency = stateDependency;
         try {
             return supp.get();
@@ -237,11 +237,11 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    public <C extends StatefulDeclarativeComponent<?, ?, ?>> IdentifiableRunnable makeStateDependency(
+    public <C extends StatefulDeclarativeComponent<?, ?, ?>> IdentityFreeRunnable makeStateDependency(
             Consumer<C> runnable,
             Function<C, Object[]> deps) {
         Supplier<StatefulDeclarativeComponent<R, O_CTX, I_CTX>> componentRef = substituteComponentRef::get;
-        return IdentifiableRunnable.Impl.explicit(
+        return IdentityFreeRunnable.Impl.explicit(
                 () -> {
                     C sub = (C) componentRef.get();
                     if(sub != null)
@@ -254,7 +254,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    public <V, M extends Memoized<V>> IdentifiableRunnable makeMemoStateDependency(
+    public <V, M extends Memoized<V>> IdentityFreeRunnable makeMemoStateDependency(
             int memoIdx,
             BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M> runnable,
             BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M, Object[]> deps) {
@@ -275,7 +275,7 @@ abstract class StatefulDeclarativeComponent<
     private <RET, V, M extends Memoized<V>> RET updateMemoWithStateDependency(int memoIdx, Supplier<RET> factory) {
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
-        IdentifiableRunnable stateDependency = this.<V, M>makeMemoStateDependency(
+        IdentityFreeRunnable stateDependency = this.<V, M>makeMemoStateDependency(
                 memoIdx,
                 (c, memo) -> {
                     // Mark the memo to be updated, so if for any reason its parent component is scheduled
@@ -302,7 +302,7 @@ abstract class StatefulDeclarativeComponent<
         return withStateDependency(stateDependency, factory);
     }
 
-    public IdentifiableRunnable makeEffectStateDependency(
+    public IdentityFreeRunnable makeEffectStateDependency(
             int effectIdx,
             BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect> runnable,
             BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect, Object[]> deps) {
@@ -323,7 +323,7 @@ abstract class StatefulDeclarativeComponent<
     private <RET> RET updateEffectWithStateDependency(int effectIdx, Supplier<RET> factory) {
         // Notice how it's not capturing neither this nor attr, as both  might be replaced with
         // newer versions, and we do not want to update stale stuff
-        IdentifiableRunnable stateDependency = this.makeEffectStateDependency(
+        IdentityFreeRunnable stateDependency = this.makeEffectStateDependency(
                 effectIdx,
                 (c, effect) -> {
                     // Mark the effect to be updated, so if for any reason its parent component is scheduled
@@ -349,7 +349,7 @@ abstract class StatefulDeclarativeComponent<
 
     private <RET> RET updateWithWrappedStateDependency(Predicate<StatefulDeclarativeComponent<?, ?, ?>> wrappingCond,
                                                        Supplier<RET> factory) {
-        IdentifiableRunnable wrappedStateDependency = getCurrentStateDependency();
+        IdentityFreeRunnable wrappedStateDependency = getCurrentStateDependency();
         if(wrappedStateDependency == null)
             return factory.get();
 
@@ -396,14 +396,14 @@ abstract class StatefulDeclarativeComponent<
         return currUpdatingComponent.withStateDependency(NO_STATE_DEPENDENCY, value);
     }
 
-    public static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection0,
+    public static <V> void indexCollection(IdentityFreeSupplier<Collection<V>> collection0,
                                            BiConsumer<Memo.DeclareMemoFn<V>, Integer> fn) {
 
         final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
         if(currUpdatingComponent == null)
             throw new UnsupportedOperationException("Currently not in a component update");
 
-        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(
+        final IdentityFreeSupplier<Collection<V>> collection = IdentityFreeSupplier.explicit(
                 currUpdatingComponent.lookups(),
                 collection0);
         final AtomicReference<Integer> previousSize = new AtomicReference<>();
@@ -421,7 +421,7 @@ abstract class StatefulDeclarativeComponent<
             previousSize.set(size);
             IntStream.range(0, size).forEach(i -> fn.accept(
                     // Declare memo on whatever context we are asked to
-                    () -> useMemo(IdentifiableSupplier.explicit(
+                    () -> useMemo(IdentityFreeSupplier.explicit(
                             () -> {
                                 // If the collection changes this will be re-evaluated
                                 Collection<V> coll = collection.get();
@@ -447,19 +447,19 @@ abstract class StatefulDeclarativeComponent<
         });
     }
 
-    public static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection0,
+    public static <V> void mapCollection(IdentityFreeSupplier<Collection<V>> collection0,
                                          BiConsumer<V, Memo.DeclareMemoFn<Integer>> fn) {
 
         final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
         if(currUpdatingComponent == null)
             throw new UnsupportedOperationException("Currently not in a component update");
 
-        final IdentifiableSupplier<Collection<V>> collection = IdentifiableSupplier.explicit(
+        final IdentityFreeSupplier<Collection<V>> collection = IdentityFreeSupplier.explicit(
                 currUpdatingComponent.lookups(),
                 collection0);
         collection.get().forEach(val -> {
             // Declare memo on whatever context we are asked to
-            fn.accept(val, () -> useMemo(IdentifiableSupplier.explicit(() -> {
+            fn.accept(val, () -> useMemo(IdentityFreeSupplier.explicit(() -> {
                 // If the collection changes this will be re-evaluated
                 Collection<V> coll = collection.get();
                 if (coll instanceof List<?>)
@@ -577,13 +577,13 @@ abstract class StatefulDeclarativeComponent<
         @Override
         public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
             Memoized<State<V>> memo = useMemo(
-                    IdentifiableSupplier.neverChange(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
+                    IdentityFreeSupplier.neverChange(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
                     (prev, next) -> false);
             return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }
 
         @Override
-        public <V> Memoized<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        public <V> Memoized<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
 
             // Try to catch memo issues as soon as possible from within the component
@@ -595,17 +595,17 @@ abstract class StatefulDeclarativeComponent<
                         "now" + outer.context.getCurrMemoizedIdx());
 
             final int idx = currMemoizedIdx++;
-            return doUseMemo(idx, IdentifiableSupplier.explicit(outer.lookups(), value), equalityFn);
+            return doUseMemo(idx, IdentityFreeSupplier.explicit(outer.lookups(), value), equalityFn);
         }
 
         @Override
         public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
-            return Hooks.useMemo(IdentifiableSupplier.neverChange(() -> new RefImpl<>(fallbackValue))).get();
+            return Hooks.useMemo(IdentityFreeSupplier.neverChange(() -> new RefImpl<>(fallbackValue))).get();
         }
 
         @Override
-        public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
-            useDisposableEffect(IdentifiableConsumer.explicit(scope -> {
+        public void useLaunchedEffect(IdentityFreeThrowingRunnable effect) {
+            useDisposableEffect(IdentityFreeConsumer.explicit(scope -> {
                 Future<?> future = outer.getAppConfig().launchedEffectsExecutor().submit(() -> {
                     try {
                         effect.run();
@@ -620,7 +620,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect0) {
+        public void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect0) {
             ensureInsideBody();
 
             // Try to catch effect issues as soon as possible from within the component
@@ -631,7 +631,7 @@ abstract class StatefulDeclarativeComponent<
                         " before " + getCurrEffectsIdx() + ", " +
                         "now" + outer.context.getCurrEffectsIdx());
 
-            final IdentifiableConsumer<DisposableEffectScope> effect = IdentifiableConsumer.explicit(
+            final IdentityFreeConsumer<DisposableEffectScope> effect = IdentityFreeConsumer.explicit(
                     outer.lookups(),
                     effect0);
             final int index = currEffectsIdx++;
@@ -650,7 +650,7 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public void useSideEffect(Runnable effect) {
-            useDisposableEffect(IdentifiableConsumer.alwaysChange(onDispose -> effect.run()));
+            useDisposableEffect(IdentityFreeConsumer.alwaysChange(onDispose -> effect.run()));
         }
 
         protected <V> void reserveMemo(ReservedMemoProxy<V> reservedMemoProxy) {
@@ -658,11 +658,11 @@ abstract class StatefulDeclarativeComponent<
             final BiPredicate<V, V> equalityFn = reservedMemoProxy.getEqualityFn();
             final Collection<MethodHandles.Lookup> lookups = outer.lookups();
             reservedMemoProxy.setReservedMemo(fn ->
-                    doUseMemo(idx, IdentifiableSupplier.explicit(lookups, fn), equalityFn));
+                    doUseMemo(idx, IdentityFreeSupplier.explicit(lookups, fn), equalityFn));
         }
 
         @SuppressWarnings("unchecked")
-        protected <V> Memoized<V> doUseMemo(int index, IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        protected <V> Memoized<V> doUseMemo(int index, IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
             if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
                 final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
                 return outer.updateMemoWithStateDependency(
@@ -691,7 +691,7 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    private static class BaseMemo<V> implements Memo<V>, IdentifiableSupplier.Explicit<V> {
+    private static class BaseMemo<V> implements Memo<V>, IdentityFreeSupplier.Explicit<V> {
 
         private static final Object[] NO_DEPS = new Object[] {};
 
@@ -738,10 +738,10 @@ abstract class StatefulDeclarativeComponent<
 
     private static class Memoized<V> extends BaseMemo<V> {
 
-        private IdentifiableSupplier<V> supplier;
+        private IdentityFreeSupplier<V> supplier;
         private boolean markedForUpdate;
 
-        public Memoized(IdentifiableSupplier<V> supplier, BiPredicate<V, V> equalityFn) {
+        public Memoized(IdentityFreeSupplier<V> supplier, BiPredicate<V, V> equalityFn) {
             super(equalityFn);
             this.value = supplier.get();
             this.supplier = supplier;
@@ -765,7 +765,7 @@ abstract class StatefulDeclarativeComponent<
             markedForUpdate = false;
         }
 
-        public Memoized<V> updateIfNecessary(IdentifiableSupplier<V> newValue) {
+        public Memoized<V> updateIfNecessary(IdentityFreeSupplier<V> newValue) {
             if(markedForUpdate || !this.supplier.equals(newValue)) {
                 this.supplier = newValue;
                 update();
@@ -795,11 +795,11 @@ abstract class StatefulDeclarativeComponent<
 
     private static class Effect {
 
-        private IdentifiableConsumer<DisposableEffectScope> effect;
+        private IdentityFreeConsumer<DisposableEffectScope> effect;
         private boolean shouldRun;
         private @Nullable Runnable onDispose;
 
-        public Effect(IdentifiableConsumer<DisposableEffectScope> effect) {
+        public Effect(IdentityFreeConsumer<DisposableEffectScope> effect) {
             this.effect = effect;
             this.shouldRun = true;
         }
@@ -808,7 +808,7 @@ abstract class StatefulDeclarativeComponent<
             this.shouldRun = true;
         }
 
-        public void updateIfNecessary(IdentifiableConsumer<DisposableEffectScope> effect) {
+        public void updateIfNecessary(IdentityFreeConsumer<DisposableEffectScope> effect) {
             // Avoid deepEquals if we should already run anyway
             if(shouldRun)
                 return;

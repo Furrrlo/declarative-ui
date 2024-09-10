@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 
 import javax.swing.*;
 import javax.swing.text.Style;
@@ -12,17 +12,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTextPane {
-  public static DeclarativeComponent<JTextPane> fn(IdentifiableConsumer<Decorator<JTextPane>> body) {
+  public static DeclarativeComponent<JTextPane> fn(IdentityFreeConsumer<Decorator<JTextPane>> body) {
     return fn(JTextPane.class, JTextPane::new, body);
   }
 
   public static DeclarativeComponent<JTextPane> fn(Supplier<JTextPane> factory,
-      IdentifiableConsumer<Decorator<JTextPane>> body) {
+      IdentityFreeConsumer<Decorator<JTextPane>> body) {
     return fn(JTextPane.class, factory, body);
   }
 
   public static <T extends JTextPane> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -33,11 +33,11 @@ public class JDTextPane {
       super(type, factory);
     }
 
-    public void logicalStyle(IdentifiableSupplier<? extends Style> logicalStyle) {
+    public void logicalStyle(IdentityFreeSupplier<? extends Style> logicalStyle) {
       attribute(PREFIX + "logicalStyle", JTextPane::getLogicalStyle, JTextPane::setLogicalStyle, logicalStyle);
     }
 
-    public void styledDocument(IdentifiableSupplier<? extends StyledDocument> styledDocument) {
+    public void styledDocument(IdentityFreeSupplier<? extends StyledDocument> styledDocument) {
       attribute(PREFIX + "styledDocument", JTextPane::getStyledDocument, JTextPane::setStyledDocument, styledDocument);
     }
   }

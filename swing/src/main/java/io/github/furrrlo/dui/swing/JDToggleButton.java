@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import java.lang.Class;
 import java.lang.String;
 import java.lang.SuppressWarnings;
@@ -12,17 +12,17 @@ import javax.swing.JToggleButton;
 @SuppressWarnings("unused")
 public class JDToggleButton {
   public static DeclarativeComponent<JToggleButton> fn(
-      IdentifiableConsumer<Decorator<JToggleButton>> body) {
+      IdentityFreeConsumer<Decorator<JToggleButton>> body) {
     return fn(JToggleButton.class, JToggleButton::new, body);
   }
 
   public static DeclarativeComponent<JToggleButton> fn(Supplier<JToggleButton> factory,
-      IdentifiableConsumer<Decorator<JToggleButton>> body) {
+      IdentityFreeConsumer<Decorator<JToggleButton>> body) {
     return fn(JToggleButton.class, factory, body);
   }
 
   public static <T extends JToggleButton> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 

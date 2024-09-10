@@ -5,26 +5,26 @@ import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class IdentifiableDeps {
+class IdentityFreeDeps {
 
-    static IdentifiableDeps of(Object[] deps) {
-        return new IdentifiableDeps(deps);
+    static IdentityFreeDeps of(Object[] deps) {
+        return new IdentityFreeDeps(deps);
     }
 
-    static IdentifiableDeps immediatelyExplicit(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
-        return new IdentifiableDeps(lookups, deps);
+    static IdentityFreeDeps immediatelyExplicit(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
+        return new IdentityFreeDeps(lookups, deps);
     }
 
     private final Lock lock = new ReentrantLock();
     private volatile boolean explicitized;
     private Object[] deps;
 
-    private IdentifiableDeps(Object[] deps) {
+    private IdentityFreeDeps(Object[] deps) {
         this.deps = deps;
     }
 
-    private IdentifiableDeps(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
-        this.deps = Identifiables.makeDependenciesExplicit(lookups, deps);
+    private IdentityFreeDeps(Collection<MethodHandles.Lookup> lookups, Object[] deps) {
+        this.deps = IdentityFrees.makeDependenciesExplicit(lookups, deps);
         this.explicitized = true;
     }
 
@@ -37,7 +37,7 @@ class IdentifiableDeps {
             if(explicitized)
                 return deps;
 
-            deps = Identifiables.makeDependenciesExplicit(lookups, deps);
+            deps = IdentityFrees.makeDependenciesExplicit(lookups, deps);
             explicitized = true;
             return deps;
         } finally {

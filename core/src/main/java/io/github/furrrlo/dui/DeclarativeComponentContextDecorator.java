@@ -91,11 +91,11 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
 
     // Internal decoration api
 
-    protected <V> ReservedMemo<V> reserveMemo(IdentifiableSupplier<V> fallbackValue) {
+    protected <V> ReservedMemo<V> reserveMemo(IdentityFreeSupplier<V> fallbackValue) {
         return reserveMemo(fallbackValue, Objects::deepEquals);
     }
 
-    protected <V> ReservedMemo<V> reserveMemo(IdentifiableSupplier<V> fallbackValue, BiPredicate<V, V> equalityFn) {
+    protected <V> ReservedMemo<V> reserveMemo(IdentityFreeSupplier<V> fallbackValue, BiPredicate<V, V> equalityFn) {
         if(toDecorate != null)
             throw new UnsupportedOperationException("Too late to reserve memos");
 
@@ -104,20 +104,20 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         return proxy;
     }
 
-    protected interface ReservedMemo<T> extends Function<IdentifiableSupplier<T>, Memo<T>> {
+    protected interface ReservedMemo<T> extends Function<IdentityFreeSupplier<T>, Memo<T>> {
         @Override
-        Memo<T> apply(IdentifiableSupplier<T> value);
+        Memo<T> apply(IdentityFreeSupplier<T> value);
     }
 
     static class ReservedMemoProxy<T> implements ReservedMemo<T> {
 
-        private final IdentifiableSupplier<T> fallbackValue;
+        private final IdentityFreeSupplier<T> fallbackValue;
         private final BiPredicate<T, T> equalityFn;
 
         private @Nullable ReservedMemo<T> actual;
         private boolean wasRun;
 
-        public ReservedMemoProxy(IdentifiableSupplier<T> fallbackValue, BiPredicate<T, T> equalityFn) {
+        public ReservedMemoProxy(IdentityFreeSupplier<T> fallbackValue, BiPredicate<T, T> equalityFn) {
             this.fallbackValue = fallbackValue;
             this.equalityFn = equalityFn;
         }
@@ -131,7 +131,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
         }
 
         @Override
-        public Memo<T> apply(IdentifiableSupplier<T> value) {
+        public Memo<T> apply(IdentityFreeSupplier<T> value) {
             if(wasRun)
                 throw new UnsupportedOperationException("Memo was already reserved");
             wasRun = true;
@@ -205,7 +205,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+    public <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
         return toDecorate().useMemo(value, equalityFn);
     }
 
@@ -215,12 +215,12 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     }
 
     @Override
-    public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+    public void useLaunchedEffect(IdentityFreeThrowingRunnable effect) {
         toDecorate().useLaunchedEffect(effect);
     }
 
     @Override
-    public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect) {
+    public void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect) {
         toDecorate().useDisposableEffect(effect);
     }
 
@@ -237,14 +237,14 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           IdentifiableSupplier<? extends V> value) {
+                                                           IdentityFreeSupplier<? extends V> value) {
         return toDecorate().attribute(key, setter, value);
     }
 
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           IdentifiableSupplier<? extends V> value,
+                                                           IdentityFreeSupplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         return toDecorate().attribute(key, setter, value, equalityFn);
     }
@@ -254,7 +254,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
-            IdentifiableSupplier<List<V>> fn
+            IdentityFreeSupplier<List<V>> fn
     ) {
         return toDecorate().listAttribute(key, type, replacer, fn);
     }
@@ -264,7 +264,7 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
             String key,
             TypeToken<V> type,
             ListRemover<T> remover,
-            IdentifiableSupplier<List<V>> fn,
+            IdentityFreeSupplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         return toDecorate().listAttribute(key, type, remover, fn, adder);

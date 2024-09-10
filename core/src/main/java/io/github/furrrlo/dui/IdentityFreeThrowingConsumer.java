@@ -4,20 +4,20 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 
-public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Identifiable, Serializable {
+public interface IdentityFreeThrowingConsumer<T> extends ThrowingConsumer<T>, IdentityFree, Serializable {
 
     @Override
     default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-        return Identifiables.computeDependencies(lookups, this);
+        return IdentityFrees.computeDependencies(lookups, this);
     }
 
-    interface Explicit<T> extends IdentifiableThrowingConsumer<T>, Identifiable.Explicit {
+    interface Explicit<T> extends IdentityFreeThrowingConsumer<T>, IdentityFree.Explicit {
 
         @Override
         Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableThrowingConsumer<T> consumer) {
+    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentityFreeThrowingConsumer<T> consumer) {
         return consumer instanceof Explicit
                 ? (Explicit<T>) consumer
                 : new Impl.ExplicitArray<>(lookups, consumer, consumer.deps(lookups));
@@ -40,16 +40,16 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
         private static class ExplicitArray<T> implements Explicit<T> {
 
             private final transient ThrowingConsumer<T> consumer;
-            private final IdentifiableDeps deps;
+            private final IdentityFreeDeps deps;
 
             public ExplicitArray(ThrowingConsumer<T> consumer, Object[] deps) {
                 this.consumer = consumer;
-                this.deps = IdentifiableDeps.of(deps);
+                this.deps = IdentityFreeDeps.of(deps);
             }
 
             public ExplicitArray(Collection<MethodHandles.Lookup> lookups, ThrowingConsumer<T> consumer, Object[] deps) {
                 this.consumer = consumer;
-                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+                this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -70,12 +70,12 @@ public interface IdentifiableThrowingConsumer<T> extends ThrowingConsumer<T>, Id
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
     }

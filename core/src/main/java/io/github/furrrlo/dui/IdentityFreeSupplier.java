@@ -5,20 +5,20 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Serializable {
+public interface IdentityFreeSupplier<T> extends Supplier<T>, IdentityFree, Serializable {
 
     @Override
     default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-        return Identifiables.computeDependencies(lookups, this);
+        return IdentityFrees.computeDependencies(lookups, this);
     }
 
-    interface Explicit<T> extends IdentifiableSupplier<T>, Identifiable.Explicit {
+    interface Explicit<T> extends IdentityFreeSupplier<T>, IdentityFree.Explicit {
 
         @Override
         Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableSupplier<T> supplier) {
+    static <T> Explicit<T> explicit(Collection<MethodHandles.Lookup> lookups, IdentityFreeSupplier<T> supplier) {
         return supplier instanceof Explicit
                 ? (Explicit<T>) supplier
                 : new Impl.ExplicitArray<>(lookups, supplier, supplier.deps(lookups));
@@ -41,16 +41,16 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
         private static class ExplicitArray<T> implements Explicit<T> {
 
             private final transient Supplier<T> supplier;
-            private final IdentifiableDeps deps;
+            private final IdentityFreeDeps deps;
 
             public ExplicitArray(Supplier<T> supplier, Object[] deps) {
                 this.supplier = supplier;
-                this.deps = IdentifiableDeps.of(deps);
+                this.deps = IdentityFreeDeps.of(deps);
             }
 
             public ExplicitArray(Collection<MethodHandles.Lookup> lookups, Supplier<T> supplier, Object[] deps) {
                 this.supplier = supplier;
-                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+                this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -71,12 +71,12 @@ public interface IdentifiableSupplier<T> extends Supplier<T>, Identifiable, Seri
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
     }

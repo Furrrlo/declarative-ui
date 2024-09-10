@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -10,12 +10,12 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class DBox {
   public static DeclarativeComponent<Box> fn(Supplier<Box> factory,
-      IdentifiableConsumer<Decorator<Box>> body) {
+      IdentityFreeConsumer<Decorator<Box>> body) {
     return fn(Box.class, factory, body);
   }
 
   public static <T extends Box> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 

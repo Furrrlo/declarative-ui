@@ -5,20 +5,20 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-public interface IdentifiableRunnable extends Runnable, Identifiable, Serializable {
+public interface IdentityFreeRunnable extends Runnable, IdentityFree, Serializable {
 
     @Override
     default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-        return Identifiables.computeDependencies(lookups, this);
+        return IdentityFrees.computeDependencies(lookups, this);
     }
 
-    interface Explicit extends IdentifiableRunnable, Identifiable.Explicit {
+    interface Explicit extends IdentityFreeRunnable, IdentityFree.Explicit {
 
         @Override
         Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static Explicit explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableRunnable runnable) {
+    static Explicit explicit(Collection<MethodHandles.Lookup> lookups, IdentityFreeRunnable runnable) {
         return runnable instanceof Explicit
                 ? (Explicit) runnable
                 : new Impl.ExplicitArray(lookups, runnable, runnable.deps(lookups));
@@ -41,16 +41,16 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
         private static class ExplicitArray implements Explicit {
 
             private final transient Runnable runnable;
-            private final IdentifiableDeps deps;
+            private final IdentityFreeDeps deps;
 
             public ExplicitArray(Runnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = IdentifiableDeps.of(deps);
+                this.deps = IdentityFreeDeps.of(deps);
             }
 
             public ExplicitArray(Collection<MethodHandles.Lookup> lookups, Runnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+                this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -71,12 +71,12 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
 
@@ -101,7 +101,7 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
 
             @Override
             public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-                return Identifiables.makeDependenciesExplicit(lookups, deps.get());
+                return IdentityFrees.makeDependenciesExplicit(lookups, deps.get());
             }
 
             @Override
@@ -112,12 +112,12 @@ public interface IdentifiableRunnable extends Runnable, Identifiable, Serializab
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
     }

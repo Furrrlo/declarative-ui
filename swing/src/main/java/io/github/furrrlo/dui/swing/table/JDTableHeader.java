@@ -14,17 +14,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTableHeader {
-  public static DeclarativeComponent<JTableHeader> fn(IdentifiableConsumer<Decorator<JTableHeader>> body) {
+  public static DeclarativeComponent<JTableHeader> fn(IdentityFreeConsumer<Decorator<JTableHeader>> body) {
     return fn(JTableHeader.class, JTableHeader::new, body);
   }
 
   public static DeclarativeComponent<JTableHeader> fn(Supplier<JTableHeader> factory,
-      IdentifiableConsumer<Decorator<JTableHeader>> body) {
+      IdentityFreeConsumer<Decorator<JTableHeader>> body) {
     return fn(JTableHeader.class, factory, body);
   }
 
   public static <T extends JTableHeader> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -35,35 +35,35 @@ public class JDTableHeader {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends TableHeaderUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends TableHeaderUI> ui) {
       attribute(PREFIX + "ui", JTableHeader::getUI, JTableHeader::setUI, ui);
     }
 
-    public void columnModel(IdentifiableSupplier<? extends TableColumnModel> columnModel) {
+    public void columnModel(IdentityFreeSupplier<? extends TableColumnModel> columnModel) {
       attribute(PREFIX + "columnModel", JTableHeader::getColumnModel, JTableHeader::setColumnModel, columnModel);
     }
 
-    public void defaultRenderer(IdentifiableSupplier<? extends TableCellRenderer> defaultRenderer) {
+    public void defaultRenderer(IdentityFreeSupplier<? extends TableCellRenderer> defaultRenderer) {
       attribute(PREFIX + "defaultRenderer", JTableHeader::getDefaultRenderer, JTableHeader::setDefaultRenderer, defaultRenderer);
     }
 
-    public void draggedColumn(IdentifiableSupplier<? extends TableColumn> draggedColumn) {
+    public void draggedColumn(IdentityFreeSupplier<? extends TableColumn> draggedColumn) {
       attribute(PREFIX + "draggedColumn", JTableHeader::getDraggedColumn, JTableHeader::setDraggedColumn, draggedColumn);
     }
 
-    public void draggedDistance(IdentifiableSupplier<Integer> draggedDistance) {
+    public void draggedDistance(IdentityFreeSupplier<Integer> draggedDistance) {
       attribute(PREFIX + "draggedDistance", JTableHeader::getDraggedDistance, JTableHeader::setDraggedDistance, draggedDistance);
     }
 
-    public void reorderingAllowed(IdentifiableSupplier<Boolean> reorderingAllowed) {
+    public void reorderingAllowed(IdentityFreeSupplier<Boolean> reorderingAllowed) {
       attribute(PREFIX + "reorderingAllowed", JTableHeader::getReorderingAllowed, JTableHeader::setReorderingAllowed, reorderingAllowed);
     }
 
-    public void resizingAllowed(IdentifiableSupplier<Boolean> resizingAllowed) {
+    public void resizingAllowed(IdentityFreeSupplier<Boolean> resizingAllowed) {
       attribute(PREFIX + "resizingAllowed", JTableHeader::getResizingAllowed, JTableHeader::setResizingAllowed, resizingAllowed);
     }
 
-    public void resizingColumn(IdentifiableSupplier<? extends TableColumn> resizingColumn) {
+    public void resizingColumn(IdentityFreeSupplier<? extends TableColumn> resizingColumn) {
       attribute(PREFIX + "resizingColumn", JTableHeader::getResizingColumn, JTableHeader::setResizingColumn, resizingColumn);
     }
 
@@ -71,7 +71,7 @@ public class JDTableHeader {
       fnAttribute(PREFIX + "table", JTableHeader::getTable, JTableHeader::setTable, table);
     }
 
-    public void updateTableInRealTime(IdentifiableSupplier<Boolean> updateTableInRealTime) {
+    public void updateTableInRealTime(IdentityFreeSupplier<Boolean> updateTableInRealTime) {
       attribute(PREFIX + "updateTableInRealTime", JTableHeader::getUpdateTableInRealTime, JTableHeader::setUpdateTableInRealTime, updateTableInRealTime);
     }
   }

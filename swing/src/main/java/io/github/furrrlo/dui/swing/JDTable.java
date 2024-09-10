@@ -14,17 +14,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDTable {
-  public static DeclarativeComponent<JTable> fn(IdentifiableConsumer<Decorator<JTable>> body) {
+  public static DeclarativeComponent<JTable> fn(IdentityFreeConsumer<Decorator<JTable>> body) {
     return fn(JTable.class, JTable::new, body);
   }
 
   public static DeclarativeComponent<JTable> fn(Supplier<JTable> factory,
-      IdentifiableConsumer<Decorator<JTable>> body) {
+      IdentityFreeConsumer<Decorator<JTable>> body) {
     return fn(JTable.class, factory, body);
   }
 
   public static <T extends JTable> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -35,120 +35,120 @@ public class JDTable {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends TableUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends TableUI> ui) {
       attribute(PREFIX + "ui", JTable::getUI, JTable::setUI, ui);
     }
 
-    public void autoCreateColumnsFromModel(IdentifiableSupplier<Boolean> autoCreateColumnsFromModel) {
+    public void autoCreateColumnsFromModel(IdentityFreeSupplier<Boolean> autoCreateColumnsFromModel) {
       attribute(PREFIX + "autoCreateColumnsFromModel", JTable::getAutoCreateColumnsFromModel, JTable::setAutoCreateColumnsFromModel, autoCreateColumnsFromModel);
     }
 
-    public void autoCreateRowSorter(IdentifiableSupplier<Boolean> autoCreateRowSorter) {
+    public void autoCreateRowSorter(IdentityFreeSupplier<Boolean> autoCreateRowSorter) {
       attribute(PREFIX + "autoCreateRowSorter", JTable::getAutoCreateRowSorter, JTable::setAutoCreateRowSorter, autoCreateRowSorter);
     }
 
-    public void autoResizeMode(IdentifiableSupplier<Integer> autoResizeMode) {
+    public void autoResizeMode(IdentityFreeSupplier<Integer> autoResizeMode) {
       attribute(PREFIX + "autoResizeMode", JTable::getAutoResizeMode, JTable::setAutoResizeMode, autoResizeMode);
     }
 
-    public void cellEditor(IdentifiableSupplier<? extends TableCellEditor> cellEditor) {
+    public void cellEditor(IdentityFreeSupplier<? extends TableCellEditor> cellEditor) {
       attribute(PREFIX + "cellEditor", JTable::getCellEditor, JTable::setCellEditor, cellEditor);
     }
 
-    public void cellSelectionEnabled(IdentifiableSupplier<Boolean> cellSelectionEnabled) {
+    public void cellSelectionEnabled(IdentityFreeSupplier<Boolean> cellSelectionEnabled) {
       attribute(PREFIX + "cellSelectionEnabled", JTable::getCellSelectionEnabled, JTable::setCellSelectionEnabled, cellSelectionEnabled);
     }
 
-    public void columnModel(IdentifiableSupplier<? extends TableColumnModel> columnModel) {
+    public void columnModel(IdentityFreeSupplier<? extends TableColumnModel> columnModel) {
       attribute(PREFIX + "columnModel", JTable::getColumnModel, JTable::setColumnModel, columnModel);
     }
 
-    public void columnSelectionAllowed(IdentifiableSupplier<Boolean> columnSelectionAllowed) {
+    public void columnSelectionAllowed(IdentityFreeSupplier<Boolean> columnSelectionAllowed) {
       attribute(PREFIX + "columnSelectionAllowed", JTable::getColumnSelectionAllowed, JTable::setColumnSelectionAllowed, columnSelectionAllowed);
     }
 
-    public void dragEnabled(IdentifiableSupplier<Boolean> dragEnabled) {
+    public void dragEnabled(IdentityFreeSupplier<Boolean> dragEnabled) {
       attribute(PREFIX + "dragEnabled", JTable::getDragEnabled, JTable::setDragEnabled, dragEnabled);
     }
 
-    public void dropMode(IdentifiableSupplier<DropMode> dropMode) {
+    public void dropMode(IdentityFreeSupplier<DropMode> dropMode) {
       attribute(PREFIX + "dropMode", JTable::getDropMode, JTable::setDropMode, dropMode);
     }
 
-    public void editingColumn(IdentifiableSupplier<Integer> editingColumn) {
+    public void editingColumn(IdentityFreeSupplier<Integer> editingColumn) {
       attribute(PREFIX + "editingColumn", JTable::getEditingColumn, JTable::setEditingColumn, editingColumn);
     }
 
-    public void editingRow(IdentifiableSupplier<Integer> editingRow) {
+    public void editingRow(IdentityFreeSupplier<Integer> editingRow) {
       attribute(PREFIX + "editingRow", JTable::getEditingRow, JTable::setEditingRow, editingRow);
     }
 
-    public void fillsViewportHeight(IdentifiableSupplier<Boolean> fillsViewportHeight) {
+    public void fillsViewportHeight(IdentityFreeSupplier<Boolean> fillsViewportHeight) {
       attribute(PREFIX + "fillsViewportHeight", JTable::getFillsViewportHeight, JTable::setFillsViewportHeight, fillsViewportHeight);
     }
 
-    public void gridColor(IdentifiableSupplier<? extends Color> gridColor) {
+    public void gridColor(IdentityFreeSupplier<? extends Color> gridColor) {
       attribute(PREFIX + "gridColor", JTable::getGridColor, JTable::setGridColor, gridColor);
     }
 
-    public void intercellSpacing(IdentifiableSupplier<? extends Dimension> intercellSpacing) {
+    public void intercellSpacing(IdentityFreeSupplier<? extends Dimension> intercellSpacing) {
       attribute(PREFIX + "intercellSpacing", JTable::getIntercellSpacing, JTable::setIntercellSpacing, intercellSpacing);
     }
 
-    public void model(IdentifiableSupplier<? extends TableModel> model) {
+    public void model(IdentityFreeSupplier<? extends TableModel> model) {
       attribute(PREFIX + "model", JTable::getModel, JTable::setModel, model);
     }
 
     public void preferredScrollableViewportSize(
-        IdentifiableSupplier<? extends Dimension> preferredScrollableViewportSize) {
+        IdentityFreeSupplier<? extends Dimension> preferredScrollableViewportSize) {
       attribute(PREFIX + "preferredScrollableViewportSize", JTable::getPreferredScrollableViewportSize, JTable::setPreferredScrollableViewportSize, preferredScrollableViewportSize);
     }
 
-    public void rowHeight(IdentifiableSupplier<Integer> rowHeight) {
+    public void rowHeight(IdentityFreeSupplier<Integer> rowHeight) {
       attribute(PREFIX + "rowHeight", JTable::getRowHeight, JTable::setRowHeight, rowHeight);
     }
 
-    public void rowMargin(IdentifiableSupplier<Integer> rowMargin) {
+    public void rowMargin(IdentityFreeSupplier<Integer> rowMargin) {
       attribute(PREFIX + "rowMargin", JTable::getRowMargin, JTable::setRowMargin, rowMargin);
     }
 
-    public void rowSelectionAllowed(IdentifiableSupplier<Boolean> rowSelectionAllowed) {
+    public void rowSelectionAllowed(IdentityFreeSupplier<Boolean> rowSelectionAllowed) {
       attribute(PREFIX + "rowSelectionAllowed", JTable::getRowSelectionAllowed, JTable::setRowSelectionAllowed, rowSelectionAllowed);
     }
 
-    public void rowSorter(IdentifiableSupplier<? extends RowSorter<? extends TableModel>> rowSorter) {
+    public void rowSorter(IdentityFreeSupplier<? extends RowSorter<? extends TableModel>> rowSorter) {
       attribute(PREFIX + "rowSorter", JTable::getRowSorter, JTable::setRowSorter, rowSorter);
     }
 
-    public void selectionBackground(IdentifiableSupplier<? extends Color> selectionBackground) {
+    public void selectionBackground(IdentityFreeSupplier<? extends Color> selectionBackground) {
       attribute(PREFIX + "selectionBackground", JTable::getSelectionBackground, JTable::setSelectionBackground, selectionBackground);
     }
 
-    public void selectionForeground(IdentifiableSupplier<? extends Color> selectionForeground) {
+    public void selectionForeground(IdentityFreeSupplier<? extends Color> selectionForeground) {
       attribute(PREFIX + "selectionForeground", JTable::getSelectionForeground, JTable::setSelectionForeground, selectionForeground);
     }
 
-    public void selectionMode(IdentifiableSupplier<Integer> selectionMode) {
+    public void selectionMode(IdentityFreeSupplier<Integer> selectionMode) {
       attribute(PREFIX + "selectionMode", t -> t.getSelectionModel().getSelectionMode(), JTable::setSelectionMode, selectionMode);
     }
 
-    public void selectionModel(IdentifiableSupplier<? extends ListSelectionModel> selectionModel) {
+    public void selectionModel(IdentityFreeSupplier<? extends ListSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JTable::getSelectionModel, JTable::setSelectionModel, selectionModel);
     }
 
-    public void showGrid(IdentifiableSupplier<Boolean> showGrid) {
+    public void showGrid(IdentityFreeSupplier<Boolean> showGrid) {
       attribute(PREFIX + "showGrid", JTable::setShowGrid, showGrid);
     }
 
-    public void showHorizontalLines(IdentifiableSupplier<Boolean> showHorizontalLines) {
+    public void showHorizontalLines(IdentityFreeSupplier<Boolean> showHorizontalLines) {
       attribute(PREFIX + "showHorizontalLines", JTable::getShowHorizontalLines, JTable::setShowHorizontalLines, showHorizontalLines);
     }
 
-    public void showVerticalLines(IdentifiableSupplier<Boolean> showVerticalLines) {
+    public void showVerticalLines(IdentityFreeSupplier<Boolean> showVerticalLines) {
       attribute(PREFIX + "showVerticalLines", JTable::getShowVerticalLines, JTable::setShowVerticalLines, showVerticalLines);
     }
 
-    public void surrendersFocusOnKeystroke(IdentifiableSupplier<Boolean> surrendersFocusOnKeystroke) {
+    public void surrendersFocusOnKeystroke(IdentityFreeSupplier<Boolean> surrendersFocusOnKeystroke) {
       attribute(PREFIX + "surrendersFocusOnKeystroke", JTable::getSurrendersFocusOnKeystroke, JTable::setSurrendersFocusOnKeystroke, surrendersFocusOnKeystroke);
     }
 
@@ -157,7 +157,7 @@ public class JDTable {
       fnAttribute(PREFIX + "tableHeader", JTable::getTableHeader, JTable::setTableHeader, tableHeader);
     }
 
-    public void updateSelectionOnSort(IdentifiableSupplier<Boolean> updateSelectionOnSort) {
+    public void updateSelectionOnSort(IdentityFreeSupplier<Boolean> updateSelectionOnSort) {
       attribute(PREFIX + "updateSelectionOnSort", JTable::getUpdateSelectionOnSort, JTable::setUpdateSelectionOnSort, updateSelectionOnSort);
     }
   }

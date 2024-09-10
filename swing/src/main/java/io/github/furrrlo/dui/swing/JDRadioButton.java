@@ -2,25 +2,25 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 
 import javax.swing.*;
 import java.util.function.Supplier;
 
 public class JDRadioButton {
 
-    public static DeclarativeComponent<JRadioButton> fn(IdentifiableConsumer<Decorator<JRadioButton>> body) {
+    public static DeclarativeComponent<JRadioButton> fn(IdentityFreeConsumer<Decorator<JRadioButton>> body) {
         return fn(JRadioButton.class, JRadioButton::new, body);
     }
 
     public static DeclarativeComponent<JRadioButton> fn(Supplier<JRadioButton> factory,
-                                                        IdentifiableConsumer<Decorator<JRadioButton>> body) {
+                                                        IdentityFreeConsumer<Decorator<JRadioButton>> body) {
         return fn(JRadioButton.class, factory, body);
     }
 
     public static <T extends JRadioButton> DeclarativeComponent<T> fn(Class<T> type,
                                                                       Supplier<T> factory,
-                                                                      IdentifiableConsumer<Decorator<T>> body) {
+                                                                      IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 

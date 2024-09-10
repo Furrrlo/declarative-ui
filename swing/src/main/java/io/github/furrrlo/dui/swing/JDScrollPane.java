@@ -12,18 +12,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDScrollPane {
 
-    public static DeclarativeComponent<JScrollPane> fn(IdentifiableConsumer<Decorator<JScrollPane>> body) {
+    public static DeclarativeComponent<JScrollPane> fn(IdentityFreeConsumer<Decorator<JScrollPane>> body) {
         return fn(JScrollPane.class, JScrollPane::new, body);
     }
 
     public static DeclarativeComponent<JScrollPane> fn(Supplier<JScrollPane> factory,
-                                                       IdentifiableConsumer<Decorator<JScrollPane>> body) {
+                                                       IdentityFreeConsumer<Decorator<JScrollPane>> body) {
         return fn(JScrollPane.class, factory, body);
     }
 
     public static <T extends JScrollPane> DeclarativeComponent<T> fn(Class<T> type,
                                                                      Supplier<T> factory,
-                                                                     IdentifiableConsumer<Decorator<T>> body) {
+                                                                     IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
@@ -35,7 +35,7 @@ public class JDScrollPane {
             super(type, factory);
         }
 
-        public void ui(IdentifiableSupplier<? extends ScrollPaneUI> ui) {
+        public void ui(IdentityFreeSupplier<? extends ScrollPaneUI> ui) {
             attribute(PREFIX + "ui", JScrollPane::getUI, JScrollPane::setUI, ui);
         }
 
@@ -51,7 +51,7 @@ public class JDScrollPane {
             fnAttribute(PREFIX + "horizontalScrollBar", JScrollPane::getHorizontalScrollBar, JScrollPane::setHorizontalScrollBar, horizontalScrollBar);
         }
 
-        public void horizontalScrollBarPolicy(IdentifiableSupplier<Integer> horizontalScrollBarPolicy) {
+        public void horizontalScrollBarPolicy(IdentityFreeSupplier<Integer> horizontalScrollBarPolicy) {
             attribute(PREFIX + "horizontalScrollBarPolicy", JScrollPane::getHorizontalScrollBarPolicy, JScrollPane::setHorizontalScrollBarPolicy, horizontalScrollBarPolicy);
         }
 
@@ -67,7 +67,7 @@ public class JDScrollPane {
             fnAttribute(PREFIX + "verticalScrollBar", JScrollPane::getVerticalScrollBar, JScrollPane::setVerticalScrollBar, verticalScrollBar);
         }
 
-        public void verticalScrollBarPolicy(IdentifiableSupplier<Integer> verticalScrollBarPolicy) {
+        public void verticalScrollBarPolicy(IdentityFreeSupplier<Integer> verticalScrollBarPolicy) {
             attribute(PREFIX + "verticalScrollBarPolicy", JScrollPane::getVerticalScrollBarPolicy, JScrollPane::setVerticalScrollBarPolicy, verticalScrollBarPolicy);
         }
 
@@ -75,7 +75,7 @@ public class JDScrollPane {
             fnAttribute(PREFIX + "viewport", JScrollPane::getViewport, JScrollPane::setViewport, viewport);
         }
 
-        public void viewportBorder(IdentifiableSupplier<? extends Border> viewportBorder) {
+        public void viewportBorder(IdentityFreeSupplier<? extends Border> viewportBorder) {
             attribute(PREFIX + "viewportBorder", JScrollPane::getViewportBorder, JScrollPane::setViewportBorder, viewportBorder);
         }
 
@@ -83,7 +83,7 @@ public class JDScrollPane {
             fnAttribute(PREFIX + "viewportView", JScrollPane::setViewportView, viewportView);
         }
 
-        public void wheelScrollingEnabled(IdentifiableSupplier<Boolean> wheelScrollingEnabled) {
+        public void wheelScrollingEnabled(IdentityFreeSupplier<Boolean> wheelScrollingEnabled) {
             attribute(PREFIX + "wheelScrollingEnabled", JScrollPane::isWheelScrollingEnabled, JScrollPane::setWheelScrollingEnabled, wheelScrollingEnabled);
         }
     }

@@ -15,14 +15,14 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     private final String key;
     private final int updatePriority;
     private final BiConsumer<T, V> setter;
-    private final IdentifiableSupplier<? extends V> valueSupplier;
+    private final IdentityFreeSupplier<? extends V> valueSupplier;
     private final AttributeEqualityFn<T, V> equalityFn;
     private @Nullable V value;
 
     public Attribute(String key,
                      int updatePriority,
                      BiConsumer<T, V> setter,
-                     IdentifiableSupplier<? extends V> valueSupplier,
+                     IdentityFreeSupplier<? extends V> valueSupplier,
                      AttributeEqualityFn<T, V> equalityFn) {
         this.key = key;
         this.updatePriority = updatePriority;

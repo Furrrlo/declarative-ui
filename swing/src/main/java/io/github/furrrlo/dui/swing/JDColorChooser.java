@@ -12,17 +12,17 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDColorChooser {
   public static DeclarativeComponent<JColorChooser> fn(
-      IdentifiableConsumer<Decorator<JColorChooser>> body) {
+      IdentityFreeConsumer<Decorator<JColorChooser>> body) {
     return fn(JColorChooser.class, JColorChooser::new, body);
   }
 
   public static DeclarativeComponent<JColorChooser> fn(Supplier<JColorChooser> factory,
-      IdentifiableConsumer<Decorator<JColorChooser>> body) {
+      IdentityFreeConsumer<Decorator<JColorChooser>> body) {
     return fn(JColorChooser.class, factory, body);
   }
 
   public static <T extends JColorChooser> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -33,7 +33,7 @@ public class JDColorChooser {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends ColorChooserUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends ColorChooserUI> ui) {
       attribute(PREFIX + "ui", JColorChooser::getUI, JColorChooser::setUI, ui);
     }
 
@@ -41,11 +41,11 @@ public class JDColorChooser {
       // TODO: implement "chooserPanels"
     }
 
-    public void color(IdentifiableSupplier<? extends Color> color) {
+    public void color(IdentityFreeSupplier<? extends Color> color) {
       attribute(PREFIX + "color", JColorChooser::getColor, JColorChooser::setColor, color);
     }
 
-    public void dragEnabled(IdentifiableSupplier<Boolean> dragEnabled) {
+    public void dragEnabled(IdentityFreeSupplier<Boolean> dragEnabled) {
       attribute(PREFIX + "dragEnabled", JColorChooser::getDragEnabled, JColorChooser::setDragEnabled, dragEnabled);
     }
 
@@ -54,7 +54,7 @@ public class JDColorChooser {
       fnAttribute(PREFIX + "previewPanel", JColorChooser::getPreviewPanel, JColorChooser::setPreviewPanel, previewPanel);
     }
 
-    public void selectionModel(IdentifiableSupplier<? extends ColorSelectionModel> selectionModel) {
+    public void selectionModel(IdentityFreeSupplier<? extends ColorSelectionModel> selectionModel) {
       attribute(PREFIX + "selectionModel", JColorChooser::getSelectionModel, JColorChooser::setSelectionModel, selectionModel);
     }
   }

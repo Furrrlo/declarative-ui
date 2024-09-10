@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-public interface Memo<T> extends IdentifiableSupplier<T> {
+public interface Memo<T> extends IdentityFreeSupplier<T> {
 
     @Override
     T get();
@@ -13,12 +13,12 @@ public interface Memo<T> extends IdentifiableSupplier<T> {
         return StatefulDeclarativeComponent.untrack(value);
     }
 
-    static <V> void indexCollection(IdentifiableSupplier<Collection<V>> collection,
+    static <V> void indexCollection(IdentityFreeSupplier<Collection<V>> collection,
                                     BiConsumer<DeclareMemoFn<V>, Integer> fn) {
         StatefulDeclarativeComponent.indexCollection(collection, fn);
     }
 
-    static <V> void mapCollection(IdentifiableSupplier<Collection<V>> collection,
+    static <V> void mapCollection(IdentityFreeSupplier<Collection<V>> collection,
                                   BiConsumer<V, DeclareMemoFn<Integer>> fn) {
         StatefulDeclarativeComponent.mapCollection(collection, fn);
     }

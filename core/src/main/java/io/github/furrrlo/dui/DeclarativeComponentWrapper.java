@@ -9,20 +9,20 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         R, DeclarativeComponentContext, StatefulDeclarativeComponent.StatefulContext> {
 
 
-    private final IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> wrapperBody;
+    private final IdentityFreeFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> wrapperBody;
 
     private boolean wasDeepUpdated;
     private boolean isDeepUpdated;
     private @Nullable StatefulDeclarativeComponent<R, ?, ?> wrapped;
     private @Nullable StatefulDeclarativeComponent<R, ?, ?> prevWrapped;
 
-    public DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body) {
-        this(IdentifiableFunction.explicit(currentLookups(), body), new AtomicReference<>());
+    public DeclarativeComponentWrapper(IdentityFreeFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body) {
+        this(IdentityFreeFunction.explicit(currentLookups(), body), new AtomicReference<>());
     }
 
-    private DeclarativeComponentWrapper(IdentifiableFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body,
+    private DeclarativeComponentWrapper(IdentityFreeFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<R>> body,
                                         AtomicReference<DeclarativeComponentWrapper<R>> selfRef) {
-        super(IdentifiableConsumer.explicit((DeclarativeComponentContext ctx) -> {
+        super(IdentityFreeConsumer.explicit((DeclarativeComponentContext ctx) -> {
             final DeclarativeComponentWrapper<R> self = Objects.requireNonNull(
                     selfRef.get(),
                     "Body invoked before wrapper could set a reference to itself");

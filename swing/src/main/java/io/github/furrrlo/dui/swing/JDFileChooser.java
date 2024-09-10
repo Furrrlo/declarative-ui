@@ -12,17 +12,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDFileChooser {
-  public static DeclarativeComponent<JFileChooser> fn(IdentifiableConsumer<Decorator<JFileChooser>> body) {
+  public static DeclarativeComponent<JFileChooser> fn(IdentityFreeConsumer<Decorator<JFileChooser>> body) {
     return fn(JFileChooser.class, JFileChooser::new, body);
   }
 
   public static DeclarativeComponent<JFileChooser> fn(Supplier<JFileChooser> factory,
-      IdentifiableConsumer<Decorator<JFileChooser>> body) {
+      IdentityFreeConsumer<Decorator<JFileChooser>> body) {
     return fn(JFileChooser.class, factory, body);
   }
 
   public static <T extends JFileChooser> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -33,7 +33,7 @@ public class JDFileChooser {
       super(type, factory);
     }
 
-    public void acceptAllFileFilterUsed(IdentifiableSupplier<Boolean> acceptAllFileFilterUsed) {
+    public void acceptAllFileFilterUsed(IdentityFreeSupplier<Boolean> acceptAllFileFilterUsed) {
       attribute(PREFIX + "acceptAllFileFilterUsed", JFileChooser::isAcceptAllFileFilterUsed, JFileChooser::setAcceptAllFileFilterUsed, acceptAllFileFilterUsed);
     }
 
@@ -41,63 +41,63 @@ public class JDFileChooser {
       fnAttribute(PREFIX + "accessory", JFileChooser::getAccessory, JFileChooser::setAccessory, accessory);
     }
 
-    public void approveButtonMnemonic(IdentifiableSupplier<Integer> approveButtonMnemonic) {
+    public void approveButtonMnemonic(IdentityFreeSupplier<Integer> approveButtonMnemonic) {
       attribute(PREFIX + "approveButtonMnemonic", JFileChooser::getApproveButtonMnemonic, JFileChooser::setApproveButtonMnemonic, approveButtonMnemonic);
     }
 
-    public void approveButtonText(IdentifiableSupplier<String> approveButtonText) {
+    public void approveButtonText(IdentityFreeSupplier<String> approveButtonText) {
       attribute(PREFIX + "approveButtonText", JFileChooser::getApproveButtonText, JFileChooser::setApproveButtonText, approveButtonText);
     }
 
-    public void approveButtonToolTipText(IdentifiableSupplier<String> approveButtonToolTipText) {
+    public void approveButtonToolTipText(IdentityFreeSupplier<String> approveButtonToolTipText) {
       attribute(PREFIX + "approveButtonToolTipText", JFileChooser::getApproveButtonToolTipText, JFileChooser::setApproveButtonToolTipText, approveButtonToolTipText);
     }
 
-    public void controlButtonsAreShown(IdentifiableSupplier<Boolean> controlButtonsAreShown) {
+    public void controlButtonsAreShown(IdentityFreeSupplier<Boolean> controlButtonsAreShown) {
       attribute(PREFIX + "controlButtonsAreShown", JFileChooser::getControlButtonsAreShown, JFileChooser::setControlButtonsAreShown, controlButtonsAreShown);
     }
 
-    public void currentDirectory(IdentifiableSupplier<? extends File> currentDirectory) {
+    public void currentDirectory(IdentityFreeSupplier<? extends File> currentDirectory) {
       attribute(PREFIX + "currentDirectory", JFileChooser::getCurrentDirectory, JFileChooser::setCurrentDirectory, currentDirectory);
     }
 
-    public void dialogTitle(IdentifiableSupplier<String> dialogTitle) {
+    public void dialogTitle(IdentityFreeSupplier<String> dialogTitle) {
       attribute(PREFIX + "dialogTitle", JFileChooser::getDialogTitle, JFileChooser::setDialogTitle, dialogTitle);
     }
 
-    public void dialogType(IdentifiableSupplier<Integer> dialogType) {
+    public void dialogType(IdentityFreeSupplier<Integer> dialogType) {
       attribute(PREFIX + "dialogType", JFileChooser::getDialogType, JFileChooser::setDialogType, dialogType);
     }
 
-    public void dragEnabled(IdentifiableSupplier<Boolean> dragEnabled) {
+    public void dragEnabled(IdentityFreeSupplier<Boolean> dragEnabled) {
       attribute(PREFIX + "dragEnabled", JFileChooser::getDragEnabled, JFileChooser::setDragEnabled, dragEnabled);
     }
 
-    public void fileFilter(IdentifiableSupplier<? extends FileFilter> fileFilter) {
+    public void fileFilter(IdentityFreeSupplier<? extends FileFilter> fileFilter) {
       attribute(PREFIX + "fileFilter", JFileChooser::getFileFilter, JFileChooser::setFileFilter, fileFilter);
     }
 
-    public void fileHidingEnabled(IdentifiableSupplier<Boolean> fileHidingEnabled) {
+    public void fileHidingEnabled(IdentityFreeSupplier<Boolean> fileHidingEnabled) {
       attribute(PREFIX + "fileHidingEnabled", JFileChooser::isFileHidingEnabled, JFileChooser::setFileHidingEnabled, fileHidingEnabled);
     }
 
-    public void fileSelectionMode(IdentifiableSupplier<Integer> fileSelectionMode) {
+    public void fileSelectionMode(IdentityFreeSupplier<Integer> fileSelectionMode) {
       attribute(PREFIX + "fileSelectionMode", JFileChooser::getFileSelectionMode, JFileChooser::setFileSelectionMode, fileSelectionMode);
     }
 
-    public void fileSystemView(IdentifiableSupplier<? extends FileSystemView> fileSystemView) {
+    public void fileSystemView(IdentityFreeSupplier<? extends FileSystemView> fileSystemView) {
       attribute(PREFIX + "fileSystemView", JFileChooser::getFileSystemView, JFileChooser::setFileSystemView, fileSystemView);
     }
 
-    public void fileView(IdentifiableSupplier<? extends FileView> fileView) {
+    public void fileView(IdentityFreeSupplier<? extends FileView> fileView) {
       attribute(PREFIX + "fileView", JFileChooser::getFileView, JFileChooser::setFileView, fileView);
     }
 
-    public void multiSelectionEnabled(IdentifiableSupplier<Boolean> multiSelectionEnabled) {
+    public void multiSelectionEnabled(IdentityFreeSupplier<Boolean> multiSelectionEnabled) {
       attribute(PREFIX + "multiSelectionEnabled", JFileChooser::isMultiSelectionEnabled, JFileChooser::setMultiSelectionEnabled, multiSelectionEnabled);
     }
 
-    public void selectedFile(IdentifiableSupplier<? extends File> selectedFile) {
+    public void selectedFile(IdentityFreeSupplier<? extends File> selectedFile) {
       attribute(PREFIX + "selectedFile", JFileChooser::getSelectedFile, JFileChooser::setSelectedFile, selectedFile);
     }
 

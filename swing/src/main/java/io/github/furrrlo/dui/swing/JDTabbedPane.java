@@ -17,18 +17,18 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 public class JDTabbedPane {
 
-    public static DeclarativeComponent<JTabbedPane> fn(IdentifiableConsumer<Decorator<JTabbedPane>> body) {
+    public static DeclarativeComponent<JTabbedPane> fn(IdentityFreeConsumer<Decorator<JTabbedPane>> body) {
         return fn(JTabbedPane.class, JTabbedPane::new, body);
     }
 
     public static DeclarativeComponent<JTabbedPane> fn(Supplier<JTabbedPane> factory,
-                                                       IdentifiableConsumer<Decorator<JTabbedPane>> body) {
+                                                       IdentityFreeConsumer<Decorator<JTabbedPane>> body) {
         return fn(JTabbedPane.class, factory, body);
     }
 
     public static <T extends JTabbedPane> DeclarativeComponent<T> fn(Class<T> type,
                                                                      Supplier<T> factory,
-                                                                     IdentifiableConsumer<Decorator<T>> body) {
+                                                                     IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
@@ -43,7 +43,7 @@ public class JDTabbedPane {
             reservedTabsMemo = reserveMemo(Collections::emptyList);
         }
 
-        public void tabLayoutPolicy(IdentifiableSupplier<Integer> tabLayoutPolicy) {
+        public void tabLayoutPolicy(IdentityFreeSupplier<Integer> tabLayoutPolicy) {
             attribute(
                     PREFIX + "tabLayoutPolicy",
                     JTabbedPane::getTabLayoutPolicy,
@@ -51,7 +51,7 @@ public class JDTabbedPane {
                     tabLayoutPolicy);
         }
 
-        public void tabPlacement(IdentifiableSupplier<Integer> tabPlacement) {
+        public void tabPlacement(IdentityFreeSupplier<Integer> tabPlacement) {
             attribute(
                     PREFIX + "tabPlacement",
                     JTabbedPane::getTabPlacement,
@@ -59,7 +59,7 @@ public class JDTabbedPane {
                     tabPlacement);
         }
 
-        public void selectedTab(IdentifiableSupplier<Integer> index) {
+        public void selectedTab(IdentityFreeSupplier<Integer> index) {
             attribute(
                     PREFIX + "selectedTab",
                     JTabbedPane::getSelectedIndex,
@@ -67,8 +67,8 @@ public class JDTabbedPane {
                     index);
         }
 
-        public void tabs(IdentifiableConsumer<TabCollector> collector) {
-            final Memo<List<Tab<?, ?>>> tabs = reservedTabsMemo.apply(IdentifiableSupplier.explicit(() -> {
+        public void tabs(IdentityFreeConsumer<TabCollector> collector) {
+            final Memo<List<Tab<?, ?>>> tabs = reservedTabsMemo.apply(IdentityFreeSupplier.explicit(() -> {
                 final List<Tab<?, ?>> tabs0 = new ArrayList<>();
                 collector.accept((key, title, icon, tabComponent, component, tooltipText) ->
                         tabs0.add(new Tab<>(key, title, icon, new TabComponent<>(key, tabComponent), component, tooltipText)));
@@ -251,11 +251,11 @@ public class JDTabbedPane {
                     l);
         }
 
-        public void ui(IdentifiableSupplier<? extends TabbedPaneUI> ui) {
+        public void ui(IdentityFreeSupplier<? extends TabbedPaneUI> ui) {
             attribute(PREFIX + "ui", JTabbedPane::getUI, JTabbedPane::setUI, ui);
         }
 
-        public void model(IdentifiableSupplier<? extends SingleSelectionModel> model) {
+        public void model(IdentityFreeSupplier<? extends SingleSelectionModel> model) {
             attribute(PREFIX + "model", JTabbedPane::getModel, JTabbedPane::setModel, model);
         }
 
@@ -264,7 +264,7 @@ public class JDTabbedPane {
             fnAttribute(PREFIX + "selectedComponent", JTabbedPane::getSelectedComponent, JTabbedPane::setSelectedComponent, selectedComponent);
         }
 
-        public void selectedIndex(IdentifiableSupplier<Integer> selectedIndex) {
+        public void selectedIndex(IdentityFreeSupplier<Integer> selectedIndex) {
             attribute(PREFIX + "selectedIndex", JTabbedPane::getSelectedIndex, JTabbedPane::setSelectedIndex, selectedIndex);
         }
     }

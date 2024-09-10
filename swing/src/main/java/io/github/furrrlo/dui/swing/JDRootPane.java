@@ -10,17 +10,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDRootPane {
-  public static DeclarativeComponent<JRootPane> fn(IdentifiableConsumer<Decorator<JRootPane>> body) {
+  public static DeclarativeComponent<JRootPane> fn(IdentityFreeConsumer<Decorator<JRootPane>> body) {
     return fn(JRootPane.class, JRootPane::new, body);
   }
 
   public static DeclarativeComponent<JRootPane> fn(Supplier<JRootPane> factory,
-      IdentifiableConsumer<Decorator<JRootPane>> body) {
+      IdentityFreeConsumer<Decorator<JRootPane>> body) {
     return fn(JRootPane.class, factory, body);
   }
 
   public static <T extends JRootPane> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -35,7 +35,7 @@ public class JDRootPane {
       fnAttribute(PREFIX + "JMenuBar", JRootPane::getJMenuBar, JRootPane::setJMenuBar, JMenuBar);
     }
 
-    public void ui(IdentifiableSupplier<? extends RootPaneUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends RootPaneUI> ui) {
       attribute(PREFIX + "ui", JRootPane::getUI, JRootPane::setUI, ui);
     }
 
@@ -58,7 +58,7 @@ public class JDRootPane {
       fnAttribute(PREFIX + "layeredPane", JRootPane::getLayeredPane, JRootPane::setLayeredPane, layeredPane);
     }
 
-    public void windowDecorationStyle(IdentifiableSupplier<Integer> windowDecorationStyle) {
+    public void windowDecorationStyle(IdentityFreeSupplier<Integer> windowDecorationStyle) {
       attribute(PREFIX + "windowDecorationStyle", JRootPane::getWindowDecorationStyle, JRootPane::setWindowDecorationStyle, windowDecorationStyle);
     }
   }

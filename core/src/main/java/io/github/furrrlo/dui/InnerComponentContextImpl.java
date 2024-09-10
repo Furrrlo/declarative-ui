@@ -54,7 +54,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     }
 
     @Override
-    public <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+    public <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
         return parent.useMemo(value, equalityFn);
     }
 
@@ -64,12 +64,12 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     }
 
     @Override
-    public void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+    public void useLaunchedEffect(IdentityFreeThrowingRunnable effect) {
         parent.useLaunchedEffect(effect);
     }
 
     @Override
-    public void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect) {
+    public void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect) {
         parent.useDisposableEffect(effect);
     }
 
@@ -87,7 +87,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           IdentifiableSupplier<? extends V> value) {
+                                                           IdentityFreeSupplier<? extends V> value) {
         parent.attribute(key, (parent, val) -> setter.accept(childGetter.apply(parent), val), value);
         return this;
     }
@@ -95,7 +95,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     @Override
     public <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                            BiConsumer<T, V> setter,
-                                                           IdentifiableSupplier<? extends V> value,
+                                                           IdentityFreeSupplier<? extends V> value,
                                                            AttributeEqualityFn<T, V> equalityFn) {
         parent.attribute(
                 key,
@@ -110,7 +110,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
             String key,
             TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
-            IdentifiableSupplier<List<V>> fn
+            IdentityFreeSupplier<List<V>> fn
     ) {
         parent.<V, S>listAttribute(key, type,
                 (parent, idx, supplier, child) -> replacer.replace(childGetter.apply(parent), idx, supplier, child),
@@ -123,7 +123,7 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
             String key,
             TypeToken<V> type,
             ListRemover<T> remover,
-            IdentifiableSupplier<List<V>> fn,
+            IdentityFreeSupplier<List<V>> fn,
             ListAdder<T, V, S> adder
     ) {
         parent.<V, S>listAttribute(key, type,

@@ -38,26 +38,26 @@ public class JDComponent {
             maximumHeight(() -> (int) dimension.get().getHeight());
         }
 
-        public void name(IdentifiableSupplier<String> name) {
+        public void name(IdentityFreeSupplier<String> name) {
             attribute(PREFIX + "name", Component::getName, Component::setName, name);
         }
 
-        public void visible(IdentifiableSupplier<Boolean> visible) {
+        public void visible(IdentityFreeSupplier<Boolean> visible) {
             attribute(PREFIX + "visible", JComponent::isVisible, JComponent::setVisible, visible);
         }
 
-        public void background(IdentifiableSupplier<? extends Color> color) {
+        public void background(IdentityFreeSupplier<? extends Color> color) {
             attribute(PREFIX + "background", JComponent::getBackground, JComponent::setBackground, color);
         }
 
-        public void maximumWidth(IdentifiableSupplier<Integer> width) {
+        public void maximumWidth(IdentityFreeSupplier<Integer> width) {
             attribute(PREFIX + "maximumHeight",
                     c -> c.getMaximumSize().width,
                     (c, w) -> c.setMaximumSize(new Dimension(w, (int) c.getMaximumSize().getHeight())),
                     width);
         }
 
-        public void maximumHeight(IdentifiableSupplier<Integer> height) {
+        public void maximumHeight(IdentityFreeSupplier<Integer> height) {
             attribute(PREFIX + "maximumHeight",
                     c -> c.getMaximumSize().height,
                     (c, h) -> c.setMaximumSize(new Dimension((int) c.getMaximumSize().getWidth(), h)),
@@ -85,12 +85,12 @@ public class JDComponent {
                     () -> l);
         }
 
-        public void layout(IdentifiableSupplier<? extends LayoutManager> layoutManager) {
+        public void layout(IdentityFreeSupplier<? extends LayoutManager> layoutManager) {
             attribute(PREFIX + "layout", Container::getLayout, Container::setLayout, layoutManager);
         }
 
-        public void children(IdentifiableConsumer<ChildCollector> childCollector) {
-            final Memo<List<Child<?>>> children = reservedChildMemo.apply(IdentifiableSupplier.explicit(() -> {
+        public void children(IdentityFreeConsumer<ChildCollector> childCollector) {
+            final Memo<List<Child<?>>> children = reservedChildMemo.apply(IdentityFreeSupplier.explicit(() -> {
                 final List<Child<?>> children0 = new ArrayList<>();
                 childCollector.accept((key, comp, constraints) -> children0.add(new Child<>(key, comp, constraints)));
                 return children0;
@@ -176,23 +176,23 @@ public class JDComponent {
             }
         }
 
-        public void actionMap(IdentifiableSupplier<? extends ActionMap> actionMap) {
+        public void actionMap(IdentityFreeSupplier<? extends ActionMap> actionMap) {
             attribute(PREFIX + "actionMap", JComponent::getActionMap, JComponent::setActionMap, actionMap);
         }
 
-        public void alignmentX(IdentifiableSupplier<Float> alignmentX) {
+        public void alignmentX(IdentityFreeSupplier<Float> alignmentX) {
             attribute(PREFIX + "alignmentX", JComponent::getAlignmentX, JComponent::setAlignmentX, alignmentX);
         }
 
-        public void alignmentY(IdentifiableSupplier<Float> alignmentY) {
+        public void alignmentY(IdentityFreeSupplier<Float> alignmentY) {
             attribute(PREFIX + "alignmentY", JComponent::getAlignmentY, JComponent::setAlignmentY, alignmentY);
         }
 
-        public void autoscrolls(IdentifiableSupplier<Boolean> autoscrolls) {
+        public void autoscrolls(IdentityFreeSupplier<Boolean> autoscrolls) {
             attribute(PREFIX + "autoscrolls", JComponent::getAutoscrolls, JComponent::setAutoscrolls, autoscrolls);
         }
 
-        public void border(IdentifiableSupplier<? extends Border> border) {
+        public void border(IdentityFreeSupplier<? extends Border> border) {
             attribute(PREFIX + "border", JComponent::getBorder, JComponent::setBorder, border);
         }
 
@@ -201,63 +201,63 @@ public class JDComponent {
             fnAttribute(PREFIX + "componentPopupMenu", JComponent::getComponentPopupMenu, JComponent::setComponentPopupMenu, componentPopupMenu);
         }
 
-        public void debugGraphicsOptions(IdentifiableSupplier<Integer> debugGraphicsOptions) {
+        public void debugGraphicsOptions(IdentityFreeSupplier<Integer> debugGraphicsOptions) {
             attribute(PREFIX + "debugGraphicsOptions", JComponent::getDebugGraphicsOptions, JComponent::setDebugGraphicsOptions, debugGraphicsOptions);
         }
 
-        public void doubleBuffered(IdentifiableSupplier<Boolean> doubleBuffered) {
+        public void doubleBuffered(IdentityFreeSupplier<Boolean> doubleBuffered) {
             attribute(PREFIX + "doubleBuffered", JComponent::isDoubleBuffered, JComponent::setDoubleBuffered, doubleBuffered);
         }
 
-        public void enabled(IdentifiableSupplier<Boolean> enabled) {
+        public void enabled(IdentityFreeSupplier<Boolean> enabled) {
             attribute(PREFIX + "enabled", JComponent::isEnabled, JComponent::setEnabled, enabled);
         }
 
-        public void font(IdentifiableSupplier<? extends Font> font) {
+        public void font(IdentityFreeSupplier<? extends Font> font) {
             attribute(PREFIX + "font", JComponent::getFont, JComponent::setFont, font);
         }
 
-        public void foreground(IdentifiableSupplier<? extends Color> foreground) {
+        public void foreground(IdentityFreeSupplier<? extends Color> foreground) {
             attribute(PREFIX + "foreground", JComponent::getForeground, JComponent::setForeground, foreground);
         }
 
-        public void inheritsPopupMenu(IdentifiableSupplier<Boolean> inheritsPopupMenu) {
+        public void inheritsPopupMenu(IdentityFreeSupplier<Boolean> inheritsPopupMenu) {
             attribute(PREFIX + "inheritsPopupMenu", JComponent::getInheritsPopupMenu, JComponent::setInheritsPopupMenu, inheritsPopupMenu);
         }
 
-        public void inputVerifier(IdentifiableSupplier<? extends InputVerifier> inputVerifier) {
+        public void inputVerifier(IdentityFreeSupplier<? extends InputVerifier> inputVerifier) {
             attribute(PREFIX + "inputVerifier", JComponent::getInputVerifier, JComponent::setInputVerifier, inputVerifier);
         }
 
-        public void minimumSize(IdentifiableSupplier<? extends Dimension> minimumSize) {
+        public void minimumSize(IdentityFreeSupplier<? extends Dimension> minimumSize) {
             attribute(PREFIX + "minimumSize", JComponent::getMinimumSize, JComponent::setMinimumSize, minimumSize);
         }
 
-        public void opaque(IdentifiableSupplier<Boolean> opaque) {
+        public void opaque(IdentityFreeSupplier<Boolean> opaque) {
             attribute(PREFIX + "opaque", JComponent::isOpaque, JComponent::setOpaque, opaque);
         }
 
-        public void preferredSize(IdentifiableSupplier<? extends Dimension> preferredSize) {
+        public void preferredSize(IdentityFreeSupplier<? extends Dimension> preferredSize) {
             attribute(PREFIX + "preferredSize", JComponent::getPreferredSize, JComponent::setPreferredSize, preferredSize);
         }
 
-        public void requestFocusEnabled(IdentifiableSupplier<Boolean> requestFocusEnabled) {
+        public void requestFocusEnabled(IdentityFreeSupplier<Boolean> requestFocusEnabled) {
             attribute(PREFIX + "requestFocusEnabled", JComponent::isRequestFocusEnabled, JComponent::setRequestFocusEnabled, requestFocusEnabled);
         }
 
-        public void toolTipText(IdentifiableSupplier<String> toolTipText) {
+        public void toolTipText(IdentityFreeSupplier<String> toolTipText) {
             attribute(PREFIX + "toolTipText", JComponent::getToolTipText, JComponent::setToolTipText, toolTipText);
         }
 
-        public void transferHandler(IdentifiableSupplier<? extends TransferHandler> transferHandler) {
+        public void transferHandler(IdentityFreeSupplier<? extends TransferHandler> transferHandler) {
             attribute(PREFIX + "transferHandler", JComponent::getTransferHandler, JComponent::setTransferHandler, transferHandler);
         }
 
-        public void verifyInputWhenFocusTarget(IdentifiableSupplier<Boolean> verifyInputWhenFocusTarget) {
+        public void verifyInputWhenFocusTarget(IdentityFreeSupplier<Boolean> verifyInputWhenFocusTarget) {
             attribute(PREFIX + "verifyInputWhenFocusTarget", JComponent::getVerifyInputWhenFocusTarget, JComponent::setVerifyInputWhenFocusTarget, verifyInputWhenFocusTarget);
         }
 
-        public void componentOrientation(IdentifiableSupplier<ComponentOrientation> componentOrientation) {
+        public void componentOrientation(IdentityFreeSupplier<ComponentOrientation> componentOrientation) {
             attribute(PREFIX + "componentOrientation", JComponent::getComponentOrientation, JComponent::setComponentOrientation, componentOrientation);
         }
     }

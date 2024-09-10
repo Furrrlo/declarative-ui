@@ -1,6 +1,6 @@
 package io.github.furrrlo.dui.swing.text;
 
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 import io.github.furrrlo.dui.swing.JDComponent;
 
 import javax.swing.*;
@@ -19,78 +19,78 @@ public class JDTextComponent {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends TextUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends TextUI> ui) {
       attribute(PREFIX + "ui", JTextComponent::getUI, JTextComponent::setUI, ui);
     }
 
-    public void caret(IdentifiableSupplier<? extends Caret> caret) {
+    public void caret(IdentityFreeSupplier<? extends Caret> caret) {
       attribute(PREFIX + "caret", JTextComponent::getCaret, JTextComponent::setCaret, caret);
     }
 
-    public void caretColor(IdentifiableSupplier<? extends Color> caretColor) {
+    public void caretColor(IdentityFreeSupplier<? extends Color> caretColor) {
       attribute(PREFIX + "caretColor", JTextComponent::getCaretColor, JTextComponent::setCaretColor, caretColor);
     }
 
-    public void caretPosition(IdentifiableSupplier<Integer> caretPosition) {
+    public void caretPosition(IdentityFreeSupplier<Integer> caretPosition) {
       attribute(PREFIX + "caretPosition", JTextComponent::getCaretPosition, JTextComponent::setCaretPosition, caretPosition);
     }
 
-    public void disabledTextColor(IdentifiableSupplier<? extends Color> disabledTextColor) {
+    public void disabledTextColor(IdentityFreeSupplier<? extends Color> disabledTextColor) {
       attribute(PREFIX + "disabledTextColor", JTextComponent::getDisabledTextColor, JTextComponent::setDisabledTextColor, disabledTextColor);
     }
 
-    public void document(IdentifiableSupplier<? extends Document> document) {
+    public void document(IdentityFreeSupplier<? extends Document> document) {
       attribute(PREFIX + "document", JTextComponent::getDocument, JTextComponent::setDocument, document);
     }
 
-    public void dragEnabled(IdentifiableSupplier<Boolean> dragEnabled) {
+    public void dragEnabled(IdentityFreeSupplier<Boolean> dragEnabled) {
       attribute(PREFIX + "dragEnabled", JTextComponent::getDragEnabled, JTextComponent::setDragEnabled, dragEnabled);
     }
 
-    public void dropMode(IdentifiableSupplier<DropMode> dropMode) {
+    public void dropMode(IdentityFreeSupplier<DropMode> dropMode) {
       attribute(PREFIX + "dropMode", JTextComponent::getDropMode, JTextComponent::setDropMode, dropMode);
     }
 
-    public void editable(IdentifiableSupplier<Boolean> editable) {
+    public void editable(IdentityFreeSupplier<Boolean> editable) {
       attribute(PREFIX + "editable", JTextComponent::isEditable, JTextComponent::setEditable, editable);
     }
 
-    public void focusAccelerator(IdentifiableSupplier<Character> focusAccelerator) {
+    public void focusAccelerator(IdentityFreeSupplier<Character> focusAccelerator) {
       attribute(PREFIX + "focusAccelerator", JTextComponent::getFocusAccelerator, JTextComponent::setFocusAccelerator, focusAccelerator);
     }
 
-    public void highlighter(IdentifiableSupplier<? extends Highlighter> highlighter) {
+    public void highlighter(IdentityFreeSupplier<? extends Highlighter> highlighter) {
       attribute(PREFIX + "highlighter", JTextComponent::getHighlighter, JTextComponent::setHighlighter, highlighter);
     }
 
-    public void keymap(IdentifiableSupplier<? extends Keymap> keymap) {
+    public void keymap(IdentityFreeSupplier<? extends Keymap> keymap) {
       attribute(PREFIX + "keymap", JTextComponent::getKeymap, JTextComponent::setKeymap, keymap);
     }
 
-    public void margin(IdentifiableSupplier<? extends Insets> margin) {
+    public void margin(IdentityFreeSupplier<? extends Insets> margin) {
       attribute(PREFIX + "margin", JTextComponent::getMargin, JTextComponent::setMargin, margin);
     }
 
-    public void navigationFilter(IdentifiableSupplier<? extends NavigationFilter> navigationFilter) {
+    public void navigationFilter(IdentityFreeSupplier<? extends NavigationFilter> navigationFilter) {
       attribute(PREFIX + "navigationFilter", JTextComponent::getNavigationFilter, JTextComponent::setNavigationFilter, navigationFilter);
     }
 
-    public void selectedTextColor(IdentifiableSupplier<? extends Color> selectedTextColor) {
+    public void selectedTextColor(IdentityFreeSupplier<? extends Color> selectedTextColor) {
       attribute(PREFIX + "selectedTextColor", JTextComponent::getSelectedTextColor, JTextComponent::setSelectedTextColor, selectedTextColor);
     }
 
-    public void selectionColor(IdentifiableSupplier<? extends Color> selectionColor) {
+    public void selectionColor(IdentityFreeSupplier<? extends Color> selectionColor) {
       attribute(PREFIX + "selectionColor", JTextComponent::getSelectionColor, JTextComponent::setSelectionColor, selectionColor);
     }
 
-    public void selectionEnd(IdentifiableSupplier<Integer> selectionEnd) {
+    public void selectionEnd(IdentityFreeSupplier<Integer> selectionEnd) {
       attribute(PREFIX + "selectionEnd", JTextComponent::getSelectionEnd, JTextComponent::setSelectionEnd, selectionEnd);
     }
 
-    public void selectionStart(IdentifiableSupplier<Integer> selectionStart) {
+    public void selectionStart(IdentityFreeSupplier<Integer> selectionStart) {
       attribute(PREFIX + "selectionStart", JTextComponent::getSelectionStart, JTextComponent::setSelectionStart, selectionStart);
     }
-    public void text(IdentifiableSupplier<String> text) {
+    public void text(IdentityFreeSupplier<String> text) {
       attribute(PREFIX + "text", JTextComponent::setText, text,
               (textField, oldV, newV) -> Objects.equals(textField.getText(), newV));
     }

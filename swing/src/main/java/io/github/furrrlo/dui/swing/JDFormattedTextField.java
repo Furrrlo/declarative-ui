@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -11,17 +11,17 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDFormattedTextField {
   public static DeclarativeComponent<JFormattedTextField> fn(
-      IdentifiableConsumer<Decorator<JFormattedTextField>> body) {
+      IdentityFreeConsumer<Decorator<JFormattedTextField>> body) {
     return fn(JFormattedTextField.class, JFormattedTextField::new, body);
   }
 
   public static DeclarativeComponent<JFormattedTextField> fn(Supplier<JFormattedTextField> factory,
-      IdentifiableConsumer<Decorator<JFormattedTextField>> body) {
+      IdentityFreeConsumer<Decorator<JFormattedTextField>> body) {
     return fn(JFormattedTextField.class, factory, body);
   }
 
   public static <T extends JFormattedTextField> DeclarativeComponent<T> fn(Class<T> type,
-      Supplier<T> factory, IdentifiableConsumer<Decorator<T>> body) {
+      Supplier<T> factory, IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -32,16 +32,16 @@ public class JDFormattedTextField {
       super(type, factory);
     }
 
-    public void focusLostBehavior(IdentifiableSupplier<Integer> focusLostBehavior) {
+    public void focusLostBehavior(IdentityFreeSupplier<Integer> focusLostBehavior) {
       attribute(PREFIX + "focusLostBehavior", JFormattedTextField::getFocusLostBehavior, JFormattedTextField::setFocusLostBehavior, focusLostBehavior);
     }
 
     public void formatterFactory(
-        IdentifiableSupplier<? extends JFormattedTextField.AbstractFormatterFactory> formatterFactory) {
+        IdentityFreeSupplier<? extends JFormattedTextField.AbstractFormatterFactory> formatterFactory) {
       attribute(PREFIX + "formatterFactory", JFormattedTextField::getFormatterFactory, JFormattedTextField::setFormatterFactory, formatterFactory);
     }
 
-    public void value(IdentifiableSupplier<?> value) {
+    public void value(IdentityFreeSupplier<?> value) {
       attribute(PREFIX + "value", JFormattedTextField::getValue, JFormattedTextField::setValue, value);
     }
   }

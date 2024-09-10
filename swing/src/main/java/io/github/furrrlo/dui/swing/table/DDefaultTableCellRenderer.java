@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.swing.table;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import io.github.furrrlo.dui.swing.JDLabel;
 
 import javax.swing.table.DefaultTableCellRenderer;
@@ -11,18 +11,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class DDefaultTableCellRenderer {
   public static DeclarativeComponent<DefaultTableCellRenderer> fn(
-      IdentifiableConsumer<Decorator<DefaultTableCellRenderer>> body) {
+      IdentityFreeConsumer<Decorator<DefaultTableCellRenderer>> body) {
     return fn(DefaultTableCellRenderer.class, DefaultTableCellRenderer::new, body);
   }
 
   public static DeclarativeComponent<DefaultTableCellRenderer> fn(
       Supplier<DefaultTableCellRenderer> factory,
-      IdentifiableConsumer<Decorator<DefaultTableCellRenderer>> body) {
+      IdentityFreeConsumer<Decorator<DefaultTableCellRenderer>> body) {
     return fn(DefaultTableCellRenderer.class, factory, body);
   }
 
   public static <T extends DefaultTableCellRenderer> DeclarativeComponent<T> fn(Class<T> type,
-      Supplier<T> factory, IdentifiableConsumer<Decorator<T>> body) {
+      Supplier<T> factory, IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 

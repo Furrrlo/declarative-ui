@@ -46,11 +46,11 @@ public final class Hooks {
         return useInternalCtx().useState(value, equalityFn);
     }
 
-    public static  <V> Memo<V> useMemo(IdentifiableSupplier<V> value) {
+    public static  <V> Memo<V> useMemo(IdentityFreeSupplier<V> value) {
         return useMemo(value, Objects::deepEquals);
     }
 
-    public static <V> Memo<V> useMemo(IdentifiableSupplier<V> value, BiPredicate<V, V> equalityFn) {
+    public static <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
         return useInternalCtx().useMemo(value, equalityFn);
     }
 
@@ -75,9 +75,9 @@ public final class Hooks {
         // entire thing. This should be fine because the captured values usually are:
         // 1. Another memo/state object (not the contained value directly), which are supposed to always be the same
         // 2. Another value which could only change if the component was re-rendered anyway
-        return useMemo(IdentifiableSupplier.explicit(
+        return useMemo(IdentityFreeSupplier.explicit(
                 () -> fun,
-                Identifiables.computeDependencies(lookups, fun)
+                IdentityFrees.computeDependencies(lookups, fun)
         )).get();
     }
 
@@ -86,7 +86,7 @@ public final class Hooks {
     }
 
     public static <V> V useCallbackExplicit(V fun, List<Object> dependencies) {
-        return useMemo(IdentifiableSupplier.explicit(() -> fun, dependencies)).get();
+        return useMemo(IdentityFreeSupplier.explicit(() -> fun, dependencies)).get();
     }
 
     public static <V> Ref<V> useRef(Supplier<V> initialValue) {
@@ -103,11 +103,11 @@ public final class Hooks {
         });
     }
 
-    public static void useLaunchedEffect(IdentifiableThrowingRunnable effect) {
+    public static void useLaunchedEffect(IdentityFreeThrowingRunnable effect) {
         useInternalCtx().useLaunchedEffect(effect);
     }
 
-    public static void useDisposableEffect(IdentifiableConsumer<DisposableEffectScope> effect) {
+    public static void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect) {
         useInternalCtx().useDisposableEffect(effect);
     }
 
@@ -115,9 +115,9 @@ public final class Hooks {
         useInternalCtx().useSideEffect(effect);
     }
 
-    public static <V> Supplier<V> produce(Supplier<V> initialValue, IdentifiableThrowingConsumer<ProduceScope<V>> producer) {
+    public static <V> Supplier<V> produce(Supplier<V> initialValue, IdentityFreeThrowingConsumer<ProduceScope<V>> producer) {
         final State<V> state = useState(initialValue);
-        useLaunchedEffect(IdentifiableThrowingRunnable.explicit(() -> {
+        useLaunchedEffect(IdentityFreeThrowingRunnable.explicit(() -> {
             class ProduceScopeImpl implements ProduceScope<V> {
                 @Nullable ThrowingRunnable onDispose;
 

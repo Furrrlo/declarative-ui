@@ -20,27 +20,27 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
 
     default <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                             BiConsumer<T, V> setter,
-                                                            IdentifiableSupplier<? extends V> value) {
+                                                            IdentityFreeSupplier<? extends V> value) {
         return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
     }
 
     default <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                             Function<T, V> getter,
                                                             BiConsumer<T, V> setter,
-                                                            IdentifiableSupplier<? extends V> value) {
+                                                            IdentityFreeSupplier<? extends V> value) {
         return attribute(key, setter, value, (c, oldV, newV) -> Objects.deepEquals(oldV, newV));
     }
 
     <V> DeclarativeRefComponentContext<T> attribute(String key,
                                                     BiConsumer<T, V> setter,
-                                                    IdentifiableSupplier<? extends V> value,
+                                                    IdentityFreeSupplier<? extends V> value,
                                                     AttributeEqualityFn<T, V> equalityFn);
 
     default <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListReplacer<T, V, S> replacer,
-            IdentifiableSupplier<List<V>> fn) {
+            IdentityFreeSupplier<List<V>> fn) {
         return listAttribute(key, TypeToken.get(type), replacer, fn);
     }
 
@@ -48,13 +48,13 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
             String key,
             TypeToken<V> type,
             ListReplacer<T, V, S> replacer,
-            IdentifiableSupplier<List<V>> fn);
+            IdentityFreeSupplier<List<V>> fn);
 
     default <V, S extends DeclarativeComponentWithIdSupplier<? extends V>> DeclarativeRefComponentContext<T> listAttribute(
             String key,
             Class<V> type,
             ListRemover<T> remover,
-            IdentifiableSupplier<List<V>> fn,
+            IdentityFreeSupplier<List<V>> fn,
             ListAdder<T, V, S> adder) {
         return listAttribute(key, TypeToken.get(type), remover, fn, adder);
     }
@@ -63,7 +63,7 @@ public interface DeclarativeRefComponentContext<T> extends DeclarativeComponentC
             String key,
             TypeToken<V> type,
             ListRemover<T> remover,
-            IdentifiableSupplier<List<V>> fn,
+            IdentityFreeSupplier<List<V>> fn,
             ListAdder<T, V, S> adder);
 
     default <C> DeclarativeRefComponentContext<T> fnAttribute(String key,

@@ -3,7 +3,7 @@ package io.github.furrrlo.dui;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 
-public interface Identifiable {
+public interface IdentityFree {
 
     default Object[] deps() {
         return deps(StatefulDeclarativeComponent.currentLookups());
@@ -15,6 +15,6 @@ public interface Identifiable {
         return getClass();
     }
 
-    interface Explicit extends Identifiable {
+    interface Explicit extends IdentityFree {
     }
 }

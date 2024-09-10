@@ -41,8 +41,8 @@ public interface Application {
             reservedRootsMemo = reserveMemo(Collections::emptyList);
         }
 
-        public void roots(IdentifiableConsumer<RootCollector> rootCollector) {
-            final Memo<List<Root<?>>> roots = reservedRootsMemo.apply(IdentifiableSupplier.explicit(() -> {
+        public void roots(IdentityFreeConsumer<RootCollector> rootCollector) {
+            final Memo<List<Root<?>>> roots = reservedRootsMemo.apply(IdentityFreeSupplier.explicit(() -> {
                 final List<Root<?>> roots0 = new ArrayList<>();
                 rootCollector.accept((key, comp) -> roots0.add(new Root<>(key, comp)));
                 return roots0;

@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 
 import javax.swing.*;
 import java.util.function.Supplier;
@@ -11,18 +11,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDCheckBox {
 
-    public static DeclarativeComponent<JCheckBox> fn(IdentifiableConsumer<Decorator<JCheckBox>> body) {
+    public static DeclarativeComponent<JCheckBox> fn(IdentityFreeConsumer<Decorator<JCheckBox>> body) {
         return fn(JCheckBox.class, JCheckBox::new, body);
     }
 
     public static DeclarativeComponent<JCheckBox> fn(Supplier<JCheckBox> factory,
-                                                     IdentifiableConsumer<Decorator<JCheckBox>> body) {
+                                                     IdentityFreeConsumer<Decorator<JCheckBox>> body) {
         return fn(JCheckBox.class, factory, body);
     }
 
     public static <T extends JCheckBox> DeclarativeComponent<T> fn(Class<T> type,
                                                                    Supplier<T> factory,
-                                                                   IdentifiableConsumer<Decorator<T>> body) {
+                                                                   IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
@@ -34,7 +34,7 @@ public class JDCheckBox {
             super(type, factory);
         }
 
-        public void borderPaintedFlat(IdentifiableSupplier<Boolean> borderPaintedFlat) {
+        public void borderPaintedFlat(IdentityFreeSupplier<Boolean> borderPaintedFlat) {
             attribute(PREFIX + "borderPaintedFlat", JCheckBox::isBorderPaintedFlat, JCheckBox::setBorderPaintedFlat, borderPaintedFlat);
         }
     }

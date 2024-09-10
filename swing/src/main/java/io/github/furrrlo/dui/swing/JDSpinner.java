@@ -9,17 +9,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDSpinner {
-  public static DeclarativeComponent<JSpinner> fn(IdentifiableConsumer<Decorator<JSpinner>> body) {
+  public static DeclarativeComponent<JSpinner> fn(IdentityFreeConsumer<Decorator<JSpinner>> body) {
     return fn(JSpinner.class, JSpinner::new, body);
   }
 
   public static DeclarativeComponent<JSpinner> fn(Supplier<JSpinner> factory,
-      IdentifiableConsumer<Decorator<JSpinner>> body) {
+      IdentityFreeConsumer<Decorator<JSpinner>> body) {
     return fn(JSpinner.class, factory, body);
   }
 
   public static <T extends JSpinner> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -30,7 +30,7 @@ public class JDSpinner {
       super(type, factory);
     }
 
-    public void ui(IdentifiableSupplier<? extends SpinnerUI> ui) {
+    public void ui(IdentityFreeSupplier<? extends SpinnerUI> ui) {
       attribute(PREFIX + "ui", JSpinner::getUI, JSpinner::setUI, ui);
     }
 
@@ -38,11 +38,11 @@ public class JDSpinner {
       fnAttribute(PREFIX + "editor", JSpinner::getEditor, JSpinner::setEditor, editor);
     }
 
-    public void model(IdentifiableSupplier<? extends SpinnerModel> model) {
+    public void model(IdentityFreeSupplier<? extends SpinnerModel> model) {
       attribute(PREFIX + "model", JSpinner::getModel, JSpinner::setModel, model);
     }
 
-    public void value(IdentifiableSupplier<?> value) {
+    public void value(IdentityFreeSupplier<?> value) {
       attribute(PREFIX + "value", JSpinner::getValue, JSpinner::setValue, value);
     }
   }

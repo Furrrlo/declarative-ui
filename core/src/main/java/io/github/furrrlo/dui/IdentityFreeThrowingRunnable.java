@@ -4,20 +4,20 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 
-public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifiable, Serializable {
+public interface IdentityFreeThrowingRunnable extends ThrowingRunnable, IdentityFree, Serializable {
 
     @Override
     default Object[] deps(Collection<MethodHandles.Lookup> lookups) {
-        return Identifiables.computeDependencies(lookups, this);
+        return IdentityFrees.computeDependencies(lookups, this);
     }
 
-    interface Explicit extends IdentifiableThrowingRunnable, Identifiable.Explicit {
+    interface Explicit extends IdentityFreeThrowingRunnable, IdentityFree.Explicit {
 
         @Override
         Object[] deps(Collection<MethodHandles.Lookup> lookups);
     }
 
-    static Explicit explicit(Collection<MethodHandles.Lookup> lookups, IdentifiableThrowingRunnable runnable) {
+    static Explicit explicit(Collection<MethodHandles.Lookup> lookups, IdentityFreeThrowingRunnable runnable) {
         return runnable instanceof Explicit
                 ? (Explicit) runnable
                 : new Impl.ExplicitArray(lookups, runnable, runnable.deps(lookups));
@@ -40,16 +40,16 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
         private static class ExplicitArray implements Explicit {
 
             private final transient ThrowingRunnable runnable;
-            private final IdentifiableDeps deps;
+            private final IdentityFreeDeps deps;
 
             public ExplicitArray(ThrowingRunnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = IdentifiableDeps.of(deps);
+                this.deps = IdentityFreeDeps.of(deps);
             }
 
             public ExplicitArray(Collection<MethodHandles.Lookup> lookups, ThrowingRunnable runnable, Object[] deps) {
                 this.runnable = runnable;
-                this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+                this.deps = IdentityFreeDeps.immediatelyExplicit(lookups, deps);
             }
 
             @Override
@@ -70,12 +70,12 @@ public interface IdentifiableThrowingRunnable extends ThrowingRunnable, Identifi
             @Override
             @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object o) {
-                return Identifiables.equals(this, o);
+                return IdentityFrees.equals(this, o);
             }
 
             @Override
             public int hashCode() {
-                return Identifiables.hashCode(this);
+                return IdentityFrees.hashCode(this);
             }
         }
     }

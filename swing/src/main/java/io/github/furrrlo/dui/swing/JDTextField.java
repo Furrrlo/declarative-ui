@@ -2,8 +2,8 @@ package io.github.furrrlo.dui.swing;
 
 import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.DeclarativeComponentFactory;
-import io.github.furrrlo.dui.IdentifiableConsumer;
-import io.github.furrrlo.dui.IdentifiableSupplier;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
+import io.github.furrrlo.dui.IdentityFreeSupplier;
 import io.github.furrrlo.dui.swing.text.JDTextComponent;
 
 import javax.swing.*;
@@ -12,18 +12,18 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public class JDTextField {
 
-    public static DeclarativeComponent<JTextField> fn(IdentifiableConsumer<Decorator<JTextField>> body) {
+    public static DeclarativeComponent<JTextField> fn(IdentityFreeConsumer<Decorator<JTextField>> body) {
         return fn(JTextField.class, JTextField::new, body);
     }
 
     public static DeclarativeComponent<JTextField> fn(Supplier<JTextField> factory,
-                                                      IdentifiableConsumer<Decorator<JTextField>> body) {
+                                                      IdentityFreeConsumer<Decorator<JTextField>> body) {
         return fn(JTextField.class, factory, body);
     }
 
     public static <T extends JTextField> DeclarativeComponent<T> fn(Class<T> type,
                                                                     Supplier<T> factory,
-                                                                    IdentifiableConsumer<Decorator<T>> body) {
+                                                                    IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
@@ -35,23 +35,23 @@ public class JDTextField {
             super(type, factory);
         }
 
-        public void action(IdentifiableSupplier<? extends Action> action) {
+        public void action(IdentityFreeSupplier<? extends Action> action) {
             attribute(PREFIX + "action", JTextField::getAction, JTextField::setAction, action);
         }
 
-        public void actionCommand(IdentifiableSupplier<String> actionCommand) {
+        public void actionCommand(IdentityFreeSupplier<String> actionCommand) {
             attribute(PREFIX + "actionCommand", JTextField::setActionCommand, actionCommand);
         }
 
-        public void columns(IdentifiableSupplier<Integer> columns) {
+        public void columns(IdentityFreeSupplier<Integer> columns) {
             attribute(PREFIX + "columns", JTextField::getColumns, JTextField::setColumns, columns);
         }
 
-        public void horizontalAlignment(IdentifiableSupplier<Integer> horizontalAlignment) {
+        public void horizontalAlignment(IdentityFreeSupplier<Integer> horizontalAlignment) {
             attribute(PREFIX + "horizontalAlignment", JTextField::getHorizontalAlignment, JTextField::setHorizontalAlignment, horizontalAlignment);
         }
 
-        public void scrollOffset(IdentifiableSupplier<Integer> scrollOffset) {
+        public void scrollOffset(IdentityFreeSupplier<Integer> scrollOffset) {
             attribute(PREFIX + "scrollOffset", JTextField::getScrollOffset, JTextField::setScrollOffset, scrollOffset);
         }
     }

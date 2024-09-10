@@ -8,17 +8,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class JDToolTip {
-  public static DeclarativeComponent<JToolTip> fn(IdentifiableConsumer<Decorator<JToolTip>> body) {
+  public static DeclarativeComponent<JToolTip> fn(IdentityFreeConsumer<Decorator<JToolTip>> body) {
     return fn(JToolTip.class, JToolTip::new, body);
   }
 
   public static DeclarativeComponent<JToolTip> fn(Supplier<JToolTip> factory,
-      IdentifiableConsumer<Decorator<JToolTip>> body) {
+      IdentityFreeConsumer<Decorator<JToolTip>> body) {
     return fn(JToolTip.class, factory, body);
   }
 
   public static <T extends JToolTip> DeclarativeComponent<T> fn(Class<T> type, Supplier<T> factory,
-      IdentifiableConsumer<Decorator<T>> body) {
+      IdentityFreeConsumer<Decorator<T>> body) {
     return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
   }
 
@@ -33,7 +33,7 @@ public class JDToolTip {
       fnAttribute(PREFIX + "component", JToolTip::getComponent, JToolTip::setComponent, component);
     }
 
-    public void tipText(IdentifiableSupplier<String> tipText) {
+    public void tipText(IdentityFreeSupplier<String> tipText) {
       attribute(PREFIX + "tipText", JToolTip::getTipText, JToolTip::setTipText, tipText);
     }
   }

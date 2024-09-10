@@ -9,18 +9,18 @@ import java.util.function.Supplier;
 
 public class JDFrame {
 
-    public static DeclarativeComponent<JFrame> fn(IdentifiableConsumer<Decorator<JFrame>> body) {
+    public static DeclarativeComponent<JFrame> fn(IdentityFreeConsumer<Decorator<JFrame>> body) {
         return fn(JFrame.class, JFrame::new, body);
     }
 
     public static DeclarativeComponent<JFrame> fn(Supplier<JFrame> factory,
-                                                  IdentifiableConsumer<Decorator<JFrame>> body) {
+                                                  IdentityFreeConsumer<Decorator<JFrame>> body) {
         return fn(JFrame.class, factory, body);
     }
 
     public static <T extends JFrame> DeclarativeComponent<T> fn(Class<T> type,
                                                                 Supplier<T> factory,
-                                                                IdentifiableConsumer<Decorator<T>> body) {
+                                                                IdentityFreeConsumer<Decorator<T>> body) {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
@@ -37,15 +37,15 @@ public class JDFrame {
             });
         }
 
-        public void visible(IdentifiableSupplier<Boolean> visible) {
+        public void visible(IdentityFreeSupplier<Boolean> visible) {
             attribute(PREFIX + "visible", Frame::isVisible, Frame::setVisible, visible);
         }
 
-        public void title(IdentifiableSupplier<String> title) {
+        public void title(IdentityFreeSupplier<String> title) {
             attribute(PREFIX + "title", Frame::getTitle, Frame::setTitle, title);
         }
 
-        public void defaultCloseOperation(IdentifiableSupplier<Integer> operation) {
+        public void defaultCloseOperation(IdentityFreeSupplier<Integer> operation) {
             attribute(PREFIX + "defaultCloseOperation", JFrame::getDefaultCloseOperation, JFrame::setDefaultCloseOperation, operation);
         }
 
@@ -54,16 +54,16 @@ public class JDFrame {
         }
 
 
-        public void minimumSize(IdentifiableSupplier<? extends Dimension> dimension) {
+        public void minimumSize(IdentityFreeSupplier<? extends Dimension> dimension) {
             attribute(PREFIX + "minimumSize", JFrame::getMinimumSize, JFrame::setMinimumSize, dimension);
         }
 
 
-        public void size(IdentifiableSupplier<? extends Dimension> dimension) {
+        public void size(IdentityFreeSupplier<? extends Dimension> dimension) {
             attribute(PREFIX + "size", JFrame::getSize, JFrame::setSize, dimension);
         }
 
-        public void locationRelativeTo(IdentifiableSupplier<Component> c) {
+        public void locationRelativeTo(IdentityFreeSupplier<Component> c) {
             attribute(PREFIX + "locationRelativeTo", JFrame::setLocationRelativeTo, c);
         }
     }
