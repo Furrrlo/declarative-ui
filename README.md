@@ -26,7 +26,7 @@ class Main {
                     children.add(JDLabel.fn(label -> label.text(() -> "Current value is " + counter.get())));
                     children.add(JDButton.fn(btn -> {
                         btn.text(() -> "Click me");
-                        btn.actionListener(useCallback(evt -> counter.update(i -> i + 1)));
+                        btn.actionListener(evt -> counter.update(i -> i + 1));
                     }));
                 });
             }));
@@ -321,7 +321,7 @@ when it's one of the following interfaces:
 
 Additionally, when in any of the dependencies of one of those functions a non-serializable lambda is found,
 the library will attempt to detect it (rn only works on Hotspot JDK most likely) and use reflections to 
-extract its captured variables.  
+extract its captured variables. This makes it so `useCallback` rarely needs to be used.
 
 You can always manually declare the dependencies by:
 - calling the static method `explicit` on one of the interfaces above
