@@ -78,6 +78,14 @@ public interface IdentityFreeConsumer<T> extends Consumer<T>, IdentityFree, Seri
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "consumer=" + consumer +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }

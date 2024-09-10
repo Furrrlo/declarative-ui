@@ -1,6 +1,7 @@
 package io.github.furrrlo.dui;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -43,5 +44,10 @@ class IdentityFreeDeps {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(deps);
     }
 }

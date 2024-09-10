@@ -78,6 +78,14 @@ public interface IdentityFreeBiFunction<T, U, R> extends BiFunction<T, U, R>, Id
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "fn=" + fn +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }

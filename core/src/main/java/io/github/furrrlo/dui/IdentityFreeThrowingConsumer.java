@@ -77,6 +77,14 @@ public interface IdentityFreeThrowingConsumer<T> extends ThrowingConsumer<T>, Id
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "consumer=" + consumer +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }

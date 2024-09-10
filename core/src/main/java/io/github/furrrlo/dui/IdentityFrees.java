@@ -235,6 +235,14 @@ class IdentityFrees {
         public int hashCode() {
             return IdentityFrees.hashCode(this);
         }
+
+        @Override
+        public String toString() {
+            return "ExplicitIdentityFreeLambda{" +
+                    "lambda=" + lambda +
+                    ", deps=" + deps +
+                    '}';
+        }
     }
 
     public static boolean equals(@Nullable Object o1, @Nullable Object o2) {

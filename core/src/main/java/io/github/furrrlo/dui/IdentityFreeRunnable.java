@@ -2,6 +2,7 @@ package io.github.furrrlo.dui;
 
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -78,6 +79,14 @@ public interface IdentityFreeRunnable extends Runnable, IdentityFree, Serializab
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "runnable=" + runnable +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
 
         public static Explicit explicit(Runnable runnable, Supplier<Object[]> deps) {
@@ -118,6 +127,14 @@ public interface IdentityFreeRunnable extends Runnable, IdentityFree, Serializab
             @Override
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
+            }
+
+            @Override
+            public String toString() {
+                return "ExplicitSupplier{" +
+                        "runnable=" + runnable +
+                        ", deps=" + Arrays.toString(deps.get()) +
+                        '}';
             }
         }
     }

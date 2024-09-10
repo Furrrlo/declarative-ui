@@ -77,6 +77,14 @@ public interface IdentityFreeThrowingRunnable extends ThrowingRunnable, Identity
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "runnable=" + runnable +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }

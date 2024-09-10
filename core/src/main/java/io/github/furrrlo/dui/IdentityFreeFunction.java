@@ -78,6 +78,14 @@ public interface IdentityFreeFunction<T, R> extends Function<T, R>, IdentityFree
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "fn=" + fn +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }

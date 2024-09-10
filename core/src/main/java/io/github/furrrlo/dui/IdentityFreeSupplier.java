@@ -78,6 +78,14 @@ public interface IdentityFreeSupplier<T> extends Supplier<T>, IdentityFree, Seri
             public int hashCode() {
                 return IdentityFrees.hashCode(this);
             }
+
+            @Override
+            public String toString() {
+                return "ExplicitArray{" +
+                        "supplier=" + supplier +
+                        ", deps=" + deps +
+                        '}';
+            }
         }
     }
 }
