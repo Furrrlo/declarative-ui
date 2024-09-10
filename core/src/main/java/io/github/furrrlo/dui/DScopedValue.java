@@ -5,8 +5,7 @@ import org.jetbrains.annotations.Contract;
 interface DScopedValue<T> {
 
     static <T> DScopedValue<T> create() {
-        // TODO: on java versions >= 20, use a wrapper around the actual ScopedValue
-        return new DThreadLocalScopedValue<>();
+        return Inner.IS_SCOPED_VALUE_AVAILABLE ? Inner.newActualScopedValue() : new DThreadLocalScopedValue<>();
     }
 
     void where(T value, Runnable runnable);
@@ -17,4 +16,27 @@ interface DScopedValue<T> {
 
     @Contract("!null -> !null; _ -> _")
     T orElse(T other);
+
+    class Inner {
+
+        private static final boolean IS_SCOPED_VALUE_AVAILABLE;
+        static {
+            boolean isScopedValueAvailable;
+            try {
+                new DActualScopedValue<>();
+                isScopedValueAvailable = true;
+            } catch (Throwable t) {
+                isScopedValueAvailable = false;
+            }
+
+            IS_SCOPED_VALUE_AVAILABLE = isScopedValueAvailable;
+        }
+
+        private Inner() {
+        }
+
+        private static <T> DScopedValue<T> newActualScopedValue() {
+            return new DActualScopedValue<>();
+        }
+    }
 }
