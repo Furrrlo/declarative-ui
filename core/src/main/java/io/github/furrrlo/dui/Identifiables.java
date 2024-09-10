@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -33,7 +34,7 @@ class Identifiables {
     private Identifiables() {
     }
 
-    public static Object[] computeDependencies(Collection<MethodHandles.Lookup> lookupsIn, Serializable identifiable) {
+    public static Object[] computeDependencies(Collection<MethodHandles.Lookup> lookupsIn, Object identifiable) {
         if (identifiable instanceof Identifiable.Explicit)
             return ((Identifiable) identifiable).deps(lookupsIn);
 
@@ -47,7 +48,23 @@ class Identifiables {
         }
 
         final List<Throwable> exs = new ArrayList<>();
+        Object[] res;
 
+        if (identifiable instanceof Serializable
+                && (res = computeSerializableDependencies(lookups, (Serializable) identifiable, exs)) != null)
+            return res;
+
+        if((res = computeUnserializableLambdaDependencies(lookups, identifiable, exs)) != null)
+            return res;
+
+        RuntimeException ex = new UnsupportedOperationException("Failed to extract dependencies");
+        exs.forEach(ex::addSuppressed);
+        throw ex;
+    }
+
+    private static Object @Nullable [] computeSerializableDependencies(Collection<MethodHandles.Lookup> lookups,
+                                                                       Serializable identifiable,
+                                                                       List<Throwable> exs) {
         final Class<?> claz = identifiable.getClass();
         MethodHandles.@Nullable Lookup clazLookup;
         try {
@@ -90,9 +107,49 @@ class Identifiables {
             exs.add(new Exception("Failed to serialize object " + identifiable, e));
         }
 
-        RuntimeException ex = new UnsupportedOperationException("Failed to extract dependencies");
-        exs.forEach(ex::addSuppressed);
-        throw ex;
+        return null;
+    }
+
+    private static boolean isLambda(Object lambda) {
+        final Class<?> claz = lambda.getClass();
+        // Hotspot specific, see:
+        // - https://github.com/openjdk/jdk/blob/88cccc14db168876a60b5ea2ae9d0fda7969af9a/src/java.base/share/classes/java/lang/invoke/InnerClassLambdaMetafactory.java#L194C42-L194C50
+        // - https://github.com/openjdk/jdk/blob/88cccc14db168876a60b5ea2ae9d0fda7969af9a/src/java.base/share/classes/java/lang/invoke/InnerClassLambdaMetafactory.java#L309
+        return claz.isSynthetic() && !claz.isAnonymousClass() && claz.getName().contains("$$Lambda");
+    }
+
+    private static Object @Nullable [] computeUnserializableLambdaDependencies(Collection<MethodHandles.Lookup> lookups,
+                                                                               Object lambda,
+                                                                               List<Throwable> exs) {
+        if(!isLambda(lambda))
+            return null;
+
+        final Class<?> claz = lambda.getClass();
+        MethodHandles.@Nullable Lookup clazLookup;
+        try {
+            clazLookup = selectLookupFor(lookups, claz);
+        } catch (IllegalAccessException e) {
+            exs.add(new Exception(
+                    "Failed to find Lookup which can access lambda. Did you grant access with a valid Lookup?", e));
+            return null;
+        }
+
+        try {
+            List<Object> list = new ArrayList<>();
+            for (Field f : claz.getDeclaredFields()) {
+                if(clazLookup != null) {
+                    list.add(clazLookup.unreflectGetter(f).invoke(lambda));
+                    continue;
+                }
+
+                f.setAccessible(true);
+                list.add(f.get(lambda));
+            }
+            return list.toArray();
+        } catch (Throwable e) {
+            exs.add(new Exception("Failed to access fields for lambda " + lambda, e));
+            return null;
+        }
     }
 
     private static MethodHandles.@Nullable Lookup selectLookupFor(
@@ -141,9 +198,43 @@ class Identifiables {
                         return IdentifiableFunction.explicit(lookups, (IdentifiableFunction<?, ?>) dep);
                     if(dep instanceof IdentifiableBiFunction)
                         return IdentifiableBiFunction.explicit(lookups, (IdentifiableBiFunction<?, ?, ?>) dep);
+                    if(isLambda(dep))
+                        return new ExplicitIdentifiableLambda(lookups, dep, computeDependencies(lookups, dep));
                     return dep;
                 })
                 .toArray();
+    }
+
+    private static class ExplicitIdentifiableLambda implements Identifiable, Identifiable.Explicit {
+
+        private final Object lambda;
+        private final IdentifiableDeps deps;
+
+        ExplicitIdentifiableLambda(Collection<MethodHandles.Lookup> lookups, Object lambda, Object[] deps) {
+            this.lambda = lambda;
+            this.deps = IdentifiableDeps.immediatelyExplicit(lookups, deps);
+        }
+
+        @Override
+        public Object[] deps(Collection<MethodHandles.Lookup> lookups) {
+            return deps.get(lookups);
+        }
+
+        @Override
+        public Class<?> getImplClass() {
+            return lambda.getClass();
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object o) {
+            return Identifiables.equals(this, o);
+        }
+
+        @Override
+        public int hashCode() {
+            return Identifiables.hashCode(this);
+        }
     }
 
     public static boolean equals(@Nullable Object o1, @Nullable Object o2) {
