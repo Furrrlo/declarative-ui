@@ -76,7 +76,7 @@ other tracked variables without causing the parent component to possibly re-rend
 ```
 Lets you cache the result of a calculation between re-renders, same as 
 <a href="https://react.dev/reference/react/useMemo">React useMemo</a> but with (optionally) 
-automatic dependency tracking (see <a href="IdentityFrees">IdentityFrees section</a>).
+automatic dependency tracking (see [IdentityFrees section](#identityfree)).
 
 The value function is a tracking function, which means that calling the getter of a tracking variable
 inside it will cause the function to depend on that variable, so it will re-run when it gets updated.
@@ -98,7 +98,9 @@ Alternatively, you can use the overload with `BiPredicate<V, V> equalityFn` for 
 ```
 Lets you cache a function definition between re-renders, same as 
 <a href="https://react.dev/reference/react/useCallback">React useCallback</a> but with (optionally) 
-automatic dependency tracking (see <a href="IdentityFrees">IdentityFrees section</a>).
+automatic dependency tracking. Compared to React, this is not needed as much as Reflections are 
+used to compare the lambda's captured parameters, however it may be needed if that mechanism fails
+(see [IdentityFrees section](#identityfree)).
 
 There is no Solidjs counterpart, as it does not re-render components (see [useState](#useState) for more info)
 
@@ -348,4 +350,3 @@ That means that:
 
 ## Missing stuff
 - Context/ComposableLocals
-- Make useCallback either mandatory or somehow not needed
