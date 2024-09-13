@@ -1,0 +1,12 @@
+[versions]
+stageVoteRelease = "1.86"
+badassJar = "2.0.0"
+
+[libraries]
+vlsi_crlf = { module = "com.github.vlsi.gradle:crlf-plugin", version.ref = "stageVoteRelease" }
+vlsi_gradleExtensions = { module = "com.github.vlsi.gradle:gradle-extensions-plugin", version.ref = "stageVoteRelease" }
+vlsi_stageVoteRelease = { module = "com.github.vlsi.gradle:stage-vote-release-plugin", version.ref = "stageVoteRelease" }
+badassJar = { module = "org.beryx:badass-jar", version.ref = "badassJar" }
+
+[plugins]
+stageVoteRelease = { id = "com.github.vlsi.stage-vote-release", version.ref = "stageVoteRelease" }

@@ -9,6 +9,12 @@ include(":swing")
 
 dependencyResolutionManagement {
     versionCatalogs {
+        create("pluginLibs") {
+            from(files("./gradle/plugins.versions.toml"))
+        }
+    }
+
+    versionCatalogs {
         create("cmptwLibs") {
             from(files("./gradle/cmptw.versions.toml"))
         }

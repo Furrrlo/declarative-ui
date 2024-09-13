@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     `kotlin-dsl`
 }
@@ -10,12 +12,10 @@ repositories {
 }
 
 dependencies {
-    val voteStageReleaseVer = "1.86"
-    implementation("com.github.vlsi.gradle:crlf-plugin:$voteStageReleaseVer")
-    implementation("com.github.vlsi.gradle:gradle-extensions-plugin:$voteStageReleaseVer")
-    implementation("com.github.vlsi.gradle:stage-vote-release-plugin:$voteStageReleaseVer")
-
-    implementation("org.beryx:badass-jar:2.0.0")
+    implementation(pluginLibs.vlsi.crlf)
+    implementation(pluginLibs.vlsi.gradleExtensions)
+    implementation(pluginLibs.vlsi.stageVoteRelease)
+    implementation(pluginLibs.badassJar)
 
     implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.13")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")

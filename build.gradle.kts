@@ -1,5 +1,7 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
-    id("com.github.vlsi.stage-vote-release") version "1.86"
+    alias(pluginLibs.plugins.stageVoteRelease)
 }
 
 group = "io.github.furrrlo"
