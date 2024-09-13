@@ -1,5 +1,5 @@
 [versions]
-stageVoteRelease = "1.86"
+stageVoteRelease = "1.90"
 badassJar = "2.0.0"
 
 [libraries]

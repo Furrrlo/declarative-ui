@@ -6,9 +6,8 @@ plugins {
     `maven-publish`
     id("com.github.vlsi.crlf")
     id("com.github.vlsi.gradle-extensions")
+    id("com.github.vlsi.stage-vote-release")
 }
-// TODO: can't apply it as it tries to hide the 'init' task and fails as it doesn't exist
-apply(plugin = "com.github.vlsi.stage-vote-release")
 
 description = "React-like library for Swing"
 
