@@ -1,0 +1,8 @@
+[versions]
+junit = "5.8.1" # TODO: this declaration is not actually used, see in buildSrc
+assertjswing = "3.9.2"
+caciotta = "1.18"
+
+[libraries]
+assertjswing = { module = "org.assertj:assertj-swing-junit", version.ref = "assertjswing" }
+caciotta = { module = "com.github.caciocavallosilano:cacio-tta", version.ref = "caciotta" }

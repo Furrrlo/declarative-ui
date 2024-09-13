@@ -350,3 +350,9 @@ That means that:
 
 ## Missing stuff
 - Context/ComposableLocals
+- Find a proper convention for user-defined component function to not make it feel
+  too different from the already defined framework ones (possibly nothing too verbose)
+- Granting access with MethodHandles.lookup() from within the component body is broken as
+  the lookup itself is needed to resolve the deps of the lambda body, therefore it cannot be run
+  and access cannot be granted
+- ListDiff and DiffingListAttribute are broken
