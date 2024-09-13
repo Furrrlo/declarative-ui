@@ -1,6 +1,5 @@
 import com.github.vlsi.gradle.crlf.CrLfSpec
 import com.github.vlsi.gradle.crlf.LineEndings
-import com.github.vlsi.gradle.release.ReleaseExtension
 
 plugins {
     java

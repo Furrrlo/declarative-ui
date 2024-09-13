@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.vlsi.stage-vote-release")
+    id("com.github.vlsi.stage-vote-release") version "1.86"
 }
 
 group = "io.github.furrrlo"
