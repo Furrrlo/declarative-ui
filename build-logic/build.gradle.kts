@@ -15,6 +15,8 @@ dependencies {
     implementation("com.github.vlsi.gradle:gradle-extensions-plugin:$voteStageReleaseVer")
     implementation("com.github.vlsi.gradle:stage-vote-release-plugin:$voteStageReleaseVer")
 
+    implementation("org.beryx:badass-jar:2.0.0")
+
     implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.13")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
     implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")

@@ -16,7 +16,8 @@ public class DAbstractColorChooserPanel {
     }
 
     public void colorTransparencySelectionEnabled(IdentityFreeSupplier<Boolean> colorTransparencySelectionEnabled) {
-      attribute(PREFIX + "colorTransparencySelectionEnabled", AbstractColorChooserPanel::isColorTransparencySelectionEnabled, AbstractColorChooserPanel::setColorTransparencySelectionEnabled, colorTransparencySelectionEnabled);
+      // TODO: this was added in Java 9 apparently
+//      attribute(PREFIX + "colorTransparencySelectionEnabled", AbstractColorChooserPanel::isColorTransparencySelectionEnabled, AbstractColorChooserPanel::setColorTransparencySelectionEnabled, colorTransparencySelectionEnabled);
     }
   }
 }
