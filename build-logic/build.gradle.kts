@@ -17,10 +17,15 @@ dependencies {
     implementation(pluginLibs.vlsi.stageVoteRelease)
     implementation(pluginLibs.badassJar)
 
-    implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.13")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
-    implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
+    implementation(codeQualityLibs.plgns.spotbugs)
+    implementation(codeQualityLibs.plgns.errorprone)
+    implementation(codeQualityLibs.plgns.nullaway)
 
     compileOnly("io.github.classgraph:classgraph:4.8.164")
     compileOnly("com.squareup:javapoet:1.13.0")
+
+    // https://github.com/gradle/gradle/issues/15383
+    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
+    implementation(files(pluginLibs.javaClass.superclass.protectionDomain.codeSource.location))
+    implementation(files(codeQualityLibs.javaClass.superclass.protectionDomain.codeSource.location))
 }

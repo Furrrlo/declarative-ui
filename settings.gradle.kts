@@ -12,9 +12,11 @@ dependencyResolutionManagement {
         create("pluginLibs") {
             from(files("./gradle/plugins.versions.toml"))
         }
-    }
 
-    versionCatalogs {
+        create("codeQualityLibs") {
+            from(files("./gradle/code-quality.versions.toml"))
+        }
+
         create("cmptwLibs") {
             from(files("./gradle/cmptw.versions.toml"))
         }
