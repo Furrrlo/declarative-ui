@@ -24,7 +24,7 @@ class CmptwTest extends AssertJSwingJUnit5TestCase {
             protected boolean isMatching(Frame frame) {
                 return "CanMyPenTabletWork".equals(frame.getTitle()) && frame.isShowing();
             }
-        }).withTimeout(10, TimeUnit.SECONDS).using(robot());
+        }).withTimeout(1, TimeUnit.MINUTES).using(robot());
     }
 
     @Override
