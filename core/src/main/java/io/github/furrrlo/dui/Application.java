@@ -2,7 +2,6 @@ package io.github.furrrlo.dui;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,11 +61,11 @@ public interface Application {
 
         public interface RootCollector {
 
-            default void add(DeclarativeComponentSupplier<? extends Component> comp) {
+            default void add(DeclarativeComponentSupplier<?> comp) {
                 add(null, comp);
             }
 
-            void add(@Nullable String key, DeclarativeComponentSupplier<? extends Component> comp);
+            void add(@Nullable String key, DeclarativeComponentSupplier<?> comp);
         }
 
         private static class Root<T> implements DeclarativeComponentWithIdSupplier<T> {
