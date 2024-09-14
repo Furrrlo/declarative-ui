@@ -2,7 +2,7 @@ package io.github.furrrlo.dui;
 
 import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListAdder;
 import io.github.furrrlo.dui.DeclarativeRefComponentContext.ListRemover;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

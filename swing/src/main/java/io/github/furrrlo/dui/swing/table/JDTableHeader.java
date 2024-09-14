@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.swing.table;
 
 import io.github.furrrlo.dui.*;
 import io.github.furrrlo.dui.swing.JDComponent;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.plaf.TableHeaderUI;

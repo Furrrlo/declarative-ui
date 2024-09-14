@@ -1,7 +1,7 @@
 package io.github.furrrlo.dui;
 
 import io.leangen.geantyref.TypeToken;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;

@@ -6,6 +6,7 @@ pmd = "7.5.0"
 
 [libraries]
 # Annotations libraries, these do not add any actual functionality, only allow for additional compiler checks
+annotations-jspecify = "org.jspecify:jspecify:1.0.0" # Nullability annotations
 annotations-jetbrains = "org.jetbrains:annotations:24.1.0" # IDE annotations
 annotations-checker = "org.checkerframework:checker-qual:3.47.0"
 annotations-errorprone = { group="com.google.errorprone", name="error_prone_annotations", version.ref="errorprone" } # Errorprone annotations for additional checks

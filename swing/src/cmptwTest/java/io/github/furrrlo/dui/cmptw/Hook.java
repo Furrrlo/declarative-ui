@@ -1,6 +1,6 @@
 package io.github.furrrlo.dui.cmptw;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
 import java.nio.file.Path;

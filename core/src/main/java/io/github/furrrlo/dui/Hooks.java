@@ -1,6 +1,6 @@
 package io.github.furrrlo.dui;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;

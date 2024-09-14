@@ -2,7 +2,7 @@ package io.github.furrrlo.dui.cmptw;
 
 import jiconfont.IconCode;
 import jiconfont.swing.IconFontSwing;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.awt.image.AbstractMultiResolutionImage;

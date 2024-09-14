@@ -1,7 +1,7 @@
 package io.github.furrrlo.dui;
 
 import io.github.furrrlo.dui.DeclarativeRefComponentContext.AttributeEqualityFn;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;

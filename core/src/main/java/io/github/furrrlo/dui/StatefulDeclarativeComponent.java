@@ -2,7 +2,7 @@ package io.github.furrrlo.dui;
 
 import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoProxy;
 import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;

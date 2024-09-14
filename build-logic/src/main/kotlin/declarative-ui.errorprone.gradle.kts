@@ -21,6 +21,7 @@ val skipErrorprone = project.ext.has("skipErrorprone")
 val codeQualityLibs = the<LibrariesForCodeQualityLibs>()
 dependencies {
     // Annotations libraries
+    implementation(codeQualityLibs.annotations.jspecify) // Nullability annotations
     implementation(codeQualityLibs.annotations.jetbrains) // IDE annotations
     implementation(codeQualityLibs.annotations.errorprone) // Errorprone annotations for additional checks
     implementation(codeQualityLibs.annotations.checker)
@@ -71,6 +72,7 @@ tasks.withType<JavaCompile> {
 
         nullaway {
             annotatedPackages.add("io.github.furrlo.dui")
+            isJSpecifyMode.set(true)
             checkOptionalEmptiness.set(true)
             suggestSuppressions.set(true)
             checkContracts.set(true)

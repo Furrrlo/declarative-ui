@@ -2,8 +2,6 @@ module io.github.furrrlo.dui.swing {
     requires transitive io.github.furrrlo.dui;
     requires transitive java.desktop;
 
-    requires static transitive org.jetbrains.annotations;
-
     exports io.github.furrrlo.dui.swing;
     exports io.github.furrrlo.dui.swing.colorchooser;
     exports io.github.furrrlo.dui.swing.table;
