@@ -22,4 +22,5 @@ tasks.withType<Pmd> {
         xml.required.set(true)
         html.required.set(true)
     }
+    isConsoleOutput = true
 }
