@@ -1,8 +1,13 @@
 [versions]
-junit = "5.8.1" # TODO: this declaration is not actually used, see in buildSrc
+junit = "5.8.1"
 assertjswing = "3.9.2"
 caciotta = "1.18"
 
 [libraries]
+junit-bom = { group="org.junit", name="junit-bom", version.ref="junit" }
+junit-jupiter-api = { group="org.junit.jupiter", name="junit-jupiter-api" }
+junit-jupiter-params = { group="org.junit.jupiter", name="junit-jupiter-params" }
+junit-jupiter-engine = { group="org.junit.jupiter", name="junit-jupiter-engine" }
+
 assertjswing = { module = "org.assertj:assertj-swing-junit", version.ref = "assertjswing" }
 caciotta = { module = "com.github.caciocavallosilano:cacio-tta", version.ref = "caciotta" }

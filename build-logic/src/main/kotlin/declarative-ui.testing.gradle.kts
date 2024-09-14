@@ -1,14 +1,20 @@
+@file:Suppress("UnstableApiUsage")
+
+import org.gradle.accessors.dm.LibrariesForLibs
+
 plugins {
     java
 }
 
+// https://github.com/gradle/gradle/issues/15383
+val libs = the<LibrariesForLibs>()
 dependencies {
-    val junit = "5.8.1"
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
-tasks.getByName<Test>("test") {
+tasks.test {
     useJUnitPlatform()
 }
