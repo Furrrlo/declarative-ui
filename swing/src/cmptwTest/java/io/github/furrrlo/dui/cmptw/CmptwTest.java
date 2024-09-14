@@ -7,6 +7,7 @@ import org.assertj.swing.fixture.FrameFixture;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.swing.finder.WindowFinder.findFrame;
 import static org.assertj.swing.launcher.ApplicationLauncher.application;
@@ -23,7 +24,7 @@ class CmptwTest extends AssertJSwingJUnit5TestCase {
             protected boolean isMatching(Frame frame) {
                 return "CanMyPenTabletWork".equals(frame.getTitle()) && frame.isShowing();
             }
-        }).using(robot());
+        }).withTimeout(10, TimeUnit.SECONDS).using(robot());
     }
 
     @Override
