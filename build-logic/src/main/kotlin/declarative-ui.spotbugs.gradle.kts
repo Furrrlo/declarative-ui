@@ -4,6 +4,7 @@ import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
 import org.gradle.accessors.dm.LibrariesForCodeQualityLibs
+import java.util.*
 
 plugins {
     id("com.github.spotbugs")
@@ -20,8 +21,11 @@ dependencies {
 }
 
 configurations.all {
-    exclude(group = "com.google.code.findbugs", module = "jsr305") // Will cause problems in Java9+
-    exclude(group = "javax.annotation", module = "jsr250-api") // Already in the jre
+    // Do not touch the spotbugs config, otherwise it will flat out refuse to work
+    if(!this.name.toLowerCase(Locale.ROOT).contains("spotbugs")) {
+        exclude(group = "com.google.code.findbugs", module = "jsr305") // Will cause problems in Java9+
+        exclude(group = "javax.annotation", module = "jsr250-api") // Already in the jre
+    }
 }
 
 spotbugs {
