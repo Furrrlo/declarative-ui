@@ -4,6 +4,7 @@ import groovy.json.JsonSlurper
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
 import org.gradle.accessors.dm.LibrariesForCodeQualityLibs
+import java.util.*
 import java.util.regex.Pattern
 
 plugins {
@@ -29,7 +30,7 @@ dependencies {
 }
 
 tasks.withType<JavaCompile> {
-    val isTestTask = name == "compileTestJava"
+    val isTestTask = name.toLowerCase(Locale.ROOT).contains("test")
 
     val objToString: (Any?) -> String? = { json: Any? ->
         if (json is String)

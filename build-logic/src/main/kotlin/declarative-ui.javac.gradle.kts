@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import java.util.*
 import java.util.regex.Pattern
 
 plugins {
@@ -9,7 +10,7 @@ val warningsFile = file("${rootDir}/config/javac/warnings.json")
 val skipWError = project.ext.has("skipErrorprone")
 
 tasks.withType<JavaCompile> {
-    val isTestTask = name == "compileTestJava"
+    val isTestTask = name.toLowerCase(Locale.ROOT).contains("test")
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000", "-Xmaxwarns", "2000"))
 
     val objToString: (Any?) -> String? = { json: Any? ->
