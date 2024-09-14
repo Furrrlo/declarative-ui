@@ -14,7 +14,7 @@ plugins {
 }
 
 
-val errorpronePatternsFile = file("${rootDir}/config/errorprone/patterns.json")
+val errorpronePatternsFile = file("${rootDir}/gradle/errorprone/patterns.json")
 val skipErrorprone = project.ext.has("skipErrorprone")
 
 // https://github.com/gradle/gradle/issues/15383

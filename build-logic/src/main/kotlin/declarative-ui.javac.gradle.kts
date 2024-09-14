@@ -6,7 +6,7 @@ plugins {
     java
 }
 
-val warningsFile = file("${rootDir}/config/javac/warnings.json")
+val warningsFile = file("${rootDir}/gradle/javac/warnings.json")
 val skipWError = project.ext.has("skipErrorprone")
 
 tasks.withType<JavaCompile> {

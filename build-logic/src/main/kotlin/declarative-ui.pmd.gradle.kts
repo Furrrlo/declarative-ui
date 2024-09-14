@@ -4,7 +4,7 @@ plugins {
     id("pmd")
 }
 
-val pmdRuleSetsFile = file("${rootDir}/config/pmd/rulesSets.xml")
+val pmdRuleSetsFile = file("${rootDir}/gradle/pmd/rulesSets.xml")
 val pmdEnabled = project.ext.has("pmd")
 
 // https://github.com/gradle/gradle/issues/15383

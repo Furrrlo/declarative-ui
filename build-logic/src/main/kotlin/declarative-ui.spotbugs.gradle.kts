@@ -10,7 +10,7 @@ plugins {
     id("com.github.spotbugs")
 }
 
-val spotBugsFile = file("${rootDir}/config/spotbugs/exclude.xml")
+val spotBugsFile = file("${rootDir}/gradle/spotbugs/exclude.xml")
 val spotBugsEnabled = project.ext.has("spotbugs")
 
 // https://github.com/gradle/gradle/issues/15383
