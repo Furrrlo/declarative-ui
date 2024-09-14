@@ -502,6 +502,8 @@ abstract class StatefulDeclarativeComponent<
 
     protected static class StatefulContext implements DeclarativeComponentContext, DeclarativeComponentInternalContext {
 
+        // This is only used internally as a placeholder, as null is already taken as a valid value
+        @SuppressWarnings("StaticAssignmentOfThrowable")
         private static final Throwable STACKTRACE_SENTINEL = new Exception("StatefulContext sentinel");
         private static final String DUI_PACKAGE;
         static {

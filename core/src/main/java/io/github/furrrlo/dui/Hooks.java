@@ -140,29 +140,27 @@ public final class Hooks {
             }
 
             final ProduceScopeImpl scope = new ProduceScopeImpl();
-            Throwable primaryThrowable = null;
-            try {
-                producer.accept(scope);
-            } catch (Throwable t) {
-                primaryThrowable = t;
-                throw t;
-            } finally {
-                if(scope.onDispose != null) {
-                    // Save and clear the interrupt status to run the onDispose function
-                    // without any interruption state set, and restore it afterward
-                    boolean wasInterrupted = Thread.interrupted();
-                    try {
-                        scope.onDispose.run();
-                    } catch (Throwable innerThrowable) {
-                        if(primaryThrowable != null)
-                            primaryThrowable.addSuppressed(new Exception("Failed to run onDispose", innerThrowable));
-                        else
-                            throw innerThrowable;
-                    } finally {
-                        if(wasInterrupted)
-                            Thread.currentThread().interrupt();
-                    }
+            // Abuse the try-with-resources mechanism so that exception handling is done properly e.g.
+            // exceptions thrown by producer#accept are not overwritten by onDispose#run in the 'finally' block
+            try(AutoCloseable closeable = () -> {
+                ThrowingRunnable onDispose = scope.onDispose;
+                if(onDispose == null)
+                    return;
+
+                // Save and clear the interrupt status to run the onDispose function
+                // without any interruption state set, and restore it afterward
+                boolean wasInterrupted = Thread.interrupted();
+                try {
+                    onDispose.run();
+                } finally {
+                    if(wasInterrupted)
+                        Thread.currentThread().interrupt();
                 }
+            }) {
+                // Make javac shut up about the following warning, as it's done on purpose and can't be suppressed
+                // "[try] auto-closeable resource unused is never referenced in body of corresponding try statement"
+                @SuppressWarnings("unused") AutoCloseable unused = closeable;
+                producer.accept(scope);
             }
         }, producer, state));
         return state;

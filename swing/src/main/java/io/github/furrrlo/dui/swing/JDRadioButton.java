@@ -26,6 +26,7 @@ public class JDRadioButton {
 
     public static class Decorator<T extends JRadioButton> extends DAbstractButton.Decorator<T> {
 
+        @SuppressWarnings("unused")
         private static final String PREFIX = "__JDRadioButton__";
 
         protected Decorator(Class<T> type, Supplier<T> factory) {

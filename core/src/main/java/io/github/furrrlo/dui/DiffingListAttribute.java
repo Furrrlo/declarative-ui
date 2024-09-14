@@ -153,7 +153,10 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
         // This is shit but whatever I guess
         // It should allow components with a different framework thread to still execute actions in order
-        @SuppressWarnings("unused")
+        @SuppressWarnings({
+                "unused", // Void result
+                "rawtypes", // arrays sigh
+                "RedundantSuppression" /* IntelliJ complains about rawtypes */})
         Void unused = CompletableFuture.allOf(componentsCreations.toArray(new CompletableFuture[0]))
                 .thenRun(() -> declarativeComponent
                         .runOrScheduleOnFrameworkThread(() -> actions.forEach(Runnable::run)))
