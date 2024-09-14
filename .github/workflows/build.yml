@@ -1,0 +1,44 @@
+name: build
+on: [ push, pull_request ]
+permissions: read-all
+
+jobs:
+  compile:
+    name: compile
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VERSION: 17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Compile
+        uses: ./.github/actions/run-gradle
+        with:
+          java: ${{ env.JAVA_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          arguments: check -x test
+
+  test:
+    name: test
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VERSION: 17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Test
+        uses: ./.github/actions/run-gradle
+        with:
+          java: ${{ env.JAVA_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          arguments: check -PskipErrorprone
+      - name: Publish results
+        uses: EnricoMi/publish-unit-test-result-action@82082dac68ad6a19d980f8ce817e108b9f496c2a # v2.17.1
+        if: always()
+        with:
+          files: "**/test-results/**/*.xml"
