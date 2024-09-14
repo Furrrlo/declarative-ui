@@ -46,6 +46,7 @@ tasks.test {
 
     if(useCaciotta) {
         systemProperty("dui.useCaciotta", useCaciotta)
+        systemProperty("java.awt.headless", false)
         systemProperty("awt.toolkit", "com.github.caciocavallosilano.cacio.ctc.CTCToolkit")
         systemProperty("java.awt.graphicsenv", "com.github.caciocavallosilano.cacio.ctc.CTCGraphicsEnvironment")
 
