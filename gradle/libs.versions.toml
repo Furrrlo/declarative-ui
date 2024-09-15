@@ -2,6 +2,7 @@
 junit = "5.8.1"
 assertjswing = "3.9.2"
 caciotta = "1.18"
+slf4j = "2.0.16"
 
 [libraries]
 junit-bom = { group="org.junit", name="junit-bom", version.ref="junit" }
@@ -11,3 +12,12 @@ junit-jupiter-engine = { group="org.junit.jupiter", name="junit-jupiter-engine" 
 
 assertjswing = { module = "org.assertj:assertj-swing-junit", version.ref = "assertjswing" }
 caciotta = { module = "com.github.caciocavallosilano:cacio-tta", version.ref = "caciotta" }
+
+slf4j-api = { module="org.slf4j:slf4j-api", version.ref="slf4j" }
+slf4j-simple = { module="org.slf4j:slf4j-simple", version.ref="slf4j" }
+slf4j-platformLogging = { module="org.slf4j:slf4j-jdk-platform-logging", version.ref="slf4j" }
+slf4j-julBridge = { module="org.slf4j:jul-to-slf4j", version.ref="slf4j" }
+junit-julToSlf4j = "no.digipost:jul-to-slf4j-junit-extension:1.0.1"
+
+[bundles]
+junit-logging = [ "slf4j-api", "slf4j-simple", "slf4j-platformLogging", "junit-julToSlf4j", "slf4j-julBridge" ]
