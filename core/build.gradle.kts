@@ -8,5 +8,5 @@ plugins {
 }
 
 dependencies {
-    api("io.leangen.geantyref:geantyref:1.3.14")
+    api(libs.geantyref)
 }

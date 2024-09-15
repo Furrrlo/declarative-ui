@@ -21,8 +21,8 @@ dependencies {
     implementation(codeQualityLibs.plgns.errorprone)
     implementation(codeQualityLibs.plgns.nullaway)
 
-    compileOnly("io.github.classgraph:classgraph:4.8.164")
-    compileOnly("com.squareup:javapoet:1.13.0")
+    compileOnly(pluginLibs.javabeans.classgraph)
+    compileOnly(pluginLibs.javabeans.javapoet)
 
     // https://github.com/gradle/gradle/issues/15383
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))

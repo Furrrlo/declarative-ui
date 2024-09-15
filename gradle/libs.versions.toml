@@ -1,10 +1,13 @@
 [versions]
+geantyref = "1.3.14"
 junit = "5.8.1"
 assertjswing = "3.9.2"
 caciotta = "1.18"
 slf4j = "2.0.16"
 
 [libraries]
+geantyref = { module="io.leangen.geantyref:geantyref", version.ref="geantyref" }
+
 junit-bom = { group="org.junit", name="junit-bom", version.ref="junit" }
 junit-jupiter-api = { group="org.junit.jupiter", name="junit-jupiter-api" }
 junit-jupiter-params = { group="org.junit.jupiter", name="junit-jupiter-params" }

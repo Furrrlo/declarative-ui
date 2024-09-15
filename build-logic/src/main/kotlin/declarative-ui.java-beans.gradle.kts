@@ -1,4 +1,7 @@
+@file:Suppress("UnstableApiUsage")
+
 import io.github.furrrlo.dui.gradle.JavaBeanGenTask
+import org.gradle.accessors.dm.LibrariesForPluginLibs
 
 plugins {
     java
@@ -12,9 +15,11 @@ val javaBeans = configurations.create("javaBeans") {
     isCanBeConsumed = false
 }
 
+// https://github.com/gradle/gradle/issues/15383
+val pluginLibs = the<LibrariesForPluginLibs>()
 dependencies {
-    javaBeans("io.github.classgraph:classgraph:4.8.164")
-    javaBeans("com.squareup:javapoet:1.13.0")
+    javaBeans(pluginLibs.javabeans.classgraph)
+    javaBeans(pluginLibs.javabeans.javapoet)
 }
 
 tasks.register<JavaBeanGenTask>("genFromJavaBeans") {

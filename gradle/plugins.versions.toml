@@ -8,5 +8,8 @@ vlsi_gradleExtensions = { module = "com.github.vlsi.gradle:gradle-extensions-plu
 vlsi_stageVoteRelease = { module = "com.github.vlsi.gradle:stage-vote-release-plugin", version.ref = "stageVoteRelease" }
 badassJar = { module = "org.beryx:badass-jar", version.ref = "badassJar" }
 
+javabeans-classgraph = "io.github.classgraph:classgraph:4.8.164"
+javabeans-javapoet = "com.squareup:javapoet:1.13.0"
+
 [plugins]
 stageVoteRelease = { id = "com.github.vlsi.stage-vote-release", version.ref = "stageVoteRelease" }
