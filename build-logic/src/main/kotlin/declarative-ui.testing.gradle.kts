@@ -23,6 +23,9 @@ tasks.test {
     systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
     reports {
         html.required.set(true)
-        junitXml.required.set(true)
+        junitXml.apply {
+            required.set(true)
+            isOutputPerTestCase = true
+        }
     }
 }
