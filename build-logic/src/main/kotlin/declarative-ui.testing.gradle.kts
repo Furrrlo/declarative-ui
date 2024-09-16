@@ -21,4 +21,8 @@ tasks.test {
     useJUnitPlatform()
 
     systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
+    reports {
+        html.required.set(true)
+        junitXml.required.set(true)
+    }
 }
