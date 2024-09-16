@@ -14,7 +14,7 @@ interface Process {
 
     Collection<String> PROCESS_EXTENSIONS = Collections.singleton("exe");
     Collection<String> ICON_EXTENSIONS = List.of("exe", "ico");
-    Path ROOT_ICON_PATH = Path.of("src\\cmptwTest\\resources\\io\\github\\furrrlo\\dui\\cmptw");
+    Path ROOT_ICON_PATH = Path.of("src/cmptwTest/resources/io/github/furrrlo/dui/cmptw").toAbsolutePath().normalize();
 
     int pid();
 
@@ -36,7 +36,7 @@ interface Process {
         try {
             return List.of(ImageIO.read(processFile.toFile()));
         } catch (IOException e) {
-            throw new UncheckedIOException(processFile.toAbsolutePath().toString(), e);
+            throw new UncheckedIOException(processFile.toFile().toString(), e);
         }
     }
 
@@ -45,7 +45,7 @@ interface Process {
             return List.of(ImageIO.read(ROOT_ICON_PATH.resolve("fallback.png").toFile()));
         } catch (IOException e) {
             throw new UncheckedIOException(
-                    ROOT_ICON_PATH.resolve("fallback.png").toAbsolutePath().toString(), e);
+                    ROOT_ICON_PATH.resolve("fallback.png").toFile().toString(), e);
         }
     }
 
