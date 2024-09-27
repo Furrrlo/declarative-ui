@@ -1,5 +1,8 @@
 package io.github.furrrlo.dui.swing.accessibility;
 
+import io.github.furrrlo.dui.DeclarativeComponent;
+import io.github.furrrlo.dui.DeclarativeComponentFactory;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import io.github.furrrlo.dui.IdentityFreeSupplier;
 import io.github.furrrlo.dui.swing.SwingDecorator;
 
@@ -8,6 +11,16 @@ import javax.accessibility.AccessibleContext;
 import java.util.function.Supplier;
 
 public class DAccessibleContext {
+
+  public static DeclarativeComponent<AccessibleContext> forInner(
+          IdentityFreeConsumer<DAccessibleContext.Decorator<AccessibleContext>> body) {
+    return DeclarativeComponentFactory.INSTANCE.of(
+            () -> new DAccessibleContext.Decorator<>(AccessibleContext.class, () -> {
+              throw new IllegalStateException("This AccessibleContext was built for a inner component");
+            }),
+            body);
+  }
+
   public static class Decorator<T extends AccessibleContext> extends SwingDecorator<T> {
     private static final String PREFIX = "__DAccessibleContext__";
 

@@ -1,8 +1,11 @@
 package io.github.furrrlo.dui.swing;
 
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import io.github.furrrlo.dui.IdentityFreeSupplier;
+import io.github.furrrlo.dui.swing.accessibility.DAccessibleContext;
 import io.leangen.geantyref.TypeToken;
 
+import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.EventListener;
@@ -98,6 +101,10 @@ public class DAwtComponent {
 
         public void componentOrientation(IdentityFreeSupplier<ComponentOrientation> componentOrientation) {
             attribute(PREFIX + "componentOrientation", Component::getComponentOrientation, Component::setComponentOrientation, componentOrientation);
+        }
+
+        public void accessibleContext(IdentityFreeConsumer<DAccessibleContext.Decorator<AccessibleContext>> body) {
+            inner(Component::getAccessibleContext, DAccessibleContext.forInner(body));
         }
     }
 }
