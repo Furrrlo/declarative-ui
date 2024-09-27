@@ -25,6 +25,9 @@ dependencies {
 tasks.register<JavaBeanGenTask>("genFromJavaBeans") {
     group = "dui"
     classpath.from(javaBeans)
-    beansToTargetPackages.set(mapOf("javax.swing" to "io.github.furrrlo.dui.swing"))
+    beansToTargetPackages.set(mapOf(
+        "javax.swing" to "io.github.furrrlo.dui.swing",
+        "javax.accessibility" to "io.github.furrrlo.dui.swing.accessibility",
+    ))
     targetDirectory.fileProvider(sourceSets.main.map { it.java.sourceDirectories.singleFile })
 }

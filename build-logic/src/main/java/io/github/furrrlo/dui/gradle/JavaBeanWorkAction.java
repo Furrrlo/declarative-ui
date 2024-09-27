@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
+import java.beans.JavaBean;
 import java.beans.PropertyDescriptor;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -65,24 +66,27 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
         try (ScanResult scanResult = new ClassGraph()
                 .verbose()
                 .enableClassInfo()
+                .enableAnnotationInfo()
                 .enableSystemJarsAndModules()
                 .acceptPackages(packagesToCheck.toArray(String[]::new))
                 .scan()) {
             final ClassInfoList subclasses = scanResult.getSubclasses(JComponent.class);
-            System.out.println("Found " + subclasses.size() + " candidates");
+            final ClassInfoList javaBeanClasses = scanResult.getClassesWithAnnotation(JavaBean.class);
+            System.out.println("Found " + subclasses.size() + " subclass candidates " +
+                    "and " + javaBeanClasses.size() + " annotated candidates");
 
             candidates = Stream.concat(
                             packagesToCheck.contains("javax.swing")
                                     ? Stream.of(JComponent.class)
                                     : Stream.empty(),
-                            subclasses.stream().map(routeClassInfo -> {
+                            Stream.concat(subclasses.stream(), javaBeanClasses.stream()).map(routeClassInfo -> {
                                 try {
                                     return Class.forName(routeClassInfo.getName());
                                 } catch (Exception ex) {
                                     throw new RuntimeException("Failed to resolve class " + routeClassInfo.getName());
                                 }
-                            }))
-                    .toList();
+                            })
+                    ).distinct().toList();
         }
 
         System.out.println("Found " + candidates.size() + " candidate classes");
@@ -95,7 +99,12 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
             final String matchedPackage = packagesToCheck.stream()
                     .filter(p -> candidateClass.getPackageName().startsWith(p))
                     .findFirst()
-                    .orElseThrow();
+                    .orElse(null);
+            if(matchedPackage == null) {
+                System.out.println("Couldn't find package match for " + candidateClass);
+                continue;
+            }
+
             final String targetPackage = beansToTargetPackages.get(matchedPackage);
             final String subpackage = candidateClass.getPackageName().substring(matchedPackage.length());
 
