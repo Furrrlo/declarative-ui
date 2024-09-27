@@ -22,11 +22,11 @@ public final class Hooks {
         return useInternalCtx();
     }
 
-    public void grantAccess(MethodHandles.Lookup lookup) {
+    public static void grantAccess(MethodHandles.Lookup lookup) {
         useInternalCtx().grantAccess(lookup);
     }
 
-    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
+    public static void grantAccess(Collection<MethodHandles.Lookup> lookups) {
         useInternalCtx().grantAccess(lookups);
     }
 
