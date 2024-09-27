@@ -131,6 +131,7 @@ class DeclarativeComponentWrapper<R> extends StatefulDeclarativeComponent<
         this.isDeepUpdated = true;
         FnAttribute.updateDeclarativeComponent(
                 getAppConfig(),
+                lookups(),
                 wasDeepUpdated,
                 curr,
                 prevWrapped,

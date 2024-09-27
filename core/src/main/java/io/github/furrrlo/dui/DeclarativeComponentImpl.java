@@ -4,10 +4,8 @@ import io.github.furrrlo.dui.DeclarativeComponentContextDecorator.ReservedMemoPr
 import io.leangen.geantyref.TypeToken;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +85,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
 
     @Override
     public @Nullable String getDeclarativeType() {
+        IdentityFreeConsumer<O_CTX> body = body(false);
         return body != null ?
                 body.getImplClass().getName() :
                 componentType != null ? componentType.getType().getTypeName() : null;
@@ -98,13 +97,13 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
     }
 
     @Override
-    public T updateOrCreateComponent(ApplicationConfig appConfig) {
+    public T updateOrCreateComponent(ApplicationConfig appConfig, Collection<MethodHandles.Lookup> lookups) {
         if(component == null) {
             component = componentFactory.get();
             LOGGER.log(Level.FINE, "Created component {0}", component);
         }
 
-        return super.updateOrCreateComponent(appConfig);
+        return super.updateOrCreateComponent(appConfig, lookups);
     }
 
     @Override
@@ -309,11 +308,13 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
             // I trust this cast
             StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?> internalComponent =
                     (StatefulDeclarativeComponent<V, DeclarativeComponentContext, ?>) component.doApplyInternal();
-            if (internalComponent.body != null) {
+            // We should not need an IdentityFreeConsumer.Explicit body, as we never check its dependencies
+            IdentityFreeConsumer<DeclarativeComponentContext> internalBody = internalComponent.body(false);
+            if (internalBody != null) {
                 InnerComponentContextImpl<T, V> ctx =
                         new InnerComponentContextImpl<>(this, ref -> ref(getter, ref), getter);
                 internalComponent.currentBodyInvocationCtx = ctx;
-                internalComponent.invokeBody(internalComponent.body, ctx, this::reserveMemo);
+                internalComponent.invokeBody(internalBody, ctx, this::reserveMemo);
                 internalComponent.currentBodyInvocationCtx = null;
             }
             return this;

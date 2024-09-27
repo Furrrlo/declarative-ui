@@ -5,7 +5,6 @@ import io.leangen.geantyref.TypeToken;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
 
@@ -34,13 +33,8 @@ class InnerComponentContextImpl<P, T> implements DeclarativeRefComponentInternal
     }
 
     @Override
-    public void grantAccess(MethodHandles.Lookup lookup) {
+    public void grantAccess(Supplier<MethodHandles.Lookup> lookup) {
         parent.grantAccess(lookup);
-    }
-
-    @Override
-    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
-        parent.grantAccess(lookups);
     }
 
     @Override

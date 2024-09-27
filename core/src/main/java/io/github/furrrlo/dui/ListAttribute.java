@@ -68,6 +68,7 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
             final boolean wasSet = idx < prevValues.size();
             FnAttribute.updateDeclarativeComponent(
                     declarativeComponent.getAppConfig(),
+                    declarativeComponent.lookups(),
                     wasSet,
                     this.value.get(idx),
                     wasSet ? prevValues.get(idx) : null,

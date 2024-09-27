@@ -129,7 +129,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                                 return;
                             }
 
-                            item.updateOrCreateComponent(declarativeComponent.getAppConfig());
+                            item.updateOrCreateComponent(declarativeComponent.getAppConfig(), declarativeComponent.lookups());
                         } finally {
                             // Complete the future even if an exception is thrown here, the stacktrace will be printed
                             // in this thread and not on the one of the parent component (if it's not the same thread)

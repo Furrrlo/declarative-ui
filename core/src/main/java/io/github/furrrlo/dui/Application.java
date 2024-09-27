@@ -17,7 +17,7 @@ public interface Application {
         final StatefulDeclarativeComponent<BaseApplication, ?, ?> ctx = DeclarativeComponentFactory.INSTANCE
                 .ofApplication(appConfig, Context::new, app::accept)
                 .doApplyInternal();
-        ctx.runOrScheduleOnFrameworkThread(() -> ctx.updateOrCreateComponent(appConfig));
+        ctx.runOrScheduleOnFrameworkThread(() -> ctx.updateOrCreateComponent(appConfig, appConfig.lookups()));
     }
 
     class BaseApplication {

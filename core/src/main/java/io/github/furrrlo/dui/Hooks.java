@@ -22,12 +22,8 @@ public final class Hooks {
         return useInternalCtx();
     }
 
-    public static void grantAccess(MethodHandles.Lookup lookup) {
+    public static void grantAccess(Supplier<MethodHandles.Lookup> lookup) {
         useInternalCtx().grantAccess(lookup);
-    }
-
-    public static void grantAccess(Collection<MethodHandles.Lookup> lookups) {
-        useInternalCtx().grantAccess(lookups);
     }
 
     public static <V> State<V> useState(V value) {

@@ -2,6 +2,8 @@ package io.github.furrrlo.dui;
 
 import org.jspecify.annotations.Nullable;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -61,6 +63,7 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
                                  @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue) {
         updateDeclarativeComponent(
                 declarativeComponent.getAppConfig(),
+                declarativeComponent.lookups(),
                 wasSet,
                 value,
                 prevValue,
@@ -69,6 +72,7 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
     }
 
     static <V> void updateDeclarativeComponent(ApplicationConfig appConfig,
+                                               Collection<MethodHandles.Lookup> lookups,
                                                boolean wasSet,
                                                StatefulDeclarativeComponent<? extends V, ?, ?> value,
                                                @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue,
@@ -85,7 +89,7 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
                 return;
             }
 
-            V created = value.updateOrCreateComponent(appConfig);
+            V created = value.updateOrCreateComponent(appConfig, lookups);
             if(createdComponent != null)
                 createdComponent.accept(created);
 

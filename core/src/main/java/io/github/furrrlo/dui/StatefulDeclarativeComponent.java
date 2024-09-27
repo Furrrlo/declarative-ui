@@ -35,13 +35,14 @@ abstract class StatefulDeclarativeComponent<
 
     private @Nullable ApplicationConfig appConfig;
 
-    protected final @Nullable IdentityFreeConsumer<O_CTX> body;
+    private final Function<Boolean, @Nullable IdentityFreeConsumer<O_CTX>> bodyFn;
     protected @Nullable IdentityFreeConsumer<O_CTX> prevBody;
 
     protected AtomicReference<@Nullable StatefulDeclarativeComponent<R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
     private List<Memoized<?>> memoizedVars = new ArrayList<>();
     private List<Effect> effects = new ArrayList<>();
+    private Set<MethodHandles.Lookup> lookups = new LinkedHashSet<>();
     protected @Nullable I_CTX context;
 
     protected @Nullable DeclarativeComponentInternalContext currentBodyInvocationCtx;
@@ -53,9 +54,34 @@ abstract class StatefulDeclarativeComponent<
 
     protected StatefulDeclarativeComponent(@Nullable ApplicationConfig appConfig,
                                            @Nullable IdentityFreeConsumer<O_CTX> body) {
-        this.body = body != null
-                ? IdentityFreeConsumer.explicit(appConfig != null ? appConfig.lookups() : currentLookups(), body)
-                : null;
+        this.bodyFn = new Function<Boolean, @Nullable IdentityFreeConsumer<O_CTX>>() {
+
+            private @Nullable IdentityFreeConsumer<O_CTX> explicit;
+
+            @Override
+            public @Nullable IdentityFreeConsumer<O_CTX> apply(Boolean requiresExplicit) {
+                if(body == null)
+                    return null;
+                if(explicit != null)
+                    return explicit;
+
+                if(requiresExplicit) {
+                    IdentityFreeConsumer<O_CTX> explicit = IdentityFreeConsumer.explicit(currentLookups(), body);
+                    this.explicit = explicit;
+                    return explicit;
+                }
+
+                return body;
+            }
+
+            @Override
+            public String toString() {
+                return "BodyWrapper{" +
+                        "explicit=" + (explicit != null) +
+                        ", body=" + (explicit != null ? explicit : body) +
+                        '}';
+            }
+        };
         this.appConfig = appConfig;
     }
 
@@ -72,6 +98,7 @@ abstract class StatefulDeclarativeComponent<
         prevBody = other.prevBody;
         memoizedVars = other.memoizedVars;
         effects = other.effects;
+        lookups = other.lookups;
         copyContext(other.context);
     }
 
@@ -88,6 +115,10 @@ abstract class StatefulDeclarativeComponent<
                     "was " + ourField + ", is " + otherField);
     }
 
+    protected @Nullable IdentityFreeConsumer<O_CTX> body(boolean requiresExplicit) {
+        return bodyFn.apply(requiresExplicit);
+    }
+
     protected abstract I_CTX newContext();
 
     protected abstract void copyContext(@Nullable I_CTX toCopy);
@@ -100,8 +131,9 @@ abstract class StatefulDeclarativeComponent<
         return Objects.requireNonNull(appConfig, "App config was not set yet");
     }
 
-    public R updateOrCreateComponent(ApplicationConfig appConfig) {
+    public R updateOrCreateComponent(ApplicationConfig appConfig, Collection<MethodHandles.Lookup> lookups) {
         this.appConfig = appConfig;
+        this.lookups.addAll(lookups);
         updateComponent();
         return getComponent();
     }
@@ -131,7 +163,14 @@ abstract class StatefulDeclarativeComponent<
     protected void updateComponent(int flags) {
         runAsComponentUpdate(() -> {
             final boolean deepUpdate = (flags & UpdateFlags.SOFT) == 0;
-            final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0 || !Objects.equals(body, prevBody);
+            final boolean depsChanged = (flags & UpdateFlags.FORCE) != 0
+                    || (prevBody == null && body(false) != null)
+                    || !Objects.equals(body(true), prevBody);
+            // If it's the first time that the body is being run, and it contains a grantAccess(...)
+            // we may not be able to explicit-ize the body, but it shouldn't be needed anyway.
+            // The previous depsChanged will only make it explicit if there was already a body, therefore
+            // we would have the lookup to access the lambda from the previous time the body was run.
+            IdentityFreeConsumer<O_CTX> body = body(false);
 
             final I_CTX newCtx;
             if(!depsChanged) {
@@ -167,7 +206,7 @@ abstract class StatefulDeclarativeComponent<
                     // if we have a soft update followed by a deep update, we would in practise
                     // skip the deep update also on the second call, as the first would consume
                     // the deps change
-                    prevBody = body;
+                    prevBody = body(true); // Force explicit, we have the lookup as the body was run
 
                     if (depsChanged) {
                         updateAttributes(newCtx);
@@ -176,7 +215,7 @@ abstract class StatefulDeclarativeComponent<
                 }
                 context = newCtx;
             } catch (Throwable t) {
-                Throwable bodyStackTrace = newCtx.getCapturedBodyStacktrace();
+                Throwable bodyStackTrace = newCtx != null ? newCtx.getCapturedBodyStacktrace() : null;
                 if(bodyStackTrace != null)
                     t.addSuppressed(bodyStackTrace);
                 throw t;
@@ -365,7 +404,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected Collection<MethodHandles.Lookup> lookups() {
-        return getAppConfig().lookups();
+        return lookups;
     }
 
     public static Collection<MethodHandles.Lookup> currentLookups() {
@@ -492,7 +531,7 @@ abstract class StatefulDeclarativeComponent<
     @Override
     public String toString() {
         return "StatefulDeclarativeComponent{" +
-                "body=" + body +
+                "body=" + bodyFn +
                 ", memoizedVars=" + memoizedVars +
                 ", effects=" + effects +
                 ", context=" + context +
@@ -559,15 +598,12 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
-        public void grantAccess(MethodHandles.Lookup lookup) {
-            ensureInsideBody();
-            // TODO:
-        }
-
-        @Override
-        public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
-            ensureInsideBody();
-            // TODO:
+        public void grantAccess(Supplier<MethodHandles.Lookup> supplier) {
+            Memoized<MethodHandles.Lookup> memo = doUseMemo(
+                    IdentityFreeSupplier.neverChange(supplier),
+                    Objects::equals);
+            // Access directly to avoid setting a signal dependency by calling get()
+            outer.lookups.add(memo.value);
         }
 
         @Override
