@@ -1,17 +1,15 @@
 package io.github.furrrlo.dui;
 
-import io.github.furrrlo.dui.Hooks.DisposableEffectScope;
 import io.leangen.geantyref.TypeToken;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.*;
 
-public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentInternalContext<T> {
+public abstract class DeclarativeComponentContextDecorator<T> implements DeclarativeRefComponentContext<T> {
 
     private final @Nullable TypeToken<T> type;
     private final List<Type> typeArguments;
@@ -182,51 +180,6 @@ public abstract class DeclarativeComponentContextDecorator<T> implements Declara
     @Override
     public void ref(Consumer<? super T> ref) {
         toDecorate().ref(ref);
-    }
-
-    @Override
-    public void grantAccess(MethodHandles.Lookup lookup) {
-        toDecorate().grantAccess(lookup);
-    }
-
-    @Override
-    public void grantAccess(Collection<MethodHandles.Lookup> lookups) {
-        toDecorate().grantAccess(lookups);
-    }
-
-    @Override
-    public <V> State<V> useState(V value, BiPredicate<V, V> equalityFn) {
-        return toDecorate().useState(value, equalityFn);
-    }
-
-    @Override
-    public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
-        return toDecorate().useState(value, equalityFn);
-    }
-
-    @Override
-    public <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
-        return toDecorate().useMemo(value, equalityFn);
-    }
-
-    @Override
-    public <V> Ref<V> useRef(Supplier<V> fallbackValue) {
-        return toDecorate().useRef(fallbackValue);
-    }
-
-    @Override
-    public void useLaunchedEffect(IdentityFreeThrowingRunnable effect) {
-        toDecorate().useLaunchedEffect(effect);
-    }
-
-    @Override
-    public void useDisposableEffect(IdentityFreeConsumer<DisposableEffectScope> effect) {
-        toDecorate().useDisposableEffect(effect);
-    }
-
-    @Override
-    public void useSideEffect(Runnable effect) {
-        toDecorate().useSideEffect(effect);
     }
 
     @Override
