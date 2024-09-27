@@ -40,8 +40,8 @@ abstract class StatefulDeclarativeComponent<
 
     protected AtomicReference<@Nullable StatefulDeclarativeComponent<R, O_CTX, I_CTX>> substituteComponentRef =
             new AtomicReference<>(this);
-    protected List<Memoized<?>> memoizedVars = new ArrayList<>();
-    protected List<Effect> effects = new ArrayList<>();
+    private List<Memoized<?>> memoizedVars = new ArrayList<>();
+    private List<Effect> effects = new ArrayList<>();
     protected @Nullable I_CTX context;
 
     protected @Nullable DeclarativeComponentInternalContext currentBodyInvocationCtx;
@@ -189,7 +189,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     protected <T> T invokeOutsideBody(Supplier<T> fn) {
-        final @Nullable DeclarativeComponentInternalContext prevCurrentBodyInvocationCtx = currentBodyInvocationCtx;
+        final DeclarativeComponentInternalContext prevCurrentBodyInvocationCtx = currentBodyInvocationCtx;
         currentBodyInvocationCtx = null;
         try {
             return fn.get();
@@ -254,7 +254,7 @@ abstract class StatefulDeclarativeComponent<
     }
 
     @SuppressWarnings("unchecked")
-    public <V, M extends Memoized<V>> IdentityFreeRunnable makeMemoStateDependency(
+    private <V, M extends Memoized<V>> IdentityFreeRunnable makeMemoStateDependency(
             int memoIdx,
             BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M> runnable,
             BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, M, Object[]> deps) {
@@ -302,7 +302,7 @@ abstract class StatefulDeclarativeComponent<
         return withStateDependency(stateDependency, factory);
     }
 
-    public IdentityFreeRunnable makeEffectStateDependency(
+    private IdentityFreeRunnable makeEffectStateDependency(
             int effectIdx,
             BiConsumer<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect> runnable,
             BiFunction<StatefulDeclarativeComponent<R, O_CTX, I_CTX>, Effect, Object[]> deps) {
@@ -500,7 +500,7 @@ abstract class StatefulDeclarativeComponent<
                 '}';
     }
 
-    protected static class StatefulContext implements DeclarativeComponentContext, DeclarativeComponentInternalContext {
+    static class StatefulContext implements DeclarativeComponentContext, DeclarativeComponentInternalContext {
 
         // This is only used internally as a placeholder, as null is already taken as a valid value
         @SuppressWarnings("StaticAssignmentOfThrowable")
@@ -516,13 +516,13 @@ abstract class StatefulDeclarativeComponent<
         private int currEffectsIdx;
         private @Nullable Throwable capturedBodyStacktrace;
 
-        public StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer) {
+        StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer) {
             this.outer = outer;
             this.currMemoizedIdx = 0;
             this.currEffectsIdx = 0;
         }
 
-        public StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer, StatefulContext other) {
+        StatefulContext(StatefulDeclarativeComponent<?, ?, ?> outer, StatefulContext other) {
             this.outer = outer;
             this.currMemoizedIdx = other.currMemoizedIdx;
             this.currEffectsIdx = other.currEffectsIdx;
@@ -578,14 +578,18 @@ abstract class StatefulDeclarativeComponent<
 
         @Override
         public <V> State<V> useState(Supplier<V> value, BiPredicate<V, V> equalityFn) {
-            Memoized<State<V>> memo = useMemo(
+            Memoized<State<V>> memo = doUseMemo(
                     IdentityFreeSupplier.neverChange(() -> new StateImpl<>(Memo.untrack(value), equalityFn)),
                     (prev, next) -> false);
             return memo.value; // Access directly to avoid setting a signal dependency by calling get()
         }
 
         @Override
-        public <V> Memoized<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        public <V> Memo<V> useMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
+            return doUseMemo(value, equalityFn);
+        }
+
+        private <V> Memoized<V> doUseMemo(IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
             ensureInsideBody();
 
             // Try to catch memo issues as soon as possible from within the component
@@ -664,7 +668,7 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @SuppressWarnings("unchecked")
-        protected <V> Memoized<V> doUseMemo(int index, IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
+        private <V> Memoized<V> doUseMemo(int index, IdentityFreeSupplier<V> value, BiPredicate<V, V> equalityFn) {
             if(index < outer.memoizedVars.size() && outer.memoizedVars.get(index) != null) {
                 final Memoized<V> memo = (Memoized<V>) outer.memoizedVars.get(index);
                 return outer.updateMemoWithStateDependency(
