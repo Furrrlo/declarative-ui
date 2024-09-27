@@ -3,6 +3,7 @@ module io.github.furrrlo.dui.swing {
     requires transitive java.desktop;
 
     exports io.github.furrrlo.dui.swing;
+    exports io.github.furrrlo.dui.swing.accessibility;
     exports io.github.furrrlo.dui.swing.colorchooser;
     exports io.github.furrrlo.dui.swing.table;
     exports io.github.furrrlo.dui.swing.text;

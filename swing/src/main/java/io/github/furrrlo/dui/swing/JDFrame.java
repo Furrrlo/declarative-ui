@@ -5,6 +5,14 @@ import org.jspecify.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.util.Arrays;
+import java.util.EventListener;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class JDFrame {
@@ -24,21 +32,12 @@ public class JDFrame {
         return DeclarativeComponentFactory.INSTANCE.of(() -> new Decorator<>(type, factory), body);
     }
 
-    public static class Decorator<T extends JFrame> extends SwingDecorator<T> {
+    public static class Decorator<T extends JFrame> extends DAwtWindow.Decorator<T> {
 
         private static final String PREFIX = "__JDFrame__";
 
         protected Decorator(Class<T> type, Supplier<T> factory) {
             super(type, factory);
-
-            setDisposer(window -> {
-                window.setVisible(false);
-                window.dispose();
-            });
-        }
-
-        public void visible(IdentityFreeSupplier<Boolean> visible) {
-            attribute(PREFIX + "visible", Frame::isVisible, Frame::setVisible, visible);
         }
 
         public void title(IdentityFreeSupplier<String> title) {
@@ -53,18 +52,28 @@ public class JDFrame {
             fnAttribute(PREFIX + "contentPane", JFrame::setContentPane, contentPane);
         }
 
-
-        public void minimumSize(IdentityFreeSupplier<? extends Dimension> dimension) {
-            attribute(PREFIX + "minimumSize", JFrame::getMinimumSize, JFrame::setMinimumSize, dimension);
-        }
-
-
         public void size(IdentityFreeSupplier<? extends Dimension> dimension) {
             attribute(PREFIX + "size", JFrame::getSize, JFrame::setSize, dimension);
         }
 
-        public void locationRelativeTo(IdentityFreeSupplier<Component> c) {
-            attribute(PREFIX + "locationRelativeTo", JFrame::setLocationRelativeTo, c);
+        public void jMenuBar(
+                @Nullable DeclarativeComponentSupplier<? extends JMenuBar> JMenuBar) {
+            fnAttribute(PREFIX + "JMenuBar", JFrame::getJMenuBar, JFrame::setJMenuBar, JMenuBar);
+        }
+
+        public void glassPane(
+                @Nullable DeclarativeComponentSupplier<? extends Component> glassPane) {
+            fnAttribute(PREFIX + "glassPane", JFrame::getGlassPane, JFrame::setGlassPane, glassPane);
+        }
+
+        public void layeredPane(
+                @Nullable DeclarativeComponentSupplier<? extends JLayeredPane> layeredPane) {
+            fnAttribute(PREFIX + "layeredPane", JFrame::getLayeredPane, JFrame::setLayeredPane, layeredPane);
+        }
+
+        public void transferHandler(
+                IdentityFreeSupplier<? extends TransferHandler> transferHandler) {
+            attribute(PREFIX + "transferHandler", JFrame::getTransferHandler, JFrame::setTransferHandler, transferHandler);
         }
     }
 }
