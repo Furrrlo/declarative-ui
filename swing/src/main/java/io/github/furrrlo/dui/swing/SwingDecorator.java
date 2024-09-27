@@ -33,11 +33,7 @@ public class SwingDecorator<T> extends DeclarativeComponentContextDecorator<T> {
 
             if(!HAS_INSTALLED_QUEUE.getAndSet(true)) {
                 Toolkit.getDefaultToolkit().getSystemEventQueue().push(new PrioritizableEventQueue());
-                eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
-            }
-
-            if (eventQueue instanceof PrioritizableEventQueue) {
-                ((PrioritizableEventQueue) eventQueue).invokeRightAfter(update);
+                SwingUtilities.invokeLater(update);
                 return;
             }
 
