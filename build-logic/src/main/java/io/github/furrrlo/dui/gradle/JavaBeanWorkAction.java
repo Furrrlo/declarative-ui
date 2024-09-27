@@ -200,7 +200,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                                 candidateClassName))
                         .addParameter(
                                 ParameterizedTypeName.get(
-                                        ClassName.get(DUI_CORE_PKG, "IdentifiableConsumer"),
+                                        ClassName.get(DUI_CORE_PKG, "IdentityFreeConsumer"),
                                         ParameterizedTypeName.get(decoratorClassName, candidateClassName)),
                                 "body")
                         .addStatement("return fn($T.class, $T::new, body)", candidateClassName, candidateClassName)
@@ -215,7 +215,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                                 "factory")
                         .addParameter(
                                 ParameterizedTypeName.get(
-                                        ClassName.get(DUI_CORE_PKG, "IdentifiableConsumer"),
+                                        ClassName.get(DUI_CORE_PKG, "IdentityFreeConsumer"),
                                         ParameterizedTypeName.get(decoratorClassName, candidateClassName)),
                                 "body")
                         .addStatement("return fn($T.class, factory, body)", candidateClassName)
@@ -234,7 +234,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                                 "factory")
                         .addParameter(
                                 ParameterizedTypeName.get(
-                                        ClassName.get(DUI_CORE_PKG, "IdentifiableConsumer"),
+                                        ClassName.get(DUI_CORE_PKG, "IdentityFreeConsumer"),
                                         ParameterizedTypeName.get(decoratorClassName, TypeVariableName.get("T"))),
                                 "body")
                         .addStatement("return $T.INSTANCE.of(() -> new $T<>(type, factory), body)",
@@ -361,7 +361,7 @@ abstract class JavaBeanWorkAction implements WorkAction<JavaBeanWorkAction.JavaB
                 .returns(TypeName.VOID)
                 .addParameter(
                         ParameterizedTypeName.get(
-                                ClassName.get(DUI_CORE_PKG, "IdentifiableSupplier"),
+                                ClassName.get(DUI_CORE_PKG, "IdentityFreeSupplier"),
                                 type.isPrimitive() ?
                                         TypeName.get(type).box() :
                                         (type.getModifiers() & java.lang.reflect.Modifier.FINAL) != 0
