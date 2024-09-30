@@ -1,15 +1,18 @@
 package io.github.furrrlo.dui.swing.text;
 
-import io.github.furrrlo.dui.DeclarativeComponent;
 import io.github.furrrlo.dui.IdentityFreeConsumer;
 import io.github.furrrlo.dui.IdentityFreeSupplier;
 import io.github.furrrlo.dui.swing.JDComponent;
+import org.jspecify.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import java.awt.*;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -96,9 +99,83 @@ public class JDTextComponent {
     public void selectionStart(IdentityFreeSupplier<Integer> selectionStart) {
       attribute(PREFIX + "selectionStart", JTextComponent::getSelectionStart, JTextComponent::setSelectionStart, selectionStart);
     }
+
     public void text(IdentityFreeSupplier<String> text) {
       attribute(PREFIX + "text", JTextComponent::setText, text,
               (textField, oldV, newV) -> Objects.equals(textField.getText(), newV));
+    }
+
+    public void textChangeListener(TextChangeListener textChangeListener) {
+      final String key = PREFIX + "textChangeListener";
+      attribute(
+              key,
+              (component, listener) -> {
+                final String prevTxtKey = PREFIX + "_prevText";
+                final Consumer<@Nullable Document> fireUpdate = (currDoc) -> {
+                  final Runnable doFire0 = () -> {
+                    final Object oldTxtCandidate = component.getClientProperty(prevTxtKey);
+
+                    final String newTxt = component.getText();
+                    final String oldTxt = oldTxtCandidate instanceof String ? (String) oldTxtCandidate : null;
+
+                    if(!Objects.equals(oldTxt, newTxt)) {
+                      listener.textChanged(new TextChangeEvent(component, oldTxt, newTxt));
+                      component.putClientProperty(prevTxtKey, newTxt);
+                    }
+                  };
+                  // If we have a document, acquire a read lock so that calls to insert do not generate multiple events
+                  final Runnable doFire = currDoc != null ? () -> currDoc.render(doFire0) : doFire0;
+                  // The document listener can be called from any thread, so make sure we are on the EDT
+                  if(SwingUtilities.isEventDispatchThread())
+                    doFire.run();
+                  else
+                    SwingUtilities.invokeLater(doFire);
+                };
+
+                final DocumentListener dl = new SimpleDocumentListener() {
+                  @Override
+                  public void changedUpdate(DocumentEvent e) {
+                    fireUpdate.accept(e.getDocument());
+                  }
+                };
+
+                Object candidate = component.getClientProperty(key);
+                if(candidate instanceof DocumentListenerWrapper) {
+                  DocumentListenerWrapper wrapper = (DocumentListenerWrapper) candidate;
+                  wrapper.setWrapped(dl);
+                  return;
+                }
+
+                DocumentListenerWrapper wrapper = new DocumentListenerWrapper(dl);
+                component.putClientProperty(prevTxtKey, component.getText());
+                component.putClientProperty(key, wrapper);
+                component.addPropertyChangeListener("document", e -> {
+                  Document d1 = (Document) e.getOldValue();
+                  Document d2 = (Document) e.getNewValue();
+                  if (d1 != null)
+                    d1.removeDocumentListener(wrapper);
+                  if (d2 != null)
+                    d2.addDocumentListener(wrapper);
+                  fireUpdate.accept(d2);
+                });
+                Document d = component.getDocument();
+                if (d != null)
+                  d.addDocumentListener(wrapper);
+              },
+              () -> textChangeListener);
+    }
+  }
+
+  private static abstract class SimpleDocumentListener implements DocumentListener {
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+      changedUpdate(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+      changedUpdate(e);
     }
   }
 }
