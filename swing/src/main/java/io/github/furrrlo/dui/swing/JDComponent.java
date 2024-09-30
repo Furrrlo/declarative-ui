@@ -7,6 +7,8 @@ import org.jspecify.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.AncestorListener;
+import java.beans.VetoableChangeListener;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
@@ -83,6 +85,24 @@ public class JDComponent {
 
         public void verifyInputWhenFocusTarget(IdentityFreeSupplier<Boolean> verifyInputWhenFocusTarget) {
             attribute(PREFIX + "verifyInputWhenFocusTarget", JComponent::getVerifyInputWhenFocusTarget, JComponent::setVerifyInputWhenFocusTarget, verifyInputWhenFocusTarget);
+        }
+
+        public void ancestorListener(AncestorListener ancestorListener) {
+            eventListener(
+                    PREFIX + "ancestorListener",
+                    AncestorListener.class,
+                    AncestorListenerWrapper::new,
+                    JComponent::addAncestorListener,
+                    ancestorListener);
+        }
+
+        public void vetoableChangeListener(VetoableChangeListener vetoableChangeListener) {
+            eventListener(
+                    PREFIX + "vetoableChangeListener",
+                    VetoableChangeListener.class,
+                    VetoableChangeListenerWrapper::new,
+                    JComponent::addVetoableChangeListener,
+                    vetoableChangeListener);
         }
     }
 }

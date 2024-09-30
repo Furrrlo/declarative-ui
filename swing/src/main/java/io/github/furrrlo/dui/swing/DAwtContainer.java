@@ -5,6 +5,7 @@ import io.leangen.geantyref.TypeToken;
 import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
+import java.awt.event.ContainerListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,6 +117,15 @@ public class DAwtContainer {
                         ", constraints=" + constraints +
                         '}';
             }
+        }
+
+        public void containerListener(ContainerListener containerListener) {
+            eventListener(
+                    PREFIX + "containerListener",
+                    ContainerListener.class,
+                    ContainerListenerWrapper::new,
+                    Container::addContainerListener,
+                    containerListener);
         }
     }
 }

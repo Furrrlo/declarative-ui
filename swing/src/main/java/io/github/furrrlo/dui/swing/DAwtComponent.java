@@ -7,6 +7,8 @@ import io.leangen.geantyref.TypeToken;
 
 import javax.accessibility.AccessibleContext;
 import java.awt.*;
+import java.awt.event.*;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.Optional;
@@ -56,6 +58,96 @@ public class DAwtComponent {
                     c -> c.getMaximumSize().height,
                     (c, h) -> c.setMaximumSize(new Dimension((int) c.getMaximumSize().getWidth(), h)),
                     height);
+        }
+
+        public void componentListener(ComponentListener componentListener) {
+            eventListener(
+                    PREFIX + "componentListener",
+                    ComponentListener.class,
+                    ComponentListenerWrapper::new,
+                    Component::addComponentListener,
+                    componentListener);
+        }
+
+        public void focusListener(FocusListener focusListener) {
+            eventListener(
+                    PREFIX + "focusListener",
+                    FocusListener.class,
+                    FocusListenerWrapper::new,
+                    Component::addFocusListener,
+                    focusListener);
+        }
+
+        public void hierarchyListener(HierarchyListener hierarchyListener) {
+            eventListener(
+                    PREFIX + "hierarchyListener",
+                    HierarchyListener.class,
+                    HierarchyListenerWrapper::new,
+                    Component::addHierarchyListener,
+                    hierarchyListener);
+        }
+
+        public void hierarchyBoundsListener(HierarchyBoundsListener hierarchyBoundsListener) {
+            eventListener(
+                    PREFIX + "hierarchyBoundsListener",
+                    HierarchyBoundsListener.class,
+                    HierarchyBoundsListenerWrapper::new,
+                    Component::addHierarchyBoundsListener,
+                    hierarchyBoundsListener);
+        }
+
+        public void keyListener(KeyListener keyListener) {
+            eventListener(
+                    PREFIX + "keyListener",
+                    KeyListener.class,
+                    KeyListenerWrapper::new,
+                    Component::addKeyListener,
+                    keyListener);
+        }
+
+        public void mouseListener(MouseListener mouseListener) {
+            eventListener(
+                    PREFIX + "mouseListener",
+                    MouseListener.class,
+                    MouseListenerWrapper::new,
+                    Component::addMouseListener,
+                    mouseListener);
+        }
+
+        public void mouseMotionListener(MouseMotionListener mouseMotionListener) {
+            eventListener(
+                    PREFIX + "mouseMotionListener",
+                    MouseMotionListener.class,
+                    MouseMotionListenerWrapper::new,
+                    Component::addMouseMotionListener,
+                    mouseMotionListener);
+        }
+
+        public void mouseWheelListener(MouseWheelListener mouseWheelListener) {
+            eventListener(
+                    PREFIX + "mouseWheelListener",
+                    MouseWheelListener.class,
+                    MouseWheelListenerWrapper::new,
+                    Component::addMouseWheelListener,
+                    mouseWheelListener);
+        }
+
+        public void inputMethodListener(InputMethodListener inputMethodListener) {
+            eventListener(
+                    PREFIX + "inputMethodListener",
+                    InputMethodListener.class,
+                    InputMethodListenerWrapper::new,
+                    Component::addInputMethodListener,
+                    inputMethodListener);
+        }
+
+        public void propertyChangeListener(PropertyChangeListener propertyChangeListener) {
+            eventListener(
+                    PREFIX + "propertyChangeListener",
+                    PropertyChangeListener.class,
+                    PropertyChangeListenerWrapper::new,
+                    Component::addPropertyChangeListener,
+                    propertyChangeListener);
         }
 
         @SuppressWarnings("unchecked")
