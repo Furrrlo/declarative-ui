@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.cmptw;
 
-import io.github.furrrlo.dui.DWrapper;
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.IdentityFreeSupplier;
-import io.github.furrrlo.dui.Memo;
+import io.github.furrrlo.dui.*;
 import io.github.furrrlo.dui.swing.*;
 import jiconfont.icons.font_awesome.FontAwesome;
 import net.miginfocom.layout.AC;
@@ -18,28 +15,36 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import static io.github.furrrlo.dui.Hooks.useMemo;
-import static io.github.furrrlo.dui.Hooks.useState;
+import static io.github.furrrlo.dui.Hooks.*;
 
 class JDDevicePanel extends JPanel {
 
     protected static final int TAB_ICON_SIZE = 32;
 
-    public static DeclarativeComponent<? extends Container> fn(Supplier<Boolean> visible,
-                                                               Supplier<Hook> hook,
-                                                               Consumer<Hook> setHook,
-                                                               Supplier<Hook.Device> device,
-                                                               Consumer<Hook.Device> setDevice) {
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    static class Props {
+        public boolean visible;
+        public Hook hook;
+        public Consumer<Hook> setHook;
+        public Hook.Device device;
+        public Consumer<Hook.Device> setDevice;
+
+        private Props(IdentityFreeConsumer<Props> propsFn) {
+            propsFn.accept(this);
+        }
+    }
+
+    public static DeclarativeComponent<? extends Container> fn(IdentityFreeConsumer<Props> propsFn) {
         return JDPanel.fn(panel -> {
+            final var props = useProps(propsFn, Props::new);
             final var selectedTabIdx = useState(0);
             final Memo<Hook.ApplicationHook> selectedAppSupp = useMemo(() ->
-                    selectedTabIdx.get() > hook.get().applicationHooks().size() - 1 ?
+                    selectedTabIdx.get() > props.map(p -> p.hook).applicationHooks().size() - 1 ?
                             null : // Fallback tab is selected
-                            hook.get().applicationHooks().stream().skip(selectedTabIdx.get()).findFirst().orElse(null));
+                            props.map(p -> p.hook).applicationHooks().stream().skip(selectedTabIdx.get()).findFirst().orElse(null));
 
-            panel.visible(visible::get);
+            panel.visible(() -> props.map(p -> p.visible));
             panel.layout(() -> new MigLayout(
                     new LC().wrapAfter(1).fill(),
                     new AC().grow(),
@@ -56,12 +61,16 @@ class JDDevicePanel extends JPanel {
                     infoPanel.children(infoPanelChildren -> {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")), new CC().split(2));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> device.get().name());
+                            textField.text(() -> props.map(p -> p.device.name()));
 //                                (v, newName) -> v.update(d -> d.withName(newName)) TODO: document filter
                         }), new CC().growX());
 
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "ID: " + device.get().id())), new CC().minWidth("0px"));
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Description: " + device.get().desc())), new CC().minWidth("0px"));
+                        infoPanelChildren.add(
+                                JDLabel.fn(label -> label.text(() -> "ID: " + props.map(p -> p.device.id()))),
+                                new CC().minWidth("0px"));
+                        infoPanelChildren.add(
+                                JDLabel.fn(label -> label.text(() -> "Description: " + props.map(p -> p.device.desc()))),
+                                new CC().minWidth("0px"));
 
                     });
 
@@ -83,7 +92,10 @@ class JDDevicePanel extends JPanel {
                                         if (process == null)
                                             return;
 
-                                        final Optional<Hook.ApplicationHook> maybeApplicationHook = hook.get().applicationHooks().stream()
+                                        final Optional<Hook.ApplicationHook> maybeApplicationHook = props
+                                                .map(p -> p.hook)
+                                                .applicationHooks()
+                                                .stream()
                                                 .filter(a -> a.application().process().equals(process.name()))
                                                 .findFirst();
                                         if(maybeApplicationHook.isPresent()) {
@@ -105,7 +117,9 @@ class JDDevicePanel extends JPanel {
                                                                 capitalize(process.name()),
                                                         process.iconPath()),
                                                 Collections.emptyList());
-                                        setHook.accept(hook.get().addApplicationHook(applicationHook));
+                                        props.accept(
+                                                p -> p.setHook,
+                                                props.map(p -> p.hook).addApplicationHook(applicationHook));
                                     })));
                         }));
 
@@ -116,7 +130,8 @@ class JDDevicePanel extends JPanel {
                             removeApplicationBtn.enabled(() -> selectedAppSupp.get() != null);
                             removeApplicationBtn.actionListener(evt -> {
                                 if(selectedAppSupp.get() != null)
-                                    setHook.accept(hook.get().removeApplicationHook(selectedAppSupp.get()));
+                                    props.map(p -> p.setHook).accept(
+                                            props.map(p -> p.hook).removeApplicationHook(selectedAppSupp.get()));
                             });
                         }));
                     });
@@ -126,34 +141,34 @@ class JDDevicePanel extends JPanel {
                     applicationsPane.name(() -> "ApplicationsTabbedPane");
                     applicationsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
                     applicationsPane.tabs(tabs -> {
-                        Memo.mapCollection(() -> hook.get().applicationHooks(), (app0, declareAppIdxMemo) -> tabs.addTab(
-                                app0.application().process(),
-                                app0.application().name(),
+                        Memo.mapCollection(() -> props.map(p -> p.hook).applicationHooks(), (applicationHook, declareAppIdxMemo) -> tabs.addTab(
+                                applicationHook.application().process(),
+                                applicationHook.application().name(),
                                 null,
                                 DWrapper.fn(tabComponent -> {
-                                    var appIconPath = useMemo(() -> app0.application().icon());
+                                    var appIconPath = useMemo(() -> applicationHook.application().icon());
                                     return tabComponent(
-                                            useMemo(() -> app0.application().name()),
+                                            useMemo(() -> applicationHook.application().name()),
                                             useMemo(() -> new MultiResolutionIconImage(
                                                     TAB_ICON_SIZE,
                                                     Process.extractProcessIcons(appIconPath.get()))));
                                 }),
-                                DWrapper.fn(applicationPane -> {
-                                    var applicationHook = useMemo(() -> app0);
-                                    return JDApplicationPane.fn(
-                                            process -> hook.get().applicationHooks().stream()
-                                                    .filter(a -> a.application().process().equals(process.name()))
-                                                    .findFirst(),
-                                            useMemo(() -> applicationHook.get().application()),
-                                            application -> setHook.accept(hook.get().replaceApplicationHook(
-                                                    applicationHook.get(),
-                                                    applicationHook.get().withApplication(application))),
-                                            applicationHook,
-                                            newApplicationHook -> setHook.accept(hook.get().replaceApplicationHook(
-                                                    applicationHook.get(),
-                                                    newApplicationHook)));
+                                JDApplicationPane.fn(p -> {
+                                    p.getApplicationHookFor = process -> props.map(p0 -> p0.hook).applicationHooks().stream()
+                                            .filter(a -> a.application().process().equals(process.name()))
+                                            .findFirst();
+                                    p.application = applicationHook.application();
+                                    p.setApplication = application -> props.map(p0 -> p0.setHook).accept(
+                                            props.map(p0 -> p0.hook).replaceApplicationHook(
+                                                    applicationHook,
+                                                    applicationHook.withApplication(application)));
+                                    p.applicationHook = applicationHook;
+                                    p.setApplicationHook = newApplicationHook -> props.map(p0 -> p0.setHook).accept(
+                                            props.map(p0 -> p0.hook).replaceApplicationHook(
+                                                    applicationHook,
+                                                    newApplicationHook));
                                 }),
-                                app0.application().name()
+                                applicationHook.application().name()
                         ));
 
                         tabs.addTab(
@@ -161,8 +176,9 @@ class JDDevicePanel extends JPanel {
                                 null,
                                 tabComponent(() -> "Fallback", () -> null),
                                 DWrapper.fn(wrapper -> JDFallbackPane.fn(
-                                        hook.get().fallbackBehavior(),
-                                        behavior -> setHook.accept(hook.get().withFallbackBehavior(behavior)))),
+                                        props.map(p0 -> p0.hook).fallbackBehavior(),
+                                        behavior -> props.map(p0 -> p0.setHook).accept(
+                                                props.map(p0 -> p0.hook).withFallbackBehavior(behavior)))),
                                 "Fallback");
                     });
                     applicationsPane.selectedTab(selectedTabIdx);

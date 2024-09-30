@@ -142,23 +142,24 @@ class JDHooksPane {
 //                                            Collections.addAll(components, container.getComponents());
 //                                    }
 //                                }
-                                return JDDevicePanel.fn(
-                                        useMemo(() -> hook.get().equals(selectedSupp.get())),
-                                        hook,
-                                        newHook -> hooks.update(l -> {
-                                            final var newHooks = new ArrayList<>(l);
-                                            if(hookIndex.get() != -1)
-                                                newHooks.set(hookIndex.get(), newHook);
-                                            return newHooks;
-                                        }),
-                                        useMemo(() -> hook.get().device()),
-                                        newDevice -> hooks.update(l -> {
-                                            final var newHooks = new ArrayList<>(l);
-                                            final var idx = hookIndex.get();
-                                            if(idx != -1)
-                                                newHooks.set(idx, newHooks.get(idx).withDevice(newDevice));
-                                            return newHooks;
-                                        }));
+                                return JDDevicePanel.fn(props -> {
+                                    props.visible = hook.get().equals(selectedSupp.get());
+                                    props.hook = hook.get();
+                                    props.setHook = newHook -> hooks.update(l -> {
+                                        final var newHooks = new ArrayList<>(l);
+                                        if(hookIndex.get() != -1)
+                                            newHooks.set(hookIndex.get(), newHook);
+                                        return newHooks;
+                                    });
+                                    props.device = hook.get().device();
+                                    props.setDevice = newDevice -> hooks.update(l -> {
+                                        final var newHooks = new ArrayList<>(l);
+                                        final var idx = hookIndex.get();
+                                        if(idx != -1)
+                                            newHooks.set(idx, newHooks.get(idx).withDevice(newDevice));
+                                        return newHooks;
+                                    });
+                                });
                             }), new CC().grow())));
                 }), new CC().grow().pushY());
 

@@ -1,9 +1,6 @@
 package io.github.furrrlo.dui.cmptw;
 
-import io.github.furrrlo.dui.DWrapper;
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.Memo;
-import io.github.furrrlo.dui.Ref;
+import io.github.furrrlo.dui.*;
 import io.github.furrrlo.dui.swing.*;
 import jiconfont.icons.font_awesome.FontAwesome;
 import net.miginfocom.layout.AC;
@@ -26,16 +23,26 @@ import static io.github.furrrlo.dui.Hooks.*;
 
 class JDApplicationPane {
 
-    public static DeclarativeComponent<? extends Component> fn(Function<Process, Optional<Hook.ApplicationHook>> getApplicationHookFor,
-                                                               Supplier<Hook.Application> application,
-                                                               Consumer<Hook.Application> setApplication,
-                                                               Supplier<Hook.ApplicationHook> applicationHook,
-                                                               Consumer<Hook.ApplicationHook> setApplicationHook) {
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    public static class Props {
+        Function<Process, Optional<Hook.ApplicationHook>> getApplicationHookFor;
+        public Hook.Application application;
+        public Consumer<Hook.Application> setApplication;
+        public Hook.ApplicationHook applicationHook;
+        public Consumer<Hook.ApplicationHook> setApplicationHook;
+
+        private Props(IdentityFreeConsumer<Props> propsFn) {
+            propsFn.accept(this);
+        }
+    }
+
+    public static DeclarativeComponent<? extends Component> fn(IdentityFreeConsumer<Props> propsFn) {
         return JDPanel.fn(panel -> {
-            final var selectedScriptIdx = useState(() -> applicationHook.get().scripts().isEmpty() ? -1 : 0);
+            final var props = useProps(propsFn, Props::new);
+            final var selectedScriptIdx = useState(() -> props.map(p -> p.applicationHook.scripts().isEmpty() ? -1 : 0));
             final Supplier<Hook.HookScript> selectedScriptSupp = useMemo(() -> selectedScriptIdx.get() < 0 ?
                     null :
-                    applicationHook.get().scripts().stream().skip(selectedScriptIdx.get()).findFirst().orElse(null));
+                    props.map(p -> p.applicationHook.scripts().stream().skip(selectedScriptIdx.get()).findFirst().orElse(null)));
             final Ref<JPanel> panelRef = useThrowingRef("Missing application pane");
 
             panel.ref(panelRef);
@@ -54,13 +61,13 @@ class JDApplicationPane {
                     infoPanel.children(infoPanelChildren -> {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> application.get().name());
+                            textField.text(() -> props.map(p -> p.application).name());
 //                                (v, newName) -> v.update(a -> a.withName(newName)) TODO:
                         }), new CC().growX());
 
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Process: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> application.get().process());
+                            textField.text(() -> props.map(p -> p.application).process());
 //                                (v, newProcess) -> v.update(a -> a.withProcess(newProcess)) TODO:
                         }), new CC().growX().split(2));
 
@@ -72,7 +79,8 @@ class JDApplicationPane {
                                         if (process == null)
                                             return;
 
-                                        final Optional<Hook.ApplicationHook> maybeApplicationHook = getApplicationHookFor.apply(process);
+                                        final Optional<Hook.ApplicationHook> maybeApplicationHook =
+                                                props.apply(p -> p.getApplicationHookFor, process);
                                         if (maybeApplicationHook.isPresent()) {
                                             JOptionPane.showMessageDialog(
                                                     SwingUtilities.windowForComponent((Component) evt.getSource()),
@@ -84,13 +92,15 @@ class JDApplicationPane {
                                             return;
                                         }
 
-                                        setApplication.accept(application.get().withProcess(process.name()));
+                                        props.accept(
+                                                p -> p.setApplication,
+                                                props.map(p -> p.application).withProcess(process.name()));
                                     })));
                         }));
 
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Icon: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> application.get().icon().toAbsolutePath().toString());
+                            textField.text(() -> props.map(p -> p.application).icon().toAbsolutePath().toString());
 //                                (v, newIcon) -> v.update(a -> a.withIcon(Path.of(newIcon)))
                         }), new CC().growX().split(2));
 
@@ -112,10 +122,12 @@ class JDApplicationPane {
                                     return;
 
                                 final File newIcon = chooser.getSelectedFile().getAbsoluteFile();
-                                if (Objects.equals(newIcon.toPath(), application.get().icon().toAbsolutePath()))
+                                if (Objects.equals(newIcon.toPath(), props.map(p -> p.application).icon().toAbsolutePath()))
                                     return;
 
-                                setApplication.accept(application.get().withIcon(newIcon.toPath()));
+                                props.accept(
+                                        p -> p.setApplication,
+                                        props.map(p -> p.application).withIcon(newIcon.toPath()));
                             });
                         }));
                     });
@@ -141,7 +153,9 @@ class JDApplicationPane {
                                                 "New",
                                                 new Hook.KeyStroke(res.evt().awtKeyCode(), res.evt().modifiers(), res.toggleKeysMask()),
                                                 "");
-                                        setApplicationHook.accept(applicationHook.get().addScript(script));
+                                        props.accept(
+                                                p -> p.setApplicationHook,
+                                                props.map(p -> p.applicationHook).addScript(script));
                                     })));
                         }));
 
@@ -152,7 +166,9 @@ class JDApplicationPane {
                             removeScriptBtn.enabled(() -> selectedScriptSupp.get() != null);
                             removeScriptBtn.actionListener(evt -> {
                                 if(selectedScriptSupp.get() != null)
-                                    setApplicationHook.accept(applicationHook.get().removeScript(selectedScriptSupp.get()));
+                                    props.accept(
+                                            p -> p.setApplicationHook,
+                                            props.map(p -> p.applicationHook).removeScript(selectedScriptSupp.get()));
                             });
                         }));
                     });
@@ -161,7 +177,7 @@ class JDApplicationPane {
                 panelChildren.add(JDTabbedPane.fn(scriptsPane -> {
                     scriptsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
                     scriptsPane.tabPlacement(() -> JTabbedPane.LEFT);
-                    scriptsPane.tabs(tabs -> Memo.mapCollection(() -> applicationHook.get().scripts(),
+                    scriptsPane.tabs(tabs -> Memo.mapCollection(() -> props.map(p -> p.applicationHook).scripts(),
                             (script0, declareScriptIdxMemo) -> tabs.addTab(
                                     script0.scriptFile() != null
                                             ? script0.scriptFile().toAbsolutePath().toString()
@@ -173,8 +189,9 @@ class JDApplicationPane {
                                         final Memo<Hook.HookScript> scriptMemo = useMemo(() -> script0);
                                         return JDScriptPane.fn(
                                                 scriptMemo,
-                                                newScript -> setApplicationHook.accept(
-                                                        applicationHook.get().replaceScript(scriptMemo.get(), newScript)));
+                                                newScript -> props.accept(
+                                                        p -> p.setApplicationHook,
+                                                        props.map(p -> p.applicationHook).replaceScript(scriptMemo.get(), newScript)));
                                     }),
                                     script0.name())));
                     scriptsPane.selectedTab(selectedScriptIdx);
