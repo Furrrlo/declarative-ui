@@ -733,11 +733,11 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    private static class BaseMemo<V> implements Memo<V>, IdentityFreeSupplier.Explicit<V> {
+    private static class BaseMemo<V> implements Memo<V>, SafeMemo<V>, IdentityFreeSupplier.Explicit<V> {
 
         private static final Object[] NO_DEPS = new Object[] {};
 
-        private final Set<Runnable> signalDeps = new LinkedHashSet<>();
+        private final Set<SignalDep<V, ?>> signalDeps = new LinkedHashSet<>();
 
         private final BiPredicate<V, V> equalityFn;
         protected V value;
@@ -754,15 +754,35 @@ abstract class StatefulDeclarativeComponent<
         }
 
         @Override
+        public V unsafeGet() {
+            return get();
+        }
+
+        @Override
         public V get() {
             final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
             if(currUpdatingComponent != null) {
                 Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
                 if (currDependency != null)
-                    signalDeps.add(currDependency);
+                    signalDeps.add(new SignalDep<>(currDependency, value, null, Objects::deepEquals));
             }
 
             return value;
+        }
+
+        @Override
+        public <R> R map(Function<V, R> mapFn, BiPredicate<R, R> equalityFn) {
+            final StatefulDeclarativeComponent<?, ?, ?> currUpdatingComponent = CURR_UPDATING_COMPONENT.orElse(null);
+            if(currUpdatingComponent != null) {
+                Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
+                if (currDependency != null) {
+                    SignalDep<V, R> dep = new SignalDep<>(currDependency, value, mapFn, equalityFn);
+                    signalDeps.add(dep);
+                    return dep.value;
+                }
+            }
+
+            return mapFn.apply(value);
         }
 
         protected boolean trySet(V value) {
@@ -771,10 +791,32 @@ abstract class StatefulDeclarativeComponent<
 
             this.value = value;
 
-            Set<Runnable> dependencies = new LinkedHashSet<>(this.signalDeps);
-            this.signalDeps.clear();
-            dependencies.forEach(Runnable::run);
+            Set<SignalDep<V, ?>> dependencies = new LinkedHashSet<>(this.signalDeps);
+            dependencies.removeIf(dep -> dep.hasChanged(value));
+            this.signalDeps.removeAll(dependencies);
+            dependencies.forEach(d -> d.dependency.run());
             return true;
+        }
+
+        private static class SignalDep<T, R> {
+            final Runnable dependency;
+            final @Nullable Function<T, R> mapFn;
+            final @Nullable R value;
+            final BiPredicate<R, R> equalityFn;
+
+            public SignalDep(Runnable dependency,
+                             @Nullable T val,
+                             @Nullable Function<T, R> mapFn,
+                             BiPredicate<R, R> equalityFn) {
+                this.dependency = dependency;
+                this.mapFn = mapFn;
+                this.value = mapFn != null ? mapFn.apply(val) : null;
+                this.equalityFn = equalityFn;
+            }
+
+            boolean hasChanged(T val) {
+                return mapFn != null && equalityFn.test(value, mapFn.apply(val));
+            }
         }
     }
 

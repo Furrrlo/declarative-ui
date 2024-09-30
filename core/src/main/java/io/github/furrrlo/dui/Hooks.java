@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class Hooks {
@@ -160,6 +161,11 @@ public final class Hooks {
             }
         }, producer, state));
         return state;
+    }
+
+    public static <T> SafeMemo<T> useProps(IdentityFreeConsumer<T> propsFn,
+                                           Function<IdentityFreeConsumer<T>, T> constructor) {
+        return useMemo(() -> constructor.apply(propsFn));
     }
 
     public interface DisposableEffectScope {

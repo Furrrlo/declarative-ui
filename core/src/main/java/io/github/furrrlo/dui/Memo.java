@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-public interface Memo<T> extends IdentityFreeSupplier<T> {
+public interface Memo<T> extends IdentityFreeSupplier<T>, SafeMemo<T> {
 
     @Override
     T get();
