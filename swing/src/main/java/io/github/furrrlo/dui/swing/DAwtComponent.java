@@ -150,16 +150,33 @@ public class DAwtComponent {
                     propertyChangeListener);
         }
 
-        @SuppressWarnings("unchecked")
+        public void propertyChangeListener(String text, PropertyChangeListener propertyChangeListener) {
+            eventListener(
+                    PREFIX + "propertyChangeListener_" + text,
+                    PropertyChangeListenerWrapper::new,
+                    c -> c.getPropertyChangeListeners(text),
+                    (c, l) -> c.addPropertyChangeListener(text, l),
+                    propertyChangeListener);
+        }
+
         public <L extends EventListener> void eventListener(String key,
                                                             Class<L> type,
                                                             Function<L, EventListenerWrapper<L>> factory,
                                                             BiConsumer<T, L> adder,
                                                             L l) {
+            eventListener(key, factory, c -> c.getListeners(type), adder, l);
+        }
+
+        @SuppressWarnings("unchecked")
+        public <L extends EventListener> void eventListener(String key,
+                                                            Function<L, EventListenerWrapper<L>> factory,
+                                                            Function<T, EventListener[]> getter,
+                                                            BiConsumer<T, L> adder,
+                                                            L l) {
             attribute(
                     key,
                     (component, v) -> {
-                        Optional<EventListenerWrapper<L>> maybeWrapper = Arrays.stream(component.getListeners(type))
+                        Optional<EventListenerWrapper<L>> maybeWrapper = Arrays.stream(getter.apply(component))
                                 .filter(EventListenerWrapper.class::isInstance)
                                 .map(w -> (EventListenerWrapper<L>) w)
                                 .findFirst();
