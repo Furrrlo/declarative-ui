@@ -1,5 +1,7 @@
 package io.github.furrrlo.dui.swing.text;
 
+import io.github.furrrlo.dui.DeclarativeComponent;
+import io.github.furrrlo.dui.IdentityFreeConsumer;
 import io.github.furrrlo.dui.IdentityFreeSupplier;
 import io.github.furrrlo.dui.swing.JDComponent;
 
@@ -41,6 +43,10 @@ public class JDTextComponent {
 
     public void document(IdentityFreeSupplier<? extends Document> document) {
       attribute(PREFIX + "document", JTextComponent::getDocument, JTextComponent::setDocument, document);
+    }
+
+    public void document(IdentityFreeConsumer<DDocument.Decorator<Document>> body) {
+      inner(JTextComponent::getDocument, DDocument.forInner(body));
     }
 
     public void dragEnabled(IdentityFreeSupplier<Boolean> dragEnabled) {
