@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -62,13 +63,17 @@ class JDApplicationPane {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
                             textField.text(() -> props.map(p -> p.application).name());
-//                                (v, newName) -> v.update(a -> a.withName(newName)) TODO:
+                            textField.textChangeListener(e -> props.accept(
+                                    p -> p.setApplication,
+                                    props.map(p -> p.application).withName(e.getNewTextOr(""))));
                         }), new CC().growX());
 
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Process: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
                             textField.text(() -> props.map(p -> p.application).process());
-//                                (v, newProcess) -> v.update(a -> a.withProcess(newProcess)) TODO:
+                            textField.textChangeListener(e -> props.accept(
+                                    p -> p.setApplication,
+                                    props.map(p -> p.application).withProcess(e.getNewTextOr(""))));
                         }), new CC().growX().split(2));
 
                         infoPanelChildren.add(JDButton.fn(selectProcessBtn -> {
@@ -101,7 +106,9 @@ class JDApplicationPane {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Icon: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
                             textField.text(() -> props.map(p -> p.application).icon().toAbsolutePath().toString());
-//                                (v, newIcon) -> v.update(a -> a.withIcon(Path.of(newIcon)))
+                            textField.textChangeListener(evt -> props.accept(
+                                    p -> p.setApplication,
+                                    props.map(p -> p.application).withIcon(Path.of(evt.getNewTextOr("")))));
                         }), new CC().growX().split(2));
 
                         infoPanelChildren.add(JDButton.fn(browseIconBtn -> {

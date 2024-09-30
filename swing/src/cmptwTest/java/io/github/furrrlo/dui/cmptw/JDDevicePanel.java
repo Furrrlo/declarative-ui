@@ -62,7 +62,9 @@ class JDDevicePanel extends JPanel {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")), new CC().split(2));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
                             textField.text(() -> props.map(p -> p.device.name()));
-//                                (v, newName) -> v.update(d -> d.withName(newName)) TODO: document filter
+                            textField.textChangeListener(evt -> props.accept(
+                                    p -> p.setDevice,
+                                    props.map(p -> p.device).withName(evt.getNewTextOr(""))));
                         }), new CC().growX());
 
                         infoPanelChildren.add(

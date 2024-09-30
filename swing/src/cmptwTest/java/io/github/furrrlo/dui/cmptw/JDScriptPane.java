@@ -79,7 +79,8 @@ class JDScriptPane {
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")));
                         infoPanelChildren.add(JDTextField.fn(textField -> {
                             textField.text(() -> script.get().name());
-//                                    (v, newName) -> script.update(s -> s.withName(newName))
+                            textField.textChangeListener(evt ->
+                                    setScript.accept(script.get().withName(evt.getNewTextOr(""))));
                         }), new CC().growX());
 
                         infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Key stroke: ")));
