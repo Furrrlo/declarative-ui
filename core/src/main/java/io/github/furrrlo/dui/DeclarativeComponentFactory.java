@@ -26,7 +26,7 @@ public class DeclarativeComponentFactory {
         return new DeclarativeComponentImpl<>(appConfig, decoratorFactory, body);
     }
 
-    public <T> DeclarativeComponent<T> wrapper(IdentityFreeFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<T>> body) {
+    public <T> DeclarativeComponent<T> wrapper(IdentityFreeFunction<DeclarativeComponentContext, DeclarativeComponentSupplier<? extends T>> body) {
         return new DeclarativeComponentWrapper<>(body);
     }
 }
