@@ -1,8 +1,6 @@
 package io.github.furrrlo.dui.cmptw;
 
-import io.github.furrrlo.dui.DWrapper;
-import io.github.furrrlo.dui.DeclarativeComponent;
-import io.github.furrrlo.dui.Memo;
+import io.github.furrrlo.dui.*;
 import io.github.furrrlo.dui.swing.JDButton;
 import io.github.furrrlo.dui.swing.JDComboBox;
 import io.github.furrrlo.dui.swing.JDPanel;
@@ -48,24 +46,26 @@ class JDHooksPane {
                     new AC().grow().align("center"),
                     new AC().gap().grow().gap().grow(0)
             ));
-
             panel.name(() -> "panel");
-            panel.children(panelChildren -> {
-                panelChildren.add(JDComboBox.fn(comboBox -> {
-                    comboBox.items(() -> hooks.get().stream()
-                            .map(h -> h.device().name())
-                            .map(s -> s.isEmpty() ? " " : s)
-                            .toList());
-                    comboBox.selectedItem(() -> selectedSupp.get().device().name().isEmpty() ?
-                            " " :
-                            selectedSupp.get().device().name());
-                    comboBox.actionListener(evt -> {
-                        final int newSelectedIdx = ((JComboBox<?>) evt.getSource()).getSelectedIndex();
-                        selectedIdx.set(newSelectedIdx);
+            panel.children(children -> {
+                children.add(childProps -> {
+                    childProps.comp = JDComboBox.fn(comboBox -> {
+                        comboBox.items(() -> hooks.get().stream()
+                                .map(h -> h.device().name())
+                                .map(s -> s.isEmpty() ? " " : s)
+                                .toList());
+                        comboBox.selectedItem(() -> selectedSupp.get().device().name().isEmpty() ?
+                                " " :
+                                selectedSupp.get().device().name());
+                        comboBox.actionListener(evt -> {
+                            final int newSelectedIdx = ((JComboBox<?>) evt.getSource()).getSelectedIndex();
+                            selectedIdx.set(newSelectedIdx);
+                        });
                     });
-                }), new CC().growX().split(3));
+                    childProps.constraints = new CC().growX().split(3);
+                });
 
-                panelChildren.add(JDButton.fn(addDeviceBtn -> {
+                children.add(JDButton.fn(addDeviceBtn -> {
                     addDeviceBtn.icon(() -> new ImageIcon(new MultiResolutionIconFont(
                             FontAwesome.PLUS, 14, new Color(0, 150, 0))));
                     addDeviceBtn.margin(() -> new Insets(2, 2, 2, 2));
@@ -100,7 +100,7 @@ class JDHooksPane {
                             })));
                 }));
 
-                panelChildren.add(JDButton.fn(removeDeviceBtn -> {
+                children.add(JDButton.fn(removeDeviceBtn -> {
                     removeDeviceBtn.icon(() -> new ImageIcon(new MultiResolutionIconFont(
                             FontAwesome.MINUS, 14, new Color(150, 0, 0))));
                     removeDeviceBtn.actionListener(evt -> {
@@ -118,19 +118,44 @@ class JDHooksPane {
                     removeDeviceBtn.enabled(() -> !selectedSupp.get().equals(DUMMY_HOOK));
                 }));
 
-                panelChildren.add(JDPanel.fn(currentPanel -> {
-                    currentPanel.name(() -> "currentPanel");
-                    currentPanel.layout(() -> new MigLayout(
-                            new LC().fill().insetsAll("0").hideMode(3),
-                            new AC().align("center"),
-                            new AC().align("center")
-                    ));
+                children.add(currentDevicePanel(hooks, selectedSupp), new CC().grow().pushY());
 
-                    currentPanel.children(currentPanelChildren -> Memo.mapCollection(hooks::get, (hook0, declareIndexMemo) ->
-                            currentPanelChildren.add(hook0.device().id(), DWrapper.fn(hookPanel -> {
-                                final var hookIndex = declareIndexMemo.get();
-                                // Turn the hook itself into a signal to propagate reactivity
-                                final var hook = useMemo(() -> hook0);
+                children.add(JDButton.fn(applyBtn -> {
+                    applyBtn.text(() -> "Apply");
+                    applyBtn.enabled(anythingEdited);
+                    applyBtn.actionListener(evt -> anythingEdited.set(false));
+                }), new CC().tag("apply").split(2));
+
+                children.add(JDButton.fn(cancelBtn -> {
+                    cancelBtn.text(() -> "Cancel");
+                    cancelBtn.actionListener(evt -> {
+                        if (anythingEdited.get())
+                            hooks.set(Stream
+                                    .concat(Stream.of(DUMMY_HOOK), initialHooks.stream())
+                                    .toList());
+                    });
+                }), new CC().tag("cancel"));
+            });
+        });
+    }
+
+    private static DeclarativeComponent<? extends JComponent> currentDevicePanel(
+            State<List<Hook>> hooks,
+            Supplier<Hook> selectedSupp
+    ) {
+        return JDPanel.fn(currentPanel -> {
+            currentPanel.name(() -> "currentPanel");
+            currentPanel.layout(() -> new MigLayout(
+                    new LC().fill().insetsAll("0").hideMode(3),
+                    new AC().align("center"),
+                    new AC().align("center")
+            ));
+
+            currentPanel.children(currentPanelChildren -> Memo.mapCollection(hooks::get, (hook0, declareIndexMemo) ->
+                    currentPanelChildren.add(hook0.device().id(), DWrapper.fn(hookPanel -> {
+                        final var hookIndex = declareIndexMemo.get();
+                        // Turn the hook itself into a signal to propagate reactivity
+                        final var hook = useMemo(() -> hook0);
 //                               TODO:
 //                                If it's the dummy one, disable everything
 //                                if(hookIn == dummyHook) {
@@ -142,43 +167,25 @@ class JDHooksPane {
 //                                            Collections.addAll(components, container.getComponents());
 //                                    }
 //                                }
-                                return JDDevicePanel.fn(props -> {
-                                    props.visible = hook.get().equals(selectedSupp.get());
-                                    props.hook = hook.get();
-                                    props.setHook = newHook -> hooks.update(l -> {
-                                        final var newHooks = new ArrayList<>(l);
-                                        if(hookIndex.get() != -1)
-                                            newHooks.set(hookIndex.get(), newHook);
-                                        return newHooks;
-                                    });
-                                    props.device = hook.get().device();
-                                    props.setDevice = newDevice -> hooks.update(l -> {
-                                        final var newHooks = new ArrayList<>(l);
-                                        final var idx = hookIndex.get();
-                                        if(idx != -1)
-                                            newHooks.set(idx, newHooks.get(idx).withDevice(newDevice));
-                                        return newHooks;
-                                    });
-                                });
-                            }), new CC().grow())));
-                }), new CC().grow().pushY());
-
-                panelChildren.add(JDButton.fn(applyBtn -> {
-                    applyBtn.text(() -> "Apply");
-                    applyBtn.enabled(anythingEdited);
-                    applyBtn.actionListener(evt -> anythingEdited.set(false));
-                }), new CC().tag("apply").split(2));
-
-                panelChildren.add(JDButton.fn(cancelBtn -> {
-                    cancelBtn.text(() -> "Cancel");
-                    cancelBtn.actionListener(evt -> {
-                        if (anythingEdited.get())
-                            hooks.set(Stream
-                                    .concat(Stream.of(DUMMY_HOOK), initialHooks.stream())
-                                    .toList());
-                    });
-                }), new CC().tag("cancel"));
-            });
+                        return JDDevicePanel.fn(props -> {
+                            props.visible = hook.get().equals(selectedSupp.get());
+                            props.hook = hook.get();
+                            props.setHook = newHook -> hooks.update(l -> {
+                                final var newHooks = new ArrayList<>(l);
+                                if(hookIndex.get() != -1)
+                                    newHooks.set(hookIndex.get(), newHook);
+                                return newHooks;
+                            });
+                            props.device = hook.get().device();
+                            props.setDevice = newDevice -> hooks.update(l -> {
+                                final var newHooks = new ArrayList<>(l);
+                                final var idx = hookIndex.get();
+                                if(idx != -1)
+                                    newHooks.set(idx, newHooks.get(idx).withDevice(newDevice));
+                                return newHooks;
+                            });
+                        });
+                    }), new CC().grow())));
         });
     }
 }

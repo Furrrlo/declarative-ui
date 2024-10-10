@@ -54,158 +54,177 @@ class JDApplicationPane {
             ));
 
             panel.children(panelChildren -> {
-                panelChildren.add(JDPanel.fn(infoPanel -> {
-                    infoPanel.layout(() -> new MigLayout(
-                            new LC().fillX().wrapAfter(2),
-                            new AC().gap().grow()
-                    ));
-                    infoPanel.children(infoPanelChildren -> {
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")));
-                        infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> props.map(p -> p.application).name());
-                            textField.textChangeListener(e -> props.accept(
-                                    p -> p.setApplication,
-                                    props.map(p -> p.application).withName(e.getNewTextOr(""))));
-                        }), new CC().growX());
+                panelChildren.add(infoPanel(props, panelRef), new CC().growX());
+                panelChildren.add(buttonsPanel(props, selectedScriptSupp), new CC().growY().split(2));
+                panelChildren.add(applicationsTabbedPane(props, selectedScriptIdx), new CC().grow());
+            });
+        });
+    }
 
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Process: ")));
-                        infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> props.map(p -> p.application).process());
-                            textField.textChangeListener(e -> props.accept(
-                                    p -> p.setApplication,
-                                    props.map(p -> p.application).withProcess(e.getNewTextOr(""))));
-                        }), new CC().growX().split(2));
+    private static DeclarativeComponentSupplier<? extends Component> infoPanel(
+            SafeMemo<Props> props,
+            Ref<JPanel> panelRef
+    ) {
+        return JDPanel.fn(infoPanel -> {
+            infoPanel.layout(() -> new MigLayout(
+                    new LC().fillX().wrapAfter(2),
+                    new AC().gap().grow()
+            ));
+            infoPanel.children(infoPanelChildren -> {
+                infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")));
+                infoPanelChildren.add(JDTextField.fn(textField -> {
+                    textField.text(() -> props.map(p -> p.application).name());
+                    textField.textChangeListener(e -> props.accept(
+                            p -> p.setApplication,
+                            props.map(p -> p.application).withName(e.getNewTextOr(""))));
+                }), new CC().growX());
 
-                        infoPanelChildren.add(JDButton.fn(selectProcessBtn -> {
-                            selectProcessBtn.text(() -> "...");
-                            selectProcessBtn.actionListener(evt -> SelectProcessDialog
-                                    .selectDevice(SwingUtilities.windowForComponent((Component) evt.getSource()), true)
-                                    .thenAccept(process -> SwingUtilities.invokeLater(() -> {
-                                        if (process == null)
-                                            return;
+                infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Process: ")));
+                infoPanelChildren.add(JDTextField.fn(textField -> {
+                    textField.text(() -> props.map(p -> p.application).process());
+                    textField.textChangeListener(e -> props.accept(
+                            p -> p.setApplication,
+                            props.map(p -> p.application).withProcess(e.getNewTextOr(""))));
+                }), new CC().growX().split(2));
 
-                                        final Optional<Hook.ApplicationHook> maybeApplicationHook =
-                                                props.apply(p -> p.getApplicationHookFor, process);
-                                        if (maybeApplicationHook.isPresent()) {
-                                            JOptionPane.showMessageDialog(
-                                                    SwingUtilities.windowForComponent((Component) evt.getSource()),
-                                                    String.format("Process %s was already added as %s",
-                                                            process.name(),
-                                                            maybeApplicationHook.get().application().name()),
-                                                    "Warning",
-                                                    JOptionPane.WARNING_MESSAGE);
-                                            return;
-                                        }
-
-                                        props.accept(
-                                                p -> p.setApplication,
-                                                props.map(p -> p.application).withProcess(process.name()));
-                                    })));
-                        }));
-
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Icon: ")));
-                        infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> props.map(p -> p.application).icon().toAbsolutePath().toString());
-                            textField.textChangeListener(evt -> props.accept(
-                                    p -> p.setApplication,
-                                    props.map(p -> p.application).withIcon(Path.of(evt.getNewTextOr("")))));
-                        }), new CC().growX().split(2));
-
-                        infoPanelChildren.add(JDButton.fn(browseIconBtn -> {
-                            browseIconBtn.text(() -> "...");
-                            browseIconBtn.actionListener(evt -> {
-                                final var chooser = new JFileChooser();
-                                chooser.addChoosableFileFilter(new FileNameExtensionFilter(
-                                        String.format("Icons (%s)", Process.ICON_EXTENSIONS.stream()
-                                                .map(ext -> "*." + ext)
-                                                .collect(Collectors.joining(", "))),
-                                        Process.ICON_EXTENSIONS.toArray(String[]::new)));
-                                chooser.setAcceptAllFileFilterUsed(true);
-                                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                                chooser.setMultiSelectionEnabled(false);
-
-                                final var res = chooser.showOpenDialog(panelRef.curr());
-                                if (res != JFileChooser.APPROVE_OPTION)
+                infoPanelChildren.add(JDButton.fn(selectProcessBtn -> {
+                    selectProcessBtn.text(() -> "...");
+                    selectProcessBtn.actionListener(evt -> SelectProcessDialog
+                            .selectDevice(SwingUtilities.windowForComponent((Component) evt.getSource()), true)
+                            .thenAccept(process -> SwingUtilities.invokeLater(() -> {
+                                if (process == null)
                                     return;
 
-                                final File newIcon = chooser.getSelectedFile().getAbsoluteFile();
-                                if (Objects.equals(newIcon.toPath(), props.map(p -> p.application).icon().toAbsolutePath()))
+                                final Optional<Hook.ApplicationHook> maybeApplicationHook =
+                                        props.apply(p -> p.getApplicationHookFor, process);
+                                if (maybeApplicationHook.isPresent()) {
+                                    JOptionPane.showMessageDialog(
+                                            SwingUtilities.windowForComponent((Component) evt.getSource()),
+                                            String.format("Process %s was already added as %s",
+                                                    process.name(),
+                                                    maybeApplicationHook.get().application().name()),
+                                            "Warning",
+                                            JOptionPane.WARNING_MESSAGE);
                                     return;
+                                }
 
                                 props.accept(
                                         p -> p.setApplication,
-                                        props.map(p -> p.application).withIcon(newIcon.toPath()));
-                            });
-                        }));
+                                        props.map(p -> p.application).withProcess(process.name()));
+                            })));
+                }));
+
+                infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Icon: ")));
+                infoPanelChildren.add(JDTextField.fn(textField -> {
+                    textField.text(() -> props.map(p -> p.application).icon().toAbsolutePath().toString());
+                    textField.textChangeListener(evt -> props.accept(
+                            p -> p.setApplication,
+                            props.map(p -> p.application).withIcon(Path.of(evt.getNewTextOr("")))));
+                }), new CC().growX().split(2));
+
+                infoPanelChildren.add(JDButton.fn(browseIconBtn -> {
+                    browseIconBtn.text(() -> "...");
+                    browseIconBtn.actionListener(evt -> {
+                        final var chooser = new JFileChooser();
+                        chooser.addChoosableFileFilter(new FileNameExtensionFilter(
+                                String.format("Icons (%s)", Process.ICON_EXTENSIONS.stream()
+                                        .map(ext -> "*." + ext)
+                                        .collect(Collectors.joining(", "))),
+                                Process.ICON_EXTENSIONS.toArray(String[]::new)));
+                        chooser.setAcceptAllFileFilterUsed(true);
+                        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                        chooser.setMultiSelectionEnabled(false);
+
+                        final var res = chooser.showOpenDialog(panelRef.curr());
+                        if (res != JFileChooser.APPROVE_OPTION)
+                            return;
+
+                        final File newIcon = chooser.getSelectedFile().getAbsoluteFile();
+                        if (Objects.equals(newIcon.toPath(), props.map(p -> p.application).icon().toAbsolutePath()))
+                            return;
+
+                        props.accept(
+                                p -> p.setApplication,
+                                props.map(p -> p.application).withIcon(newIcon.toPath()));
                     });
-                }), new CC().growX());
-
-                panelChildren.add(JDPanel.fn(buttonsPanel -> {
-                    buttonsPanel.layout(() -> new MigLayout(
-                            new LC().flowY().alignY("top").insetsAll("0")
-                    ));
-
-                    buttonsPanel.children(buttonsPanelChildren -> {
-                        buttonsPanelChildren.add(JDButton.fn(addScriptBtn -> {
-                            addScriptBtn.icon(() -> new ImageIcon(
-                                    new MultiResolutionIconFont(FontAwesome.PLUS, 14, new Color(0, 150, 0))));
-                            addScriptBtn.margin(() -> new Insets(2, 2, 2, 2));
-                            addScriptBtn.actionListener(evt -> SelectKeyStrokeDialog
-                                    .selectKeyStroke(SwingUtilities.windowForComponent((Component) evt.getSource()), null, 0) // TODO: target device
-                                    .thenAccept(res -> SwingUtilities.invokeLater(() -> {
-                                        if (res == null)
-                                            return;
-
-                                        final var script = new Hook.HookScript(
-                                                "New",
-                                                new Hook.KeyStroke(res.evt().awtKeyCode(), res.evt().modifiers(), res.toggleKeysMask()),
-                                                "");
-                                        props.accept(
-                                                p -> p.setApplicationHook,
-                                                props.map(p -> p.applicationHook).addScript(script));
-                                    })));
-                        }));
-
-                        buttonsPanelChildren.add(JDButton.fn(removeScriptBtn -> {
-                            removeScriptBtn.icon(() -> new ImageIcon(
-                                    new MultiResolutionIconFont(FontAwesome.MINUS, 14, new Color(150, 0, 0))));
-                            removeScriptBtn.margin(() -> new Insets(2, 2, 2, 2));
-                            removeScriptBtn.enabled(() -> selectedScriptSupp.get() != null);
-                            removeScriptBtn.actionListener(evt -> {
-                                if(selectedScriptSupp.get() != null)
-                                    props.accept(
-                                            p -> p.setApplicationHook,
-                                            props.map(p -> p.applicationHook).removeScript(selectedScriptSupp.get()));
-                            });
-                        }));
-                    });
-                }), new CC().growY().split(2));
-
-                panelChildren.add(JDTabbedPane.fn(scriptsPane -> {
-                    scriptsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
-                    scriptsPane.tabPlacement(() -> JTabbedPane.LEFT);
-                    scriptsPane.tabs(tabs -> Memo.mapCollection(() -> props.map(p -> p.applicationHook).scripts(),
-                            (script0, declareScriptIdxMemo) -> tabs.addTab(
-                                    script0.scriptFile() != null
-                                            ? script0.scriptFile().toAbsolutePath().toString()
-                                            : script0.name(),
-                                    script0.name(),
-                                    null,
-                                    null,
-                                    DWrapper.fn(scriptPane -> {
-                                        final Memo<Hook.HookScript> scriptMemo = useMemo(() -> script0);
-                                        return JDScriptPane.fn(
-                                                scriptMemo,
-                                                newScript -> props.accept(
-                                                        p -> p.setApplicationHook,
-                                                        props.map(p -> p.applicationHook).replaceScript(scriptMemo.get(), newScript)));
-                                    }),
-                                    script0.name())));
-                    scriptsPane.selectedTab(selectedScriptIdx);
-                    scriptsPane.changeListener(
-                            evt -> selectedScriptIdx.set(((JTabbedPane) evt.getSource()).getSelectedIndex()));
-                }), new CC().grow());
+                }));
             });
+        });
+    }
+
+    private static DeclarativeComponentSupplier<? extends Component> buttonsPanel(
+            SafeMemo<Props> props,
+            Supplier<Hook.HookScript> selectedScriptSupp
+    ) {
+        return JDPanel.fn(buttonsPanel -> {
+            buttonsPanel.layout(() -> new MigLayout(
+                    new LC().flowY().alignY("top").insetsAll("0")
+            ));
+
+            buttonsPanel.children(buttonsPanelChildren -> {
+                buttonsPanelChildren.add(JDButton.fn(addScriptBtn -> {
+                    addScriptBtn.icon(() -> new ImageIcon(
+                            new MultiResolutionIconFont(FontAwesome.PLUS, 14, new Color(0, 150, 0))));
+                    addScriptBtn.margin(() -> new Insets(2, 2, 2, 2));
+                    addScriptBtn.actionListener(evt -> SelectKeyStrokeDialog
+                            .selectKeyStroke(SwingUtilities.windowForComponent((Component) evt.getSource()), null, 0) // TODO: target device
+                            .thenAccept(res -> SwingUtilities.invokeLater(() -> {
+                                if (res == null)
+                                    return;
+
+                                final var script = new Hook.HookScript(
+                                        "New",
+                                        new Hook.KeyStroke(res.evt().awtKeyCode(), res.evt().modifiers(), res.toggleKeysMask()),
+                                        "");
+                                props.accept(
+                                        p -> p.setApplicationHook,
+                                        props.map(p -> p.applicationHook).addScript(script));
+                            })));
+                }));
+
+                buttonsPanelChildren.add(JDButton.fn(removeScriptBtn -> {
+                    removeScriptBtn.icon(() -> new ImageIcon(
+                            new MultiResolutionIconFont(FontAwesome.MINUS, 14, new Color(150, 0, 0))));
+                    removeScriptBtn.margin(() -> new Insets(2, 2, 2, 2));
+                    removeScriptBtn.enabled(() -> selectedScriptSupp.get() != null);
+                    removeScriptBtn.actionListener(evt -> {
+                        if(selectedScriptSupp.get() != null)
+                            props.accept(
+                                    p -> p.setApplicationHook,
+                                    props.map(p -> p.applicationHook).removeScript(selectedScriptSupp.get()));
+                    });
+                }));
+            });
+        });
+    }
+
+    private static DeclarativeComponentSupplier<? extends Component> applicationsTabbedPane(
+            SafeMemo<Props> props,
+            State<Integer> selectedScriptIdx
+    ) {
+        return JDTabbedPane.fn(scriptsPane -> {
+            scriptsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
+            scriptsPane.tabPlacement(() -> JTabbedPane.LEFT);
+            scriptsPane.tabs(tabs -> Memo.mapCollection(() -> props.map(p -> p.applicationHook).scripts(),
+                    (script0, declareScriptIdxMemo) -> tabs.addTab(
+                            script0.scriptFile() != null
+                                    ? script0.scriptFile().toAbsolutePath().toString()
+                                    : script0.name(),
+                            script0.name(),
+                            null,
+                            null,
+                            DWrapper.fn(scriptPane -> {
+                                final Memo<Hook.HookScript> scriptMemo = useMemo(() -> script0);
+                                return JDScriptPane.fn(
+                                        scriptMemo,
+                                        newScript -> props.accept(
+                                                p -> p.setApplicationHook,
+                                                props.map(p -> p.applicationHook).replaceScript(scriptMemo.get(), newScript)));
+                            }),
+                            script0.name())));
+            scriptsPane.selectedTab(selectedScriptIdx);
+            scriptsPane.changeListener(
+                    evt -> selectedScriptIdx.set(((JTabbedPane) evt.getSource()).getSelectedIndex()));
         });
     }
 }

@@ -52,142 +52,157 @@ class JDDevicePanel extends JPanel {
             ));
 
             panel.children(panelChildren -> {
-                panelChildren.add(JDPanel.fn(infoPanel -> {
-                    infoPanel.layout(() -> new MigLayout(
-                            new LC().fillX().wrapAfter(1).minWidth("0px"),
-                            new AC().grow()
-                    ));
+                panelChildren.add(infoPanel(props), new CC().growX());
+                panelChildren.add(buttonsPanel(props, selectedAppSupp), new CC().growY().split(2));
+                panelChildren.add(applicationsTabbedPane(props, selectedTabIdx), new CC().grow());
+            });
+        });
+    }
 
-                    infoPanel.children(infoPanelChildren -> {
-                        infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")), new CC().split(2));
-                        infoPanelChildren.add(JDTextField.fn(textField -> {
-                            textField.text(() -> props.map(p -> p.device.name()));
-                            textField.textChangeListener(evt -> props.accept(
-                                    p -> p.setDevice,
-                                    props.map(p -> p.device).withName(evt.getNewTextOr(""))));
-                        }), new CC().growX());
+    private static DeclarativeComponent<? extends JComponent> buttonsPanel(
+            SafeMemo<Props> props,
+            Memo<Hook.ApplicationHook> selectedAppSupp
+    ) {
+        return JDPanel.fn(buttonsPanel -> {
+            buttonsPanel.layout(() -> new MigLayout(
+                    new LC().flowY().alignY("top").insetsAll("0"))
+            );
 
-                        infoPanelChildren.add(
-                                JDLabel.fn(label -> label.text(() -> "ID: " + props.map(p -> p.device.id()))),
-                                new CC().minWidth("0px"));
-                        infoPanelChildren.add(
-                                JDLabel.fn(label -> label.text(() -> "Description: " + props.map(p -> p.device.desc()))),
-                                new CC().minWidth("0px"));
+            buttonsPanel.children(buttonsPanelChildren -> {
+                buttonsPanelChildren.add(JDButton.fn(addApplicationBtn -> {
+                    addApplicationBtn.icon(() -> new ImageIcon(
+                            new MultiResolutionIconFont(FontAwesome.PLUS, 14, new Color(0, 150, 0))));
+                    addApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
+                    addApplicationBtn.actionListener(evt -> SelectProcessDialog
+                            .selectDevice(SwingUtilities.windowForComponent((Component) evt.getSource()), true)
+                            .thenAccept(process -> SwingUtilities.invokeLater(() -> {
+                                if (process == null)
+                                    return;
 
+                                final Optional<Hook.ApplicationHook> maybeApplicationHook = props
+                                        .map(p -> p.hook)
+                                        .applicationHooks()
+                                        .stream()
+                                        .filter(a -> a.application().process().equals(process.name()))
+                                        .findFirst();
+                                if(maybeApplicationHook.isPresent()) {
+                                    JOptionPane.showMessageDialog(
+                                            SwingUtilities.windowForComponent((Component) evt.getSource()),
+                                            String.format("Process %s was already added as %s",
+                                                    process.name(),
+                                                    maybeApplicationHook.get().application().name()),
+                                            "Warning",
+                                            JOptionPane.WARNING_MESSAGE);
+                                    return;
+                                }
+
+                                final var applicationHook = new Hook.ApplicationHook(
+                                        new Hook.Application(
+                                                process.name(),
+                                                process.name().toLowerCase(Locale.ROOT).endsWith(".exe") ?
+                                                        capitalize(process.name().substring(0, process.name().length() - ".exe".length())) :
+                                                        capitalize(process.name()),
+                                                process.iconPath()),
+                                        Collections.emptyList());
+                                props.accept(
+                                        p -> p.setHook,
+                                        props.map(p -> p.hook).addApplicationHook(applicationHook));
+                            })));
+                }));
+
+                buttonsPanelChildren.add(JDButton.fn(removeApplicationBtn -> {
+                    removeApplicationBtn.icon(() -> new ImageIcon(
+                            new MultiResolutionIconFont(FontAwesome.MINUS, 14, new Color(150, 0, 0))));
+                    removeApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
+                    removeApplicationBtn.enabled(() -> selectedAppSupp.get() != null);
+                    removeApplicationBtn.actionListener(evt -> {
+                        if(selectedAppSupp.get() != null)
+                            props.map(p -> p.setHook).accept(
+                                    props.map(p -> p.hook).removeApplicationHook(selectedAppSupp.get()));
                     });
+                }));
+            });
+        });
+    }
 
+    private static DeclarativeComponent<? extends JComponent> infoPanel(SafeMemo<Props> props) {
+        return JDPanel.fn(infoPanel -> {
+            infoPanel.layout(() -> new MigLayout(
+                    new LC().fillX().wrapAfter(1).minWidth("0px"),
+                    new AC().grow()
+            ));
+
+            infoPanel.children(infoPanelChildren -> {
+                infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Name: ")), new CC().split(2));
+                infoPanelChildren.add(JDTextField.fn(textField -> {
+                    textField.text(() -> props.map(p -> p.device.name()));
+                    textField.textChangeListener(evt -> props.accept(
+                            p -> p.setDevice,
+                            props.map(p -> p.device).withName(evt.getNewTextOr(""))));
                 }), new CC().growX());
 
-                panelChildren.add(JDPanel.fn(buttonsPanel -> {
-                    buttonsPanel.layout(() -> new MigLayout(
-                            new LC().flowY().alignY("top").insetsAll("0"))
-                    );
+                infoPanelChildren.add(
+                        JDLabel.fn(label -> label.text(() -> "ID: " + props.map(p -> p.device.id()))),
+                        new CC().minWidth("0px"));
+                infoPanelChildren.add(
+                        JDLabel.fn(label -> label.text(() -> "Description: " + props.map(p -> p.device.desc()))),
+                        new CC().minWidth("0px"));
 
-                    buttonsPanel.children(buttonsPanelChildren -> {
-                        buttonsPanelChildren.add(JDButton.fn(addApplicationBtn -> {
-                            addApplicationBtn.icon(() -> new ImageIcon(
-                                    new MultiResolutionIconFont(FontAwesome.PLUS, 14, new Color(0, 150, 0))));
-                            addApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
-                            addApplicationBtn.actionListener(evt -> SelectProcessDialog
-                                    .selectDevice(SwingUtilities.windowForComponent((Component) evt.getSource()), true)
-                                    .thenAccept(process -> SwingUtilities.invokeLater(() -> {
-                                        if (process == null)
-                                            return;
-
-                                        final Optional<Hook.ApplicationHook> maybeApplicationHook = props
-                                                .map(p -> p.hook)
-                                                .applicationHooks()
-                                                .stream()
-                                                .filter(a -> a.application().process().equals(process.name()))
-                                                .findFirst();
-                                        if(maybeApplicationHook.isPresent()) {
-                                            JOptionPane.showMessageDialog(
-                                                    SwingUtilities.windowForComponent((Component) evt.getSource()),
-                                                    String.format("Process %s was already added as %s",
-                                                            process.name(),
-                                                            maybeApplicationHook.get().application().name()),
-                                                    "Warning",
-                                                    JOptionPane.WARNING_MESSAGE);
-                                            return;
-                                        }
-
-                                        final var applicationHook = new Hook.ApplicationHook(
-                                                new Hook.Application(
-                                                        process.name(),
-                                                        process.name().toLowerCase(Locale.ROOT).endsWith(".exe") ?
-                                                                capitalize(process.name().substring(0, process.name().length() - ".exe".length())) :
-                                                                capitalize(process.name()),
-                                                        process.iconPath()),
-                                                Collections.emptyList());
-                                        props.accept(
-                                                p -> p.setHook,
-                                                props.map(p -> p.hook).addApplicationHook(applicationHook));
-                                    })));
-                        }));
-
-                        buttonsPanelChildren.add(JDButton.fn(removeApplicationBtn -> {
-                            removeApplicationBtn.icon(() -> new ImageIcon(
-                                    new MultiResolutionIconFont(FontAwesome.MINUS, 14, new Color(150, 0, 0))));
-                            removeApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
-                            removeApplicationBtn.enabled(() -> selectedAppSupp.get() != null);
-                            removeApplicationBtn.actionListener(evt -> {
-                                if(selectedAppSupp.get() != null)
-                                    props.map(p -> p.setHook).accept(
-                                            props.map(p -> p.hook).removeApplicationHook(selectedAppSupp.get()));
-                            });
-                        }));
-                    });
-                }), new CC().growY().split(2));
-
-                panelChildren.add(JDTabbedPane.fn(applicationsPane -> {
-                    applicationsPane.name(() -> "ApplicationsTabbedPane");
-                    applicationsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
-                    applicationsPane.tabs(tabs -> {
-                        Memo.mapCollection(() -> props.map(p -> p.hook).applicationHooks(), (applicationHook, declareAppIdxMemo) -> tabs.addTab(
-                                applicationHook.application().process(),
-                                applicationHook.application().name(),
-                                null,
-                                DWrapper.fn(tabComponent -> {
-                                    var appIconPath = useMemo(() -> applicationHook.application().icon());
-                                    return tabComponent(
-                                            useMemo(() -> applicationHook.application().name()),
-                                            useMemo(() -> new MultiResolutionIconImage(
-                                                    TAB_ICON_SIZE,
-                                                    Process.extractProcessIcons(appIconPath.get()))));
-                                }),
-                                JDApplicationPane.fn(p -> {
-                                    p.getApplicationHookFor = process -> props.map(p0 -> p0.hook).applicationHooks().stream()
-                                            .filter(a -> a.application().process().equals(process.name()))
-                                            .findFirst();
-                                    p.application = applicationHook.application();
-                                    p.setApplication = application -> props.map(p0 -> p0.setHook).accept(
-                                            props.map(p0 -> p0.hook).replaceApplicationHook(
-                                                    applicationHook,
-                                                    applicationHook.withApplication(application)));
-                                    p.applicationHook = applicationHook;
-                                    p.setApplicationHook = newApplicationHook -> props.map(p0 -> p0.setHook).accept(
-                                            props.map(p0 -> p0.hook).replaceApplicationHook(
-                                                    applicationHook,
-                                                    newApplicationHook));
-                                }),
-                                applicationHook.application().name()
-                        ));
-
-                        tabs.addTab(
-                                "Fallback",
-                                null,
-                                tabComponent(() -> "Fallback", () -> null),
-                                DWrapper.fn(wrapper -> JDFallbackPane.fn(
-                                        props.map(p0 -> p0.hook).fallbackBehavior(),
-                                        behavior -> props.map(p0 -> p0.setHook).accept(
-                                                props.map(p0 -> p0.hook).withFallbackBehavior(behavior)))),
-                                "Fallback");
-                    });
-                    applicationsPane.selectedTab(selectedTabIdx);
-                    applicationsPane.changeListener(evt ->
-                            selectedTabIdx.set(((JTabbedPane) evt.getSource()).getSelectedIndex()));
-                }), new CC().grow());
             });
+        });
+    }
+
+    private static DeclarativeComponent<? extends JComponent> applicationsTabbedPane(
+            SafeMemo<Props> props,
+            State<Integer> selectedTabIdx
+    ) {
+        return JDTabbedPane.fn(applicationsPane -> {
+            applicationsPane.name(() -> "ApplicationsTabbedPane");
+            applicationsPane.tabLayoutPolicy(() -> JTabbedPane.SCROLL_TAB_LAYOUT);
+            applicationsPane.tabs(tabs -> {
+                Memo.mapCollection(() -> props.map(p -> p.hook).applicationHooks(), (applicationHook, declareAppIdxMemo) -> tabs.addTab(
+                        applicationHook.application().process(),
+                        applicationHook.application().name(),
+                        null,
+                        DWrapper.fn(tabComponent -> {
+                            var appIconPath = useMemo(() -> applicationHook.application().icon());
+                            return tabComponent(
+                                    useMemo(() -> applicationHook.application().name()),
+                                    useMemo(() -> new MultiResolutionIconImage(
+                                            TAB_ICON_SIZE,
+                                            Process.extractProcessIcons(appIconPath.get()))));
+                        }),
+                        JDApplicationPane.fn(p -> {
+                            p.getApplicationHookFor = process -> props.map(p0 -> p0.hook).applicationHooks().stream()
+                                    .filter(a -> a.application().process().equals(process.name()))
+                                    .findFirst();
+                            p.application = applicationHook.application();
+                            p.setApplication = application -> props.map(p0 -> p0.setHook).accept(
+                                    props.map(p0 -> p0.hook).replaceApplicationHook(
+                                            applicationHook,
+                                            applicationHook.withApplication(application)));
+                            p.applicationHook = applicationHook;
+                            p.setApplicationHook = newApplicationHook -> props.map(p0 -> p0.setHook).accept(
+                                    props.map(p0 -> p0.hook).replaceApplicationHook(
+                                            applicationHook,
+                                            newApplicationHook));
+                        }),
+                        applicationHook.application().name()
+                ));
+
+                tabs.addTab(
+                        "Fallback",
+                        null,
+                        tabComponent(() -> "Fallback", () -> null),
+                        DWrapper.fn(wrapper -> JDFallbackPane.fn(
+                                props.map(p0 -> p0.hook).fallbackBehavior(),
+                                behavior -> props.map(p0 -> p0.setHook).accept(
+                                        props.map(p0 -> p0.hook).withFallbackBehavior(behavior)))),
+                        "Fallback");
+            });
+            applicationsPane.selectedTab(selectedTabIdx);
+            applicationsPane.changeListener(evt ->
+                    selectedTabIdx.set(((JTabbedPane) evt.getSource()).getSelectedIndex()));
         });
     }
 
