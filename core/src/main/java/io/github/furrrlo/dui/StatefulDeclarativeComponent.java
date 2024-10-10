@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.github.furrrlo.dui.Hooks.useMemo;
@@ -733,11 +734,11 @@ abstract class StatefulDeclarativeComponent<
         }
     }
 
-    private static class BaseMemo<V> implements Memo<V>, SafeMemo<V>, IdentityFreeSupplier.Explicit<V> {
+    private static class BaseMemo<V> implements Memo<V>, InternalMemo, IdentityFreeSupplier.Explicit<V> {
 
         private static final Object[] NO_DEPS = new Object[] {};
 
-        private final Set<SignalDep<V, ?>> signalDeps = new LinkedHashSet<>();
+        private final Map<Runnable, SignalDep<V, ?>> signalDeps = new LinkedHashMap<>();
 
         private final BiPredicate<V, V> equalityFn;
         protected V value;
@@ -764,7 +765,9 @@ abstract class StatefulDeclarativeComponent<
             if(currUpdatingComponent != null) {
                 Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
                 if (currDependency != null)
-                    signalDeps.add(new SignalDep<>(currDependency, value, null, Objects::deepEquals));
+                    signalDeps.compute(currDependency, (k, prevDep) -> prevDep == null
+                            ? new SignalDep<>(k, null, null, equalityFn)
+                            : prevDep.combine(null, null));
             }
 
             return value;
@@ -776,9 +779,10 @@ abstract class StatefulDeclarativeComponent<
             if(currUpdatingComponent != null) {
                 Runnable currDependency = currUpdatingComponent.getCurrentStateDependency();
                 if (currDependency != null) {
-                    SignalDep<V, R> dep = new SignalDep<>(currDependency, value, mapFn, equalityFn);
-                    signalDeps.add(dep);
-                    return dep.value;
+                    signalDeps.compute(currDependency, (k, prevDep) -> prevDep == null
+                            ? new SignalDep<>(k, value, mapFn, equalityFn)
+                            : prevDep.combine(value, mapFn));
+                    return mapFn.apply(value);
                 }
             }
 
@@ -791,11 +795,16 @@ abstract class StatefulDeclarativeComponent<
 
             this.value = value;
 
-            Set<SignalDep<V, ?>> dependencies = new LinkedHashSet<>(this.signalDeps);
-            dependencies.removeIf(dep -> dep.hasChanged(value));
-            this.signalDeps.removeAll(dependencies);
+            Set<SignalDep<V, ?>> dependencies = new LinkedHashSet<>(this.signalDeps.values());
+            dependencies.removeIf(e -> e.hasNotChanged(value));
+            this.signalDeps.values().removeAll(dependencies);
             dependencies.forEach(d -> d.dependency.run());
             return true;
+        }
+
+        @Override
+        public int getSignalDependenciesSize() {
+            return signalDeps.size();
         }
 
         private static class SignalDep<T, R> {
@@ -814,8 +823,51 @@ abstract class StatefulDeclarativeComponent<
                 this.equalityFn = equalityFn;
             }
 
-            boolean hasChanged(T val) {
+            boolean hasNotChanged(T val) {
                 return mapFn != null && equalityFn.test(value, mapFn.apply(val));
+            }
+
+            @SuppressWarnings("unchecked")
+            <NR> SignalDep<T, ?> combine(@Nullable T val, @Nullable Function<T, NR> mapFn) {
+                // If either of the two is an unconditional signal, just return something that runs all the time anyway
+                if (this.mapFn == null)
+                    return this;
+                if (mapFn == null)
+                    return new SignalDep<>(dependency, null, null, Objects::deepEquals);
+
+                // Combine the mapping functions
+                List<Function<T, ?>> mappers;
+                if (this.mapFn instanceof CombinedMapper && mapFn instanceof CombinedMapper) {
+                    mappers = new ArrayList<>(((CombinedMapper<T>) this.mapFn).mappers);
+                    mappers.addAll(((CombinedMapper<T>) mapFn).mappers);
+                } else if(this.mapFn instanceof CombinedMapper) {
+                    mappers = new ArrayList<>(((CombinedMapper<T>) this.mapFn).mappers);
+                    mappers.add(mapFn);
+                } else if(mapFn instanceof CombinedMapper) {
+                    mappers = new ArrayList<>(((CombinedMapper<T>) mapFn).mappers);
+                    mappers.add(this.mapFn);
+                } else {
+                    mappers = new ArrayList<>();
+                    mappers.add(this.mapFn);
+                    mappers.add(mapFn);
+                }
+
+                CombinedMapper<T> mapper = new CombinedMapper<>(Collections.unmodifiableList(mappers));
+                return new SignalDep<>(dependency, val, mapper, Objects::deepEquals);
+            }
+
+            static class CombinedMapper<T> implements Function<T, Object> {
+
+                final List<Function<T, ?>> mappers;
+
+                public CombinedMapper(List<Function<T, ?>> mappers) {
+                    this.mappers = mappers;
+                }
+
+                @Override
+                public Object apply(T t) {
+                    return mappers.stream().map(m -> m.apply(t)).collect(Collectors.toList());
+                }
             }
         }
     }
