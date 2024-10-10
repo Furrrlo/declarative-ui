@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 import static io.github.furrrlo.dui.Hooks.*;
 
-class JDDevicePanel extends JPanel {
+class DevicePanel extends JPanel {
 
     protected static final int TAB_ICON_SIZE = 32;
 
@@ -172,7 +172,7 @@ class JDDevicePanel extends JPanel {
                                             TAB_ICON_SIZE,
                                             Process.extractProcessIcons(appIconPath.get()))));
                         }),
-                        JDApplicationPane.fn(p -> {
+                        ApplicationPane.fn(p -> {
                             p.getApplicationHookFor = process -> props.map(p0 -> p0.hook).applicationHooks().stream()
                                     .filter(a -> a.application().process().equals(process.name()))
                                     .findFirst();
@@ -194,7 +194,7 @@ class JDDevicePanel extends JPanel {
                         "Fallback",
                         null,
                         tabComponent(() -> "Fallback", () -> null),
-                        DWrapper.fn(wrapper -> JDFallbackPane.fn(
+                        DWrapper.fn(wrapper -> FallbackPane.fn(
                                 props.map(p0 -> p0.hook).fallbackBehavior(),
                                 behavior -> props.map(p0 -> p0.setHook).accept(
                                         props.map(p0 -> p0.hook).withFallbackBehavior(behavior)))),

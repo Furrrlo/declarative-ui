@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import static io.github.furrrlo.dui.Hooks.useMemo;
 import static io.github.furrrlo.dui.Hooks.useState;
 
-class JDHooksPane {
+class HooksPane {
 
     private static final Hook DUMMY_HOOK = new Hook(
             new Hook.Device("", "", ""),
@@ -167,7 +167,7 @@ class JDHooksPane {
 //                                            Collections.addAll(components, container.getComponents());
 //                                    }
 //                                }
-                        return JDDevicePanel.fn(props -> {
+                        return DevicePanel.fn(props -> {
                             props.visible = hook.get().equals(selectedSupp.get());
                             props.hook = hook.get();
                             props.setHook = newHook -> hooks.update(l -> {

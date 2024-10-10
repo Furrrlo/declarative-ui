@@ -96,7 +96,7 @@ public class CmptwMain {
         Application.create(cfg, app -> app.roots(roots -> roots.add(JDFrame.fn(frame -> {
             frame.title(() -> "CanMyPenTabletWork");
             frame.defaultCloseOperation(() -> WindowConstants.EXIT_ON_CLOSE);
-            frame.contentPane(JDHooksPane.fn(INITIAL_HOOKS));
+            frame.contentPane(HooksPane.fn(INITIAL_HOOKS));
             frame.minimumSize(() -> new Dimension(700, 700));
             frame.size(() -> new Dimension(700, 700));
             frame.locationRelativeTo(() -> null);

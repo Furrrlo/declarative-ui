@@ -37,9 +37,9 @@ import java.util.function.Supplier;
 
 import static io.github.furrrlo.dui.Hooks.*;
 
-class JDScriptPane {
+class ScriptPane {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JDScriptPane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptPane.class);
     private static final ExecutorService VALIDATION_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
         final Thread th = Executors.defaultThreadFactory().newThread(r);
         th.setName("script-validation-thread");
@@ -207,9 +207,9 @@ class JDScriptPane {
             return isLafManagerInstalled.get() ?
                     JDPanel.fn(
                             () -> {
-                                var syntaxTheme1 = JDScriptPane.syntaxTheme;
+                                var syntaxTheme1 = ScriptPane.syntaxTheme;
                                 if (syntaxTheme1 == null)
-                                    JDScriptPane.syntaxTheme = syntaxTheme1 = new DarklafRSyntaxTheme();
+                                    ScriptPane.syntaxTheme = syntaxTheme1 = new DarklafRSyntaxTheme();
 
                                 var textArea = new RSyntaxTextArea();
                                 syntaxTheme1.apply(textArea);

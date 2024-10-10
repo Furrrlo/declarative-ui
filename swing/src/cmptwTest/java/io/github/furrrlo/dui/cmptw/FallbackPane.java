@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 import static io.github.furrrlo.dui.Hooks.useMemo;
 
-class JDFallbackPane {
+class FallbackPane {
 
     public static DeclarativeComponent<? extends Component> fn(Hook.FallbackBehavior fallbackBehavior,
                                                                Consumer<Hook.FallbackBehavior> setFallbackBehavior) {

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import static io.github.furrrlo.dui.Hooks.*;
 
-class JDApplicationPane {
+class ApplicationPane {
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     public static class Props {
@@ -215,7 +215,7 @@ class JDApplicationPane {
                             null,
                             DWrapper.fn(scriptPane -> {
                                 final Memo<Hook.HookScript> scriptMemo = useMemo(() -> script0);
-                                return JDScriptPane.fn(
+                                return ScriptPane.fn(
                                         scriptMemo,
                                         newScript -> props.accept(
                                                 p -> p.setApplicationHook,
