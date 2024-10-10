@@ -9,6 +9,7 @@ import java.awt.event.ContainerListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,7 @@ public class DAwtContainer {
                     () -> children.get().stream().map(Child::constraints).collect(Collectors.toList()));
         }
 
+        @SuppressWarnings("overloads") // It's appropriate
         public interface ChildCollector {
 
             default void add(DeclarativeComponentSupplier<? extends Component> comp) {
@@ -81,6 +83,23 @@ public class DAwtContainer {
             }
 
             void add(@Nullable String key, DeclarativeComponentSupplier<? extends Component> comp, @Nullable Object constraints);
+
+            default void add(IdentityFreeConsumer<ChildProps> propsFn) {
+                ChildProps props = new ChildProps(propsFn);
+                add(props.key, props.comp, props.constraints);
+            }
+        }
+
+        public static class ChildProps {
+            public DeclarativeComponentSupplier<? extends Component> comp;
+            public @Nullable String key;
+            public @Nullable Object constraints;
+
+            @SuppressWarnings({"DataFlowIssue", "SelfAssignment"}) // Done on purpose
+            private ChildProps(IdentityFreeConsumer<ChildProps> propsFn) {
+                propsFn.accept(this);
+                comp = Objects.requireNonNull(comp, "Missing child component");
+            }
         }
 
         private static class Child<T extends Component> implements DeclarativeComponentWithIdSupplier<T> {

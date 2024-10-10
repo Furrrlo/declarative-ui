@@ -75,7 +75,7 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
                                                Collection<MethodHandles.Lookup> lookups,
                                                boolean wasSet,
                                                StatefulDeclarativeComponent<? extends V, ?, ?> value,
-                                               @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue,
+                                               @Nullable StatefulDeclarativeComponent<? extends V, ?, ?> prevValue,
                                                @Nullable Consumer<V> createdComponent,
                                                @Nullable Consumer<V> updatedComponent) {
         value.runOrScheduleOnFrameworkThread(() -> {
