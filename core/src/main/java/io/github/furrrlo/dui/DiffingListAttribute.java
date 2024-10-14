@@ -25,25 +25,25 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     private final ListAdder<T, C, S> adder;
     private final ListRemover<T> remover;
     private final Supplier<List<S>> valueSuppliersSupplier;
-    private final Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> valueFn;
+    private final Function<List<S>, List<ValueAndSupplier<C, S>>> valueFn;
 
-    private List<S> suppliers;
-    private List<StatefulDeclarativeComponent<C, ?, ?>> value;
+    private List<ValueAndSupplier<C, S>> value;
 
     public DiffingListAttribute(String key,
                                 int updatePriority,
                                 ListAdder<T, C, S> adder,
                                 ListRemover<T> remover,
                                 Supplier<List<S>> suppliers,
-                                Function<List<S>, List<StatefulDeclarativeComponent<C, ?, ?>>> value) {
+                                Function<S, StatefulDeclarativeComponent<C, ?, ?>> value) {
         this.key = key;
         this.updatePriority = updatePriority;
         this.adder = adder;
         this.remover = remover;
         this.valueSuppliersSupplier = suppliers;
-        this.suppliers = suppliers.get();
-        this.valueFn = value;
-        this.value = value.apply(this.suppliers);
+        this.valueFn = ss -> ss.stream()
+                .map(s -> new ValueAndSupplier<>(s, value.apply(s)))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        this.value = valueFn.apply(suppliers.get());
     }
 
     @Override
@@ -61,36 +61,19 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                        T obj,
                        boolean checkDeps,
                        @Nullable DiffingListAttribute<T, C, S> prev) {
-        // prev might be this attribute itself, so we need to save the values and suppliers before we replace them
-        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValue = prev != null ? prev.value : Collections.emptyList();
-        final List<S> prevSuppliers = prev != null ? prev.suppliers : null;
-        this.suppliers = valueSuppliersSupplier.get();
-        this.value = valueFn.apply(this.suppliers);
+        // prev might be this attribute itself, so we need to save the values before we replace them
+        final List<ValueAndSupplier<C, S>> prevValue = prev != null ? prev.value : Collections.emptyList();
+        this.value = valueFn.apply(valueSuppliersSupplier.get());
 
-        final Map<StatefulDeclarativeComponent<C, ?, ?>, S> implToSuppliers = Stream
-                .of(IntStream.range(0, suppliers.size())
-                                .boxed()
-                                .collect(Collectors.toMap(value::get, suppliers::get)),
-                        prevSuppliers != null ?
-                                IntStream.range(0, prevSuppliers.size())
-                                        .boxed()
-                                        .collect(Collectors.toMap(prevValue::get, prevSuppliers::get)) :
-                                Collections.<StatefulDeclarativeComponent<C, ?, ?>, S>emptyMap())
-                .flatMap(m -> m.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
-                    // In case of memoized stuff, the values might be the same (so also the suppliers)
-                    if(v1 == v2) return v1;
-                    throw new UnsupportedOperationException("Same key for values " + v1 + " and " + v2);
-                }));
-
-        final List<ListDiff.OutputMove<StatefulDeclarativeComponent<C, ?, ?>>> outputMoves = ListDiff.diff(
+        final List<ListDiff.OutputMove<ValueAndSupplier<C, S>>> outputMoves = ListDiff.diff(
                 prevValue,
                 value,
-                StatefulDeclarativeComponent::getDeclarativeType,
-                c -> Objects.requireNonNull(implToSuppliers.get(c),
-                        "Missing supplier for impl " + c).getId(),
+                c -> c.value.getDeclarativeType(),
+                c -> c.supplier.getId(),
                 new ArrayList<>());
-        final List<StatefulDeclarativeComponent<C, ?, ?>> toUpdate = new ArrayList<>(prevValue);
+        final List<StatefulDeclarativeComponent<C, ?, ?>> toUpdate = prevValue.stream()
+                .map(v -> v.value)
+                .collect(Collectors.toList());
         final Set<StatefulDeclarativeComponent<?, ?, ?>> alreadyDeepUpdated = new LinkedHashSet<>();
         final Set<StatefulDeclarativeComponent<?, ?, ?>> toDispose = new LinkedHashSet<>();
 
@@ -98,9 +81,11 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
         final List<CompletableFuture<?>> componentsCreations = new ArrayList<>();
 
         outputMoves.forEach(move -> move.doMove(
-                (idx, item) -> {
-                    final S supplier = Objects.requireNonNull(implToSuppliers.get(item), "Missing supplier for impl " + item);
-                    final StatefulDeclarativeComponent<C, ?, ?> prevItem = idx < prevValue.size() ? prevValue.get(idx) : null;
+                (idx, itemAndSupplier) -> {
+                    final StatefulDeclarativeComponent<C, ?,?> item = itemAndSupplier.value;
+                    final S supplier = itemAndSupplier.supplier;
+
+                    final StatefulDeclarativeComponent<C, ?, ?> prevItem = idx < prevValue.size() ? prevValue.get(idx).value : null;
                     final boolean canSubstitutePrevItem = prevItem != null &&
                             !prevItem.hasBeenSubstituted() &&
                             Objects.equals(
@@ -163,7 +148,7 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
         // Deep updates
         for (int i = 0; i < toUpdate.size(); i++) {
-            final StatefulDeclarativeComponent<C, ?, ?> currImpl = value.get(i);
+            final StatefulDeclarativeComponent<C, ?, ?> currImpl = value.get(i).value;
             final StatefulDeclarativeComponent<C, ?, ?> prevImpl = toUpdate.get(i);
             if (alreadyDeepUpdated.contains(currImpl))
                 continue;
@@ -179,6 +164,17 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
 
     @Override
     public void dispose() {
-        value.forEach(c -> c.runOrScheduleOnFrameworkThread(c::disposeComponent));
+        value.forEach(c -> c.value.runOrScheduleOnFrameworkThread(c.value::disposeComponent));
+    }
+
+    private static class ValueAndSupplier<C, S extends DeclarativeComponentWithIdSupplier<? extends C>> {
+
+        final S supplier;
+        final StatefulDeclarativeComponent<C, ?, ?> value;
+
+        public ValueAndSupplier(S supplier, StatefulDeclarativeComponent<C, ?, ?> value) {
+            this.supplier = supplier;
+            this.value = value;
+        }
     }
 }

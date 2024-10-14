@@ -459,11 +459,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                     updatePriority,
                     adder, remover,
                     fn,
-                    suppliers -> suppliers.stream()
-                            .map(s -> (StatefulDeclarativeComponent<C, ?, ?>) s.doApplyInternal())
-                            .collect(Collectors.collectingAndThen(
-                                    Collectors.toList(),
-                                    Collections::unmodifiableList)))));
+                    supplier -> (StatefulDeclarativeComponent<C, ?, ?>) supplier.doApplyInternal())));
             return this;
         }
     }
