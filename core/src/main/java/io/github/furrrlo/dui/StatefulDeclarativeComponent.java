@@ -116,6 +116,10 @@ abstract class StatefulDeclarativeComponent<
                     "was " + ourField + ", is " + otherField);
     }
 
+    public boolean hasBeenSubstituted() {
+        return substituteComponentRef.get() == this;
+    }
+
     protected @Nullable IdentityFreeConsumer<O_CTX> body(boolean requiresExplicit) {
         return bodyFn.apply(requiresExplicit);
     }

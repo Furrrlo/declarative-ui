@@ -106,9 +106,11 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                 (idx, item) -> {
                     final S supplier = Objects.requireNonNull(implToSuppliers.get(item), "Missing supplier for impl " + item);
                     final StatefulDeclarativeComponent<C, ?, ?> prevItem = idx < prevValue.size() ? prevValue.get(idx) : null;
-                    final boolean canSubstitutePrevItem = prevItem != null && Objects.equals(
-                            item.getDeclarativeType(),
-                            Objects.requireNonNull(prevItem).getDeclarativeType());
+                    final boolean canSubstitutePrevItem = prevItem != null &&
+                            !prevItem.hasBeenSubstituted() &&
+                            Objects.equals(
+                                    item.getDeclarativeType(),
+                                    Objects.requireNonNull(prevItem).getDeclarativeType());
 
                     if (idx >= toUpdate.size())
                         toUpdate.add(item);
@@ -139,14 +141,14 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     componentsCreations.add(future);
                     actions.add(() -> {
                         final C component = item.getComponent();
-                        if (LOGGER.isLoggable(Level.FINE))
-                            LOGGER.log(Level.FINE, "Inserting component {0} at idx {1} of {2}", new Object[]{component, idx, obj});
+                        if (LOGGER.isLoggable(Level.INFO))
+                            LOGGER.log(Level.INFO, "{0}: Inserting component at idx ({1}: {2}) of {3}", new Object[]{key, idx, component, obj});
                         adder.add(obj, idx, supplier, component);
                     });
                 },
                 idx -> {
-                    if (LOGGER.isLoggable(Level.FINE))
-                        LOGGER.log(Level.FINE, "Removing component at idx {0} of {1}", new Object[]{idx, obj});
+                    if (LOGGER.isLoggable(Level.INFO))
+                        LOGGER.log(Level.INFO, "{0}: Removing component at idx {1} of {2}", new Object[]{key, idx, obj});
                     toDispose.add(toUpdate.remove(idx));
                     actions.add(() -> remover.remover(obj, idx));
                 }));

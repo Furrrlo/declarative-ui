@@ -127,6 +127,7 @@ class HooksPane {
                 }), new CC().tag("apply").split(2));
 
                 children.add(JDButton.fn(cancelBtn -> {
+                    cancelBtn.name(() -> "cancel_btn");
                     cancelBtn.text(() -> "Cancel");
                     cancelBtn.actionListener(evt -> {
                         if (anythingEdited.get())

@@ -71,6 +71,7 @@ class SelectProcessDialog extends JDialog {
 
     private void init(boolean processInfo) {
         setTitle("Select Process");
+        setName("select_process_dialog");
 
         final JPanel contentPane = new JPanel();
         contentPane.setLayout(new MigLayout(new LC().fill().flowY().align("center", "center")));
@@ -197,6 +198,7 @@ class SelectProcessDialog extends JDialog {
         });
 
         final JButton addBtn = new JButton("Apply");
+        addBtn.setName("add_btn");
         addBtn.setEnabled(processTable.getSelectedRow() != -1);
         processTable.getSelectionModel().addListSelectionListener(evt -> addBtn.setEnabled(processTable.getSelectedRow() != -1));
         addBtn.addActionListener(evt -> {

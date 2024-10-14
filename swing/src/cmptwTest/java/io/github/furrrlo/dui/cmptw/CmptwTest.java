@@ -40,4 +40,35 @@ class CmptwTest extends AssertJSwingJUnit5TestCase {
                 .tabbedPane("ApplicationsTabbedPane")
                 .requireTabTitles("OneNote", "WebEx", "Firefox", "Fallback");
     }
+
+    @Test
+    public void fixItemDoubleSubstitutionInComponentDiffing() {
+        window.button("remove_application_btn").click();
+        window.button("remove_application_btn").click();
+        window.button("remove_application_btn").click();
+
+        window.button("add_application_btn").click();
+        window.dialog("select_process_dialog").table().selectRows(1);
+        window.dialog("select_process_dialog").button("add_btn").click();
+
+        window.button("add_application_btn").click();
+        window.dialog("select_process_dialog").table().selectRows(0);
+        window.dialog("select_process_dialog").button("add_btn").click();
+
+        window.button("add_application_btn").click();
+        window.dialog("select_process_dialog").table().selectRows(2);
+        window.dialog("select_process_dialog").button("add_btn").click();
+
+        var tabbedPane = window
+                        .panel("currentPanel")
+                        .tabbedPane("ApplicationsTabbedPane");
+
+        tabbedPane.requireTabTitles("Firefox", "ONENOTE", "Washost", "Fallback");
+        // __JTabbedPane__components: Removing component at idx 1 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
+        // __JTabbedPane__components: Removing component at idx 1 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
+        // __JTabbedPane__components: Inserting component javax.swing.JPanel[,0,0,0x0,invalid,layout=net.miginfocom.swing.MigLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=] at idx 0 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,invalid,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
+        // __JTabbedPane__components: Inserting component javax.swing.JPanel[,0,0,0x0,invalid,layout=net.miginfocom.swing.MigLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=] at idx 2 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,invalid,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
+        window.button("cancel_btn").click();
+        tabbedPane.requireTabTitles("OneNote", "WebEx", "Firefox", "Fallback");
+    }
 }

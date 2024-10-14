@@ -70,6 +70,7 @@ class DevicePanel extends JPanel {
 
             buttonsPanel.children(buttonsPanelChildren -> {
                 buttonsPanelChildren.add(JDButton.fn(addApplicationBtn -> {
+                    addApplicationBtn.name(() -> "add_application_btn");
                     addApplicationBtn.icon(() -> new ImageIcon(
                             new MultiResolutionIconFont(FontAwesome.PLUS, 14, new Color(0, 150, 0))));
                     addApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
@@ -111,6 +112,7 @@ class DevicePanel extends JPanel {
                 }));
 
                 buttonsPanelChildren.add(JDButton.fn(removeApplicationBtn -> {
+                    removeApplicationBtn.name(() -> "remove_application_btn");
                     removeApplicationBtn.icon(() -> new ImageIcon(
                             new MultiResolutionIconFont(FontAwesome.MINUS, 14, new Color(150, 0, 0))));
                     removeApplicationBtn.margin(() -> new Insets(2, 2, 2, 2));
