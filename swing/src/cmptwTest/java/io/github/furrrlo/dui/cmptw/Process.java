@@ -24,9 +24,9 @@ interface Process {
 
     static Collection<Process> enumerateProcesses() {
         return List.of(
-                new ProcessImpl(1, "OneNote", ROOT_ICON_PATH.resolve("onenote.png")),
-                new ProcessImpl(2, "WebEx", ROOT_ICON_PATH.resolve("webex.png")),
-                new ProcessImpl(3, "Firefox", ROOT_ICON_PATH.resolve("firefox.png")));
+                new ProcessImpl(1, "ONENOTE.exe", ROOT_ICON_PATH.resolve("onenote.png")),
+                new ProcessImpl(2, "washost.exe", ROOT_ICON_PATH.resolve("webex.png")),
+                new ProcessImpl(3, "firefox.exe", ROOT_ICON_PATH.resolve("firefox.png")));
     }
 
     static List<BufferedImage> extractProcessIcons(Path processFile) {
