@@ -39,34 +39,18 @@ class FnAttribute<T, V> implements DeclarativeComponentImpl.Attr<T, FnAttribute<
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
                        boolean checkDeps,
-                       boolean wasSet,
-                       @Nullable FnAttribute<T, V> prev,
-                       @Nullable Object prevValue) {
+                       @Nullable FnAttribute<T, V> prev) {
         value = valueSupplier.doApplyInternal();
 
-        updateAttribute(
-                declarativeComponent,
-                obj,
-                wasSet,
-                value,
-                (StatefulDeclarativeComponent<V, ?, ?>) prevValue);
-    }
-
-    private void updateAttribute(DeclarativeComponentImpl<T, ?> declarativeComponent,
-                                 T obj,
-                                 boolean wasSet,
-                                 StatefulDeclarativeComponent<? extends V, ?, ?> value,
-                                 @Nullable StatefulDeclarativeComponent<V, ?, ?> prevValue) {
         updateDeclarativeComponent(
                 declarativeComponent.getAppConfig(),
                 declarativeComponent.lookups(),
-                wasSet,
+                prev != null,
                 value,
-                prevValue,
+                prev != null ? prev.value : null,
                 created -> setter.accept(obj, created),
                 null);
     }

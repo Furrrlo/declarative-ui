@@ -162,8 +162,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
             final Attr<T, ?> prevProp = context != null ?
                     context.attributes.get(key) :
                     null;
-            final Object prevValue = prevProp != null ? prevProp.value() : null;
-            this.<Attr>updateAttribute(key, prop, component, true,prevProp != null, prevProp, prevValue);
+            this.<Attr>updateAttribute(key, prop, component, true, prevProp);
         });
         // TODO: what happens when an attribute was there, but is no longer present?
         // for now copy over old attributes (might be not ideal, but at least we don't lose stuff around)
@@ -175,11 +174,9 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                                                          A attr,
                                                          T obj,
                                                          boolean checkDeps,
-                                                         boolean wasSet,
-                                                         @Nullable A prev,
-                                                         @Nullable Object prevValue) {
+                                                         @Nullable A prev) {
         this.<Void, A>buildOrChangeAttrWithStateDependency(attrKey, attr.updatePriority(), () -> {
-            attr.update(this, obj, checkDeps, wasSet, prev, prevValue);
+            attr.update(this, obj, checkDeps, prev);
             return null;
         });
     }
@@ -225,8 +222,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
                     if(c == null || (c.context != null && c.context.attributes.get(attrKey) != attr))
                         return;
 
-                    c.runAsComponentUpdate(() -> c.updateAttribute(
-                            attrKey, attr, c.component, false, true, attr, attr.value()));
+                    c.runAsComponentUpdate(() -> c.updateAttribute(attrKey, attr, c.component, false, attr));
                 }),
                 (c, attr) -> new Object[] { attr });
         return withStateDependency(stateDependency, factory);
@@ -507,9 +503,7 @@ class DeclarativeComponentImpl<T, O_CTX extends DeclarativeComponentContext>
         void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                     T obj,
                     boolean checkDeps,
-                    boolean wasSet,
-                    @Nullable SELF prev,
-                    @Nullable Object prevValue);
+                    @Nullable SELF prev);
 
         void dispose();
     }

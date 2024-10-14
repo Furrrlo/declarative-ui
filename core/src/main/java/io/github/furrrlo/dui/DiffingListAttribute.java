@@ -57,21 +57,16 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
                        boolean checkDeps,
-                       boolean wasSet,
-                       @Nullable DiffingListAttribute<T, C, S> prev,
-                       @Nullable Object prevValue0) {
-        // prev might be this attribute itself, so we need to save the suppliers before we replace them
+                       @Nullable DiffingListAttribute<T, C, S> prev) {
+        // prev might be this attribute itself, so we need to save the values and suppliers before we replace them
+        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValue = prev != null ? prev.value : Collections.emptyList();
         final List<S> prevSuppliers = prev != null ? prev.suppliers : null;
         this.suppliers = valueSuppliersSupplier.get();
         this.value = valueFn.apply(this.suppliers);
 
-        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValue = wasSet ?
-                (List<StatefulDeclarativeComponent<C, ?, ?>>) Objects.requireNonNull(prevValue0) :
-                Collections.emptyList();
         final Map<StatefulDeclarativeComponent<C, ?, ?>, S> implToSuppliers = Stream
                 .of(IntStream.range(0, suppliers.size())
                                 .boxed()

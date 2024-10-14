@@ -42,24 +42,19 @@ class Attribute<T, V> implements DeclarativeComponentImpl.Attr<T, Attribute<T, V
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
                        boolean checkDeps,
-                       boolean wasSet,
-                       @Nullable Attribute<T, V> prev,
-                       @Nullable Object prevValue) {
-        updateAttribute(obj, wasSet, checkDeps, prev, (V) prevValue);
-    }
-
-    private void updateAttribute(T obj, boolean wasSet, boolean checkDeps, @Nullable Attribute<T, V> prev, V prevValue) {
-        if(checkDeps && wasSet && Objects.equals(prev != null ? prev.valueSupplier : null, valueSupplier))
+                       @Nullable Attribute<T, V> prev) {
+        if(checkDeps && prev != null && Objects.equals(prev.valueSupplier, valueSupplier))
             return;
 
+        // prev might be this attribute itself, so we need to save value before we replace it
+        final V prevValue = prev != null ? prev.value : null;
         final V value = valueSupplier.get();
         this.value = value;
 
-        if (!wasSet || !equalityFn.equals(obj, prevValue, value)) {
+        if (prev == null || !equalityFn.equals(obj, prevValue, value)) {
             if(obj == null)
                 throw new NullPointerException(String.format(
                         "Attribute '%s' with old value '%s' and new value '%s'",

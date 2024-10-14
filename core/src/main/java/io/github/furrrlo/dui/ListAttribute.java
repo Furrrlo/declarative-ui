@@ -48,19 +48,14 @@ class ListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void update(DeclarativeComponentImpl<T, ?> declarativeComponent,
                        T obj,
                        boolean checkDeps,
-                       boolean wereSet,
-                       @Nullable ListAttribute<T, C, S> prev,
-                       @Nullable Object prevValues0) {
+                       @Nullable ListAttribute<T, C, S> prev) {
+        // prev might be this attribute itself, so we need to save the values before we replace them
+        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValues = prev != null ? prev.value : Collections.emptyList();
         this.suppliers = valueSuppliersSupplier.get();
         this.value = valueFn.apply(this.suppliers);
-
-        final List<StatefulDeclarativeComponent<C, ?, ?>> prevValues = wereSet ?
-                (List<StatefulDeclarativeComponent<C, ?, ?>>) Objects.requireNonNull(prevValues0) :
-                Collections.emptyList();
 
         final List<C> children = new ArrayList<>();
         int idx;
