@@ -94,7 +94,7 @@ class ListDiff {
             // Item is not in this position and not in the next one, so insert it (remove it first if not already)
             // If it's a free item, we have no way to search for it, so ignore them
             boolean wasKeyedItemAlreadyRemoved = key != null && simulate.keyedToBeReAddedByKey.remove(key) != null;
-            if(!wasKeyedItemAlreadyRemoved) {
+            if(key != null && !wasKeyedItemAlreadyRemoved) {
                 // TODO: remove this somehow
                 for (int offset = 2; simulateIdx + offset < simulate.size(); offset++) {
                     String nextItemKey = extractKeyFn.apply(simulate.get(simulateIdx + offset));
