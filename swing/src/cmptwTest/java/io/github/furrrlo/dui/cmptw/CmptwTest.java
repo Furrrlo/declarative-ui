@@ -63,8 +63,8 @@ class CmptwTest extends AssertJSwingJUnit5TestCase {
         window.dialog("select_process_dialog").button("add_btn").click();
 
         var tabbedPane = window
-                        .panel("currentPanel")
-                        .tabbedPane("ApplicationsTabbedPane");
+                .panel("currentPanel")
+                .tabbedPane("ApplicationsTabbedPane");
 
         tabbedPane.requireTabTitles("Firefox", "ONENOTE", "Washost", "Fallback");
         // __JTabbedPane__components: Removing component at idx 1 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
