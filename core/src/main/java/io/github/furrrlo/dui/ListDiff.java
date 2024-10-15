@@ -20,6 +20,17 @@ class ListDiff {
             Function<? super T, @Nullable String> extractKeyFn,
             List<OutputMove<T>> outputMoves
     ) {
+        diff(oldList, newList, extractTypeFn, extractKeyFn, new OutputMoves<>(outputMoves));
+        return outputMoves;
+    }
+
+    private static <T> void diff(
+            List<T> oldList,
+            List<T> newList,
+            Function<? super T, @Nullable String> extractTypeFn,
+            Function<? super T, @Nullable String> extractKeyFn,
+            OutputMoves<T> outputMoves
+    ) {
         final Map<String, T> oldKeys = extractKeys(oldList, extractKeyFn);
 
         final Map<String, T> newKeys = extractKeys(newList, extractKeyFn);
@@ -45,17 +56,15 @@ class ListDiff {
         // Remove marked values
         for(int i = simulate.size() - 1; i >= 0; i--) {
             if(simulate.get(i) == null) {
-                final int idx = i;
-                outputMoves.add((__, remove) -> remove.accept(idx));
+                outputMoves.removeMove(i);
                 simulate.remove(i);
             }
         }
 
         // We got the old list to be the same size or smaller than the new one,
         // now move and add stuff to go from oldList -> newList
-        int newListIdx0, simulateIdx = 0;
-        for(newListIdx0 = 0; newListIdx0 < newList.size() && simulateIdx < simulate.size(); newListIdx0++) {
-            final int newListIdx = newListIdx0;
+        int newListIdx, simulateIdx = 0;
+        for(newListIdx = 0; newListIdx < newList.size() && simulateIdx < simulate.size(); newListIdx++) {
 
             final T newItem = newList.get(newListIdx);
             final String key = extractKeyFn.apply(newItem);
@@ -75,7 +84,7 @@ class ListDiff {
             final T maybeOldKeyedItem = key != null ? oldKeys.get(key) : null;
             if (key != null && maybeOldKeyedItem == null) {
                 final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, null);
-                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
+                outputMoves.insertMove(newListIdx, newItem, replacedOldItem);
                 continue;
             }
             // If the item is at the next position, just remove the current item
@@ -84,7 +93,7 @@ class ListDiff {
                 String nextItemType = extractTypeFn.apply(simulateItem);
 
                 if (Objects.equals(key, nextItemKey) && Objects.equals(type, nextItemType)) {
-                    outputMoves.add((__, remove) -> remove.accept(newListIdx));
+                    outputMoves.removeMove(newListIdx);
                     simulate.remove(simulateIdx); // Remove the current one
                     simulateIdx++; // We just checked that this one is correct, we can just skip
                     continue;
@@ -99,8 +108,7 @@ class ListDiff {
                 for (int offset = 2; simulateIdx + offset < simulate.size(); offset++) {
                     String nextItemKey = extractKeyFn.apply(simulate.get(simulateIdx + offset));
                     if (Objects.equals(key, nextItemKey)) {
-                        final int offset0 = offset;
-                        outputMoves.add((__, remove) -> remove.accept(newListIdx + offset0));
+                        outputMoves.removeMove(newListIdx + offset);
                         simulate.remove(simulateIdx + offset);
                         break;
                     }
@@ -109,26 +117,23 @@ class ListDiff {
 
             // Types are different, need to replace it by removing the previous one
             if(key == null && !isSameType)
-                outputMoves.add((__, remove) -> remove.accept(newListIdx));
+                outputMoves.removeMove(newListIdx);
             final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, maybeOldKeyedItem);
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
+            outputMoves.insertMove(newListIdx, newItem, replacedOldItem);
         }
 
         // If the old list was smaller than the new one (simulateIdx >= simulate.size()),
         // we have fewer values than what we need, just get them from the new ones
-        for(; newListIdx0 < newList.size(); newListIdx0++) {
-            final int newListIdx = newListIdx0;
+        for(; newListIdx < newList.size(); newListIdx++) {
             final T newItem = newList.get(newListIdx);
             final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, null);
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
+            outputMoves.insertMove(newListIdx, newItem, replacedOldItem);
         }
 
         // If simulate is still longer than newList, remove items until both are the same length
-        final int newListFinalSize = newListIdx0;
+        final int newListFinalSize = newListIdx;
         for (int i = simulateIdx; i < simulate.size(); i++)
-            outputMoves.add((__, remove) -> remove.accept(newListFinalSize));
-
-        return outputMoves;
+            outputMoves.removeMove(newListFinalSize);
     }
 
     public interface OutputMove<T> {
@@ -138,6 +143,23 @@ class ListDiff {
         interface Insert<T> {
 
             void insert(int idx, T val, @Nullable T oldVal);
+        }
+    }
+
+    public static class OutputMoves<T> {
+
+        private final List<OutputMove<T>> moves;
+
+        public OutputMoves(List<OutputMove<T>> moves) {
+            this.moves = moves;
+        }
+
+        void insertMove(int idx, T val, @Nullable T oldVal) {
+            moves.add((insert, __) -> insert.insert(idx, val, oldVal));
+        }
+
+        void removeMove(int idx) {
+            moves.add((__, remove) -> remove.accept(idx));
         }
     }
 
