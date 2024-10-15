@@ -117,14 +117,14 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
                     componentsCreations.add(future);
                     actions.add(() -> {
                         final C component = item.getComponent();
-                        if (LOGGER.isLoggable(Level.INFO))
-                            LOGGER.log(Level.INFO, "{0}: Inserting component at idx ({1}: {2}) of {3}", new Object[]{key, idx, component, obj});
+                        if (LOGGER.isLoggable(Level.FINE))
+                            LOGGER.log(Level.FINE, "{0}: Inserting component at idx ({1}: {2}) of {3}", new Object[]{key, idx, component, obj});
                         adder.add(obj, idx, supplier, component);
                     });
                 },
                 idx -> {
-                    if (LOGGER.isLoggable(Level.INFO))
-                        LOGGER.log(Level.INFO, "{0}: Removing component at idx {1} of {2}", new Object[]{key, idx, obj});
+                    if (LOGGER.isLoggable(Level.FINE))
+                        LOGGER.log(Level.FINE, "{0}: Removing component at idx {1} of {2}", new Object[]{key, idx, obj});
                     toDispose.add(toUpdate.remove(idx));
                     actions.add(() -> remover.remover(obj, idx));
                 }));
