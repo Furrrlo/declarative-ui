@@ -4,7 +4,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -28,7 +27,7 @@ class ListDiff {
 
         // Build a list to simulate what needs to happen
         final AtomicInteger freeIdx = new AtomicInteger(0);
-        final SimulateList<T> simulate = new SimulateList<>(extractTypeFn, extractKeyFn, oldList, oldV -> {
+        final SimulateList<T> simulate = new SimulateList<>(extractTypeFn, extractKeyFn, oldList, newKeys, oldV -> {
             final String oldKey = extractKeyFn.apply(oldV);
             // Value with key is no longer present, mark index to be removed
             if (oldKey != null && !newKeys.containsKey(oldKey))
@@ -75,7 +74,8 @@ class ListDiff {
             // Item with a new key, insert it
             final T maybeOldKeyedItem = key != null ? oldKeys.get(key) : null;
             if (key != null && maybeOldKeyedItem == null) {
-                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, null));
+                final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, null);
+                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
                 continue;
             }
             // If the item is at the next position, just remove the current item
@@ -93,7 +93,7 @@ class ListDiff {
 
             // Item is not in this position and not in the next one, so insert it (remove it first if not already)
             // If it's a free item, we have no way to search for it, so ignore them
-            boolean wasKeyedItemAlreadyRemoved = key != null && simulate.keyedRemovedByKey.remove(key) != null;
+            boolean wasKeyedItemAlreadyRemoved = key != null && simulate.keyedToBeReAddedByKey.remove(key) != null;
             if(!wasKeyedItemAlreadyRemoved) {
                 // TODO: remove this somehow
                 for (int offset = 2; simulateIdx + offset < simulate.size(); offset++) {
@@ -110,7 +110,8 @@ class ListDiff {
             // Types are different, need to replace it by removing the previous one
             if(key == null && !isSameType)
                 outputMoves.add((__, remove) -> remove.accept(newListIdx));
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, maybeOldKeyedItem));
+            final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, maybeOldKeyedItem);
+            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
         }
 
         // If the old list was smaller than the new one (simulateIdx >= simulate.size()),
@@ -118,7 +119,8 @@ class ListDiff {
         for(; newListIdx0 < newList.size(); newListIdx0++) {
             final int newListIdx = newListIdx0;
             final T newItem = newList.get(newListIdx);
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, null));
+            final T replacedOldItem = simulate.findItemToBeReplacedFor(newItem, null);
+            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, replacedOldItem));
         }
 
         // If simulate is still longer than newList, remove items until both are the same length
@@ -126,45 +128,7 @@ class ListDiff {
         for (int i = simulateIdx; i < simulate.size(); i++)
             outputMoves.add((__, remove) -> remove.accept(newListFinalSize));
 
-        final Map<String, List<T>> freeRemovedByType = simulate.freeRemovedByType;
-        final Map<String, List<T>> keyedRemovedByType = extractTypes(simulate.keyedRemovedByKey.values(), extractTypeFn);
-        return outputMoves.stream()
-                .map(move -> {
-                    final AtomicReference<OutputMove<T>> mapped = new AtomicReference<>();
-                    move.doMove(
-                            (idx, child, oldChild) -> {
-                                // if old not null, we already found it
-                                if(oldChild != null) {
-                                    mapped.set(move);
-                                    return;
-                                }
-
-                                final boolean hasKey = extractKeyFn.apply(child) != null;
-                                final String type = extractTypeFn.apply(child);
-
-                                List<T> candidates;
-                                final T candidate;
-                                // For keyed items, try to reuse already present ones which were disposed
-                                if(hasKey && !(candidates = keyedRemovedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
-                                    candidate = candidates.remove(0);
-                                } else if(!(candidates = freeRemovedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
-                                    candidate = candidates.remove(0);
-                                } else {
-                                    candidate = null;
-                                }
-
-                                if(candidate != null) {
-                                    mapped.set((insert, __) -> insert.insert(idx, child, candidate));
-                                    return;
-                                }
-
-                                mapped.set(move);
-                            },
-                            idx -> mapped.set(move)
-                    );
-                    return mapped.get();
-                })
-                .collect(Collectors.toList());
+        return outputMoves;
     }
 
     public interface OutputMove<T> {
@@ -181,19 +145,23 @@ class ListDiff {
 
         private final List<T> newSimulation;
         private final List<T> oldSimulation;
+        private final Map<String, T> newKeys;
 
         private final Function<? super T, @Nullable String> extractTypeFn;
         private final Function<? super T, @Nullable String> extractKeyFn;
 
-        final Map<String, T> keyedRemovedByKey = new HashMap<>();
-        final Map<String, List<T>> freeRemovedByType = new HashMap<>();
+        final Map<String, T> keyedToBeReAddedByKey = new HashMap<>();
+        final Map<String, List<T>> keyedToBeReUsedByType = new HashMap<>();
+        final Map<String, List<T>> freeToBeReUsedByType = new HashMap<>();
 
         public SimulateList(Function<? super T, @Nullable String> extractTypeFn,
                             Function<? super T, @Nullable String> extractKeyFn,
                             List<T> oldList,
+                            Map<String, T> newKeys,
                             Function<T, T> buildSimulation) {
             this.extractTypeFn = extractTypeFn;
             this.extractKeyFn = extractKeyFn;
+            this.newKeys = newKeys;
             this.oldSimulation = new ArrayList<>(oldList);
             this.newSimulation = oldList.stream()
                     .map(buildSimulation)
@@ -211,14 +179,36 @@ class ListDiff {
         public void remove(int i) {
             T removed = oldSimulation.remove(i);
             String key = extractKeyFn.apply(removed);
-            if(key != null) {
-                keyedRemovedByKey.put(key, removed);
+            if(key != null && newKeys.containsKey(key)) {
+                keyedToBeReAddedByKey.put(key, removed);
             } else {
                 String type = extractTypeFn.apply(removed);
-                freeRemovedByType.computeIfAbsent(type, t -> new ArrayList<>()).add(removed);
+                if(key != null /* && !newKeys.containsKey(key) */)
+                    keyedToBeReUsedByType.computeIfAbsent(type, t -> new ArrayList<>()).add(removed);
+                else
+                    freeToBeReUsedByType.computeIfAbsent(type, t -> new ArrayList<>()).add(removed);
             }
 
             newSimulation.remove(i);
+        }
+
+        public @Nullable T findItemToBeReplacedFor(T item, @Nullable T firstCandidate) {
+            final String key = extractKeyFn.apply(item);
+            final String type = extractTypeFn.apply(item);
+
+            List<T> candidates;
+            final T candidate;
+            if(firstCandidate != null && Objects.equals(type, extractTypeFn.apply(firstCandidate))) {
+                candidate = firstCandidate;
+            } else if(key != null && !(candidates = keyedToBeReUsedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
+                candidate = candidates.remove(0);
+            } else if(!(candidates = freeToBeReUsedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
+                candidate = candidates.remove(0);
+            } else {
+                candidate = null;
+            }
+
+            return candidate;
         }
     }
 
@@ -230,15 +220,6 @@ class ListDiff {
                 .collect(Collectors.toMap(
                         AbstractMap.SimpleEntry::getKey,
                         AbstractMap.SimpleEntry::getValue));
-    }
-
-    private static <T> Map<String, List<T>> extractTypes(Collection<T> collection,
-                                                         Function<? super T, @Nullable String> extractTypeFn) {
-        // Can't use Collectors.groupingBy as it won't accept null keys
-        Map<String, List<T>> map = new HashMap<>();
-        for (T t : collection)
-            map.computeIfAbsent(extractTypeFn.apply(t), k -> new ArrayList<>()).add(t);
-        return map;
     }
 
     private static <T> List<T> extractFree(List<T> list, Function<? super T, @Nullable String> extractKeyFn) {
