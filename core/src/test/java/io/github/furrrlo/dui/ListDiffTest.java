@@ -1,5 +1,6 @@
 package io.github.furrrlo.dui;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -17,55 +18,74 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ListDiffTest {
 
     static Stream<Arguments> testReorderSource() {
-        return Stream.of(
-                testReorderArgs("only keys",
+        return Stream.<@Nullable String>of(
+                "type",
+                null
+        ).flatMap(type -> Stream.of(
+                testReorderArgs("only keys (" + type + ')',
+                        t -> type,
                         Item::id,
                         Arrays.asList(new Item("a"), new Item("b"), new Item("c"), new Item("d"), new Item("e")),
                         Arrays.asList(new Item("c"), new Item("a"), new Item("b"), new Item("e"), new Item("f"))),
-                testReorderArgs("no keys",
+                testReorderArgs("no keys (" + type + ')',
+                        t -> type,
                         i -> null,
                         Arrays.asList(new Item("a"), new Item("b"), new Item("c"), new Item("d"), new Item("e")),
                         Arrays.asList(new Item("c"), new Item("a"), new Item("b"), new Item("e"), new Item("f"))),
-                testReorderArgs("key moved afterward",
+                testReorderArgs("key moved afterward (" + type + ')',
+                        t -> type,
                         obj -> (obj instanceof Item) ? ((Item) obj).id() : null,
                         Arrays.asList(new NoKey("a"), new NoKey("b"), new Item("c"), new NoKey("d"), new NoKey("e")),
                         Arrays.asList(new Item("c"), new NoKey("a"), new NoKey("b"), new NoKey("e"), new NoKey("f"))),
-                testReorderArgs("removed item in the middle",
+                testReorderArgs("removed item in the middle (" + type + ')',
+                        t -> type,
                         obj -> (obj instanceof Item) ? ((Item) obj).id() : null,
                         Arrays.asList(new Item("a"), new NoKey("b"), new Item("c")),
                         Arrays.asList(new Item("a"), new Item("c"))),
-                testReorderArgs("removed 2 items in the middle",
+                testReorderArgs("removed 2 items in the middle (" + type + ')',
+                        t -> type,
                         obj -> (obj instanceof Item) ? ((Item) obj).id() : null,
                         Arrays.asList(new Item("a"), new NoKey("b"), new NoKey("c"), new Item("d")),
                         Arrays.asList(new Item("a"), new Item("d"))),
-                testReorderArgs("swapped keyed items",
+                testReorderArgs("swapped keyed items (" + type + ')',
+                        t -> type,
                         Item::id,
                         Arrays.asList(new Item("a"), new Item("b"), new Item("c")),
                         Arrays.asList(new Item("a"), new Item("c"), new Item("b")))
-//                testReorderArgs("Move free",
+//                testReorderArgs("Move free (" + type + ')',
+//                        t -> type,
 //                        obj -> (obj instanceof Item) ? ((Item) obj).id() : null,
 //                        Arrays.asList(new Item("a"), new Item("b"), new NoKey("c"), new NoKey("d"), new Item("e")),
 //                        Arrays.asList(new NoKey("d"), new Item("a"), new Item("b"), new NoKey("c"), new Item("e"))),
-//                testReorderArgs("Move free (with other free)",
+//                testReorderArgs("Move free (with other free) (" + type + ')',
+//                        t -> type,
 //                        obj -> (obj instanceof Item) ? ((Item) obj).id() : null,
 //                        Arrays.asList(new Item("a"), new Item("b"), new NoKey("c"), new Item("d"), new Item("e")),
 //                        Arrays.asList(new NoKey("c"), new Item("a"), new Item("b"), new Item("d"), new Item("e")))
-        );
+        ));
     }
 
-    static <T> Arguments testReorderArgs(String msg, Function<T, String> keyFn, List<T> oldL, List<T> newList) {
-        return Arguments.of(msg, keyFn, oldL, newList);
+    static <T> Arguments testReorderArgs(String msg,
+                                         Function<? super T, @Nullable String> typeFn,
+                                         Function<? super T, @Nullable String> keyFn,
+                                         List<T> oldL,
+                                         List<T> newList) {
+        return Arguments.of(msg, typeFn, keyFn, oldL, newList);
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("testReorderSource")
-    <T> void testReorder(String msg, Function<T, String> keyFn, List<T> oldL, List<T> newList) {
+    <T> void testReorder(String msg,
+                         Function<? super T, @Nullable String> typeFn,
+                         Function<? super T, @Nullable String> keyFn,
+                         List<T> oldL,
+                         List<T> newList) {
         System.out.println(">> " + msg);
 
         final List<T> oldList = new ArrayList<>(oldL);
-        final List<ListDiff.OutputMove<T>> outputMoves = ListDiff.diff(oldList, newList, i -> "type", keyFn, new ArrayList<>());
+        final List<ListDiff.OutputMove<T>> outputMoves = ListDiff.diff(oldList, newList, typeFn, keyFn, new ArrayList<>());
         outputMoves.forEach(m -> m.doMove(
-                (i, v) -> {
+                (i, v, oldV) -> {
                     System.out.println("    Inserting " + v + " at " + i + " to " + oldList);
                     if(oldList.contains(v))
                         throw new UnsupportedOperationException("Item " + v + " was already contained: " + oldList);
