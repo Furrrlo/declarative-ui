@@ -20,7 +20,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
-    systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
+    systemProperty("org.slf4j.simpleLogger.log.io.github.furrrlo.dui", "debug")
     reports {
         html.required.set(true)
         junitXml.apply {
