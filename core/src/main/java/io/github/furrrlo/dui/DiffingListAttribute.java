@@ -11,8 +11,6 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? extends C>>
         implements DeclarativeComponentImpl.Attr<T, DiffingListAttribute<T, C, S>> {
@@ -81,16 +79,14 @@ class DiffingListAttribute<T, C, S extends DeclarativeComponentWithIdSupplier<? 
         final List<CompletableFuture<?>> componentsCreations = new ArrayList<>();
 
         outputMoves.forEach(move -> move.doMove(
-                (idx, itemAndSupplier) -> {
+                (idx, itemAndSupplier, prevItemAndSupplier) -> {
                     final StatefulDeclarativeComponent<C, ?,?> item = itemAndSupplier.value;
                     final S supplier = itemAndSupplier.supplier;
 
-                    final StatefulDeclarativeComponent<C, ?, ?> prevItem = idx < prevValue.size() ? prevValue.get(idx).value : null;
-                    final boolean canSubstitutePrevItem = prevItem != null &&
-                            !prevItem.hasBeenSubstituted() &&
-                            Objects.equals(
-                                    item.getDeclarativeType(),
-                                    Objects.requireNonNull(prevItem).getDeclarativeType());
+                    final StatefulDeclarativeComponent<C, ?, ?> prevItem = prevItemAndSupplier != null ? prevItemAndSupplier.value : null;
+                    final boolean canSubstitutePrevItem = prevItem != null && Objects.equals(
+                            item.getDeclarativeType(),
+                            Objects.requireNonNull(prevItem).getDeclarativeType());
 
                     if (idx >= toUpdate.size())
                         toUpdate.add(item);

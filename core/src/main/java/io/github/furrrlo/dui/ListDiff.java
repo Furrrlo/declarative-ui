@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -72,8 +73,9 @@ class ListDiff {
                 continue;
             }
             // Item with a new key, insert it
-            if (key != null && !oldKeys.containsKey(key)) {
-                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
+            final T maybeOldKeyedItem = key != null ? oldKeys.get(key) : null;
+            if (key != null && maybeOldKeyedItem == null) {
+                outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, null));
                 continue;
             }
             // If the item is at the next position, just remove the current item
@@ -108,7 +110,7 @@ class ListDiff {
             // Types are different, need to replace it by removing the previous one
             if(key == null && !isSameType)
                 outputMoves.add((__, remove) -> remove.accept(newListIdx));
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
+            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, maybeOldKeyedItem));
         }
 
         // If the old list was smaller than the new one (simulateIdx >= simulate.size()),
@@ -116,7 +118,7 @@ class ListDiff {
         for(; newListIdx0 < newList.size(); newListIdx0++) {
             final int newListIdx = newListIdx0;
             final T newItem = newList.get(newListIdx);
-            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem));
+            outputMoves.add((insert, __) -> insert.insert(newListIdx, newItem, null));
         }
 
         // If simulate is still longer than newList, remove items until both are the same length
@@ -124,7 +126,45 @@ class ListDiff {
         for (int i = simulateIdx; i < simulate.size(); i++)
             outputMoves.add((__, remove) -> remove.accept(newListFinalSize));
 
-        return outputMoves;
+        final Map<String, List<T>> freeRemovedByType = simulate.freeRemovedByType;
+        final Map<String, List<T>> keyedRemovedByType = extractTypes(simulate.keyedRemovedByKey.values(), extractTypeFn);
+        return outputMoves.stream()
+                .map(move -> {
+                    final AtomicReference<OutputMove<T>> mapped = new AtomicReference<>();
+                    move.doMove(
+                            (idx, child, oldChild) -> {
+                                // if old not null, we already found it
+                                if(oldChild != null) {
+                                    mapped.set(move);
+                                    return;
+                                }
+
+                                final boolean hasKey = extractKeyFn.apply(child) != null;
+                                final String type = extractTypeFn.apply(child);
+
+                                List<T> candidates;
+                                final T candidate;
+                                // For keyed items, try to reuse already present ones which were disposed
+                                if(hasKey && !(candidates = keyedRemovedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
+                                    candidate = candidates.remove(0);
+                                } else if(!(candidates = freeRemovedByType.getOrDefault(type, Collections.emptyList())).isEmpty()) {
+                                    candidate = candidates.remove(0);
+                                } else {
+                                    candidate = null;
+                                }
+
+                                if(candidate != null) {
+                                    mapped.set((insert, __) -> insert.insert(idx, child, candidate));
+                                    return;
+                                }
+
+                                mapped.set(move);
+                            },
+                            idx -> mapped.set(move)
+                    );
+                    return mapped.get();
+                })
+                .collect(Collectors.toList());
     }
 
     public interface OutputMove<T> {
@@ -133,7 +173,7 @@ class ListDiff {
 
         interface Insert<T> {
 
-            void insert(int idx, T val);
+            void insert(int idx, T val, @Nullable T oldVal);
         }
     }
 
@@ -190,6 +230,15 @@ class ListDiff {
                 .collect(Collectors.toMap(
                         AbstractMap.SimpleEntry::getKey,
                         AbstractMap.SimpleEntry::getValue));
+    }
+
+    private static <T> Map<String, List<T>> extractTypes(Collection<T> collection,
+                                                         Function<? super T, @Nullable String> extractTypeFn) {
+        // Can't use Collectors.groupingBy as it won't accept null keys
+        Map<String, List<T>> map = new HashMap<>();
+        for (T t : collection)
+            map.computeIfAbsent(extractTypeFn.apply(t), k -> new ArrayList<>()).add(t);
+        return map;
     }
 
     private static <T> List<T> extractFree(List<T> list, Function<? super T, @Nullable String> extractKeyFn) {
