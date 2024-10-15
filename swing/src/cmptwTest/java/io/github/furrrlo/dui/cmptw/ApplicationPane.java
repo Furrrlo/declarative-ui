@@ -81,6 +81,7 @@ class ApplicationPane {
 
                 infoPanelChildren.add(JDLabel.fn(label -> label.text(() -> "Process: ")));
                 infoPanelChildren.add(JDTextField.fn(textField -> {
+                    textField.name(() -> "application_process_txt_field");
                     textField.text(() -> props.map(p -> p.application).process());
                     textField.textChangeListener(e -> props.accept(
                             p -> p.setApplication,

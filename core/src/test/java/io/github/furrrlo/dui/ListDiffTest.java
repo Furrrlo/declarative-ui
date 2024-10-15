@@ -1,6 +1,7 @@
 package io.github.furrrlo.dui;
 
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ListDiffTest {
 
@@ -101,6 +103,33 @@ class ListDiffTest {
                 newList.stream().map(keyFn).collect(Collectors.toList()),
                 oldList.stream().map(keyFn).collect(Collectors.toList()),
                 msg);
+    }
+
+    @Test
+    void testSingleKeyChangeNoMoves() {
+        System.out.println(">> single key changed");
+
+        final List<Item> oldList = new ArrayList<>(Arrays.asList(new Item("a"), new Item("b"), new Item("c")));
+        final List<Item> newList = new ArrayList<>(Arrays.asList(new Item("a"), new Item("d"), new Item("c")));
+
+        final List<ListDiff.OutputMove<Item>> outputMoves = ListDiff.diff(oldList, newList, t -> "type", Item::id, new ArrayList<>());
+        outputMoves.forEach(m -> m.doMove(
+                (i, v, oldV) -> {
+                    System.out.println("    Inserting " + v + " at " + i + " to " + oldList);
+                    if(oldList.contains(v))
+                        throw new UnsupportedOperationException("Item " + v + " was already contained: " + oldList);
+                    oldList.add(i, v);
+                },
+                (i) -> {
+                    System.out.println("    Removing " + i + " from " + oldList);
+                    oldList.remove(i);
+                }
+        ));
+
+        assertTrue(
+                outputMoves.isEmpty(),
+                "When a single key of an item changes, it makes no sense to remove the old item and add a new " +
+                        "one of the same type, we can just reuse the previous one and change its key");
     }
 
     private static class Item {

@@ -3,9 +3,12 @@ package io.github.furrrlo.dui.cmptw;
 import com.github.caciocavallosilano.cacio.ctc.junit.CacioTest;
 import io.github.furrrlo.dui.assertj.swing.AssertJSwingJUnit5TestCase;
 import org.assertj.swing.core.GenericTypeMatcher;
+import org.assertj.swing.data.Index;
 import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.fixture.JPanelFixture;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.TimeUnit;
 
@@ -70,5 +73,26 @@ class CmptwTest extends AssertJSwingJUnit5TestCase {
         // __JTabbedPane__components: Inserting component javax.swing.JPanel[,0,0,0x0,invalid,layout=net.miginfocom.swing.MigLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=] at idx 2 of javax.swing.JTabbedPane[ApplicationsTabbedPane,35,85,634x502,invalid,layout=javax.swing.plaf.basic.BasicTabbedPaneUI$TabbedPaneScrollLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=352,maximumSize=,minimumSize=,preferredSize=,haveRegistered=true,tabPlacement=TOP]
         window.button("cancel_btn").click();
         tabbedPane.requireTabTitles("OneNote", "WebEx", "Firefox", "Fallback");
+    }
+
+    @Test
+    public void testSingleTabKeyChangeKeepCurrentTabIndex() {
+
+        var tabbedPane = window
+                .panel("currentPanel")
+                .tabbedPane("ApplicationsTabbedPane");
+        var selectedPaneTab = new JPanelFixture(robot(), (JPanel) tabbedPane.target().getSelectedComponent());
+        tabbedPane.requireSelectedTab(Index.atIndex(0));
+
+        var tabKeyField = selectedPaneTab.textBox("application_process_txt_field");
+        var prevText = tabKeyField.text();
+
+        tabKeyField.enterText("eee");
+        tabbedPane.requireSelectedTab(Index.atIndex(0));
+        tabKeyField.requireText(prevText + "eee");
+
+        tabKeyField.setText(prevText);
+        tabbedPane.requireSelectedTab(Index.atIndex(0));
+        tabKeyField.requireText(prevText);
     }
 }
