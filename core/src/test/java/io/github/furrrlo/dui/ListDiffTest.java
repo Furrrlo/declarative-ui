@@ -63,7 +63,7 @@ class ListDiffTest {
         System.out.println(">> " + msg);
 
         final List<T> oldList = new ArrayList<>(oldL);
-        final List<ListDiff.OutputMove<T>> outputMoves = ListDiff.reorder(oldList, newList, keyFn, new ArrayList<>());
+        final List<ListDiff.OutputMove<T>> outputMoves = ListDiff.diff(oldList, newList, i -> "type", keyFn, new ArrayList<>());
         outputMoves.forEach(m -> m.doMove(
                 (i, v) -> {
                     System.out.println("    Inserting " + v + " at " + i + " to " + oldList);
